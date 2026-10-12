@@ -1,41 +1,33 @@
-node_modules
-*.env
-.prettierrc.json
-*.pdf
-*.png
-!assinado.png
-!ICP.png
-!pendente.png
-*.rar
-# planejamento interno, fica fora do historico (o repositorio volta a ser publico)
-/docs/interno/
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-# monorepo
-dist/
-*.tsbuildinfo
-coverage/
-.turbo/
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
 
-# Certificados, chaves e credenciais
-*.pfx
-*.p12
-*.pem
-*.key
-.env*
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
 
-# Binários e empacotados
-*.jar
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-# Temporários e editores
-*.swp
-*~
-.swp
-.swo
-
-# Arquivos locais de processamento / uploads / downloads
-/Arquivos/Permanente/JSignPdf.jar
-/Arquivos/Permanente/*.pfx
-/Arquivos/Permanente/*.pem
-/Arquivos/Temporario/
-uploads/
-
+### VS Code ###
+.vscode/

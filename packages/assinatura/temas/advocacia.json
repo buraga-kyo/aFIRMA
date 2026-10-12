@@ -1,9 +1,0 @@
-{
-  "versao": 1,
-  "nome_galeria": "Advocacia",
-  "marca": { "nome": "Escritório de Advocacia", "logo_chave": "", "logo_largura_mm": 30 },
-  "paleta": { "primaria": "#1A365D", "texto": "#1B1B1B", "texto_suave": "#4A5568", "linha": "#E2E8F0", "fundo": "#F8FAFC" },
-  "tipografia": { "familia": "Merriweather", "tamanho_base": 10 },
-  "textos": { "titulo_relatorio": "Relatório de Assinaturas e Evidências", "rodape_pagina": "Documento protegido por AssineAi" },
-  "carimbo": { "pagina": "ultima", "mostrar_qr": true, "mascarar_contato": false }
-}
