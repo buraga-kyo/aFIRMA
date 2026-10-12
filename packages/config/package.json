@@ -1,7 +1,0 @@
-{
-  "name": "@assineai/config",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "description": "tsconfig, eslint e prettier compartilhados por todos os pacotes"
-}

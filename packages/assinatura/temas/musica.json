@@ -1,9 +1,0 @@
-{
-  "versao": 1,
-  "nome_galeria": "Música & Cultura",
-  "marca": { "nome": "Selo Musical", "logo_chave": "", "logo_largura_mm": 28 },
-  "paleta": { "primaria": "#D946EF", "texto": "#F8FAFC", "texto_suave": "#94A3B8", "linha": "#334155", "fundo": "#0F172A" },
-  "tipografia": { "familia": "Montserrat", "tamanho_base": 10 },
-  "textos": { "titulo_relatorio": "Autenticidade do Fonograma", "rodape_pagina": "Registro Oficial" },
-  "carimbo": { "pagina": "primeira", "mostrar_qr": true, "mascarar_contato": false }
-}
