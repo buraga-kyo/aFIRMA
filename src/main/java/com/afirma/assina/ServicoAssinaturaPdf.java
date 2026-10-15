@@ -6,6 +6,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.MessageDigest;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -26,7 +27,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ServicoAssinaturaPdf {
 
-	public byte[] assinar(byte[] pdf, byte[] certificado, char[] senha) throws Exception {
+	public byte[] assinar(byte[] pdf, byte[] certificado, char[] senha,
+			boolean permitirCertificadoVencido) throws Exception {
 		if (pdf == null || pdf.length == 0 || certificado == null || certificado.length == 0) {
 			throw new IllegalArgumentException("PDF e certificado são obrigatórios");
 		}
@@ -55,7 +57,13 @@ public class ServicoAssinaturaPdf {
 		if (!(cadeia[0] instanceof X509Certificate folha)) {
 			throw new IllegalArgumentException("Certificado X.509 inválido");
 		}
-		folha.checkValidity();
+		try {
+			folha.checkValidity();
+		} catch (CertificateExpiredException erro) {
+			if (!permitirCertificadoVencido) {
+				throw erro;
+			}
+		}
 
 		ByteArrayOutputStream saida = new ByteArrayOutputStream();
 		PdfReader leitor = new PdfReader(pdf);

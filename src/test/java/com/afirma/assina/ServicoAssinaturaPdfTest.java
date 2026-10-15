@@ -29,7 +29,7 @@ class ServicoAssinaturaPdfTest {
 
 	@Test
 	void assinaPdfEVerificaIntegridade() throws Exception {
-		byte[] assinado = servico.assinar(criarPdf(), criarCertificado(false), "senha-teste".toCharArray());
+		byte[] assinado = servico.assinar(criarPdf(), criarCertificado(false), "senha-teste".toCharArray(), false);
 		PdfReader leitor = new PdfReader(assinado);
 		try {
 			var campos = leitor.getAcroFields();
@@ -44,7 +44,21 @@ class ServicoAssinaturaPdfTest {
 	void rejeitaCertificadoVencido() throws Exception {
 		byte[] certificado = criarCertificado(true);
 		assertThrows(CertificateExpiredException.class,
-				() -> servico.assinar(criarPdf(), certificado, "senha-teste".toCharArray()));
+				() -> servico.assinar(criarPdf(), certificado, "senha-teste".toCharArray(), false));
+	}
+
+	@Test
+	void assinaComCertificadoVencidoQuandoPermitido() throws Exception {
+		byte[] assinado = servico.assinar(criarPdf(), criarCertificado(true),
+				"senha-teste".toCharArray(), true);
+		PdfReader leitor = new PdfReader(assinado);
+		try {
+			var campos = leitor.getAcroFields();
+			assertEquals(1, campos.getSignedFieldNames().size());
+			assertTrue(campos.verifySignature(campos.getSignedFieldNames().getFirst()).verify());
+		} finally {
+			leitor.close();
+		}
 	}
 
 	private byte[] criarPdf() throws Exception {

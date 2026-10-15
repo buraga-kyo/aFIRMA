@@ -1,7 +1,9 @@
 package com.afirma.assina;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -25,7 +27,8 @@ class ControleAssinaturaPdfTest {
 		when(repositorio.findById(1L)).thenReturn(Optional.of(configuracao));
 		ServicoAssinaturaPdf servico = mock(ServicoAssinaturaPdf.class);
 		byte[] assinado = "%PDF-assinado".getBytes(StandardCharsets.US_ASCII);
-		when(servico.assinar(any(byte[].class), any(byte[].class), any(char[].class))).thenReturn(assinado);
+		when(servico.assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(true)))
+				.thenReturn(assinado);
 		var controle = new ControleAssinaturaPdf(servico, new ValidadorPedidoAssinatura(repositorio));
 		var mvc = MockMvcBuilders.standaloneSetup(controle)
 				.setControllerAdvice(new TratamentoErrosApi()).build();
@@ -35,9 +38,11 @@ class ControleAssinaturaPdfTest {
 						"%PDF-1.7\n".getBytes(StandardCharsets.US_ASCII)))
 				.file(new MockMultipartFile("certificado", "certificado.pfx", "application/octet-stream",
 						new byte[] {1, 2, 3}))
-				.param("senha", "senha-de-teste"))
+				.param("senha", "senha-de-teste")
+				.param("permitirCertificadoVencido", "true"))
 				.andExpect(status().isOk())
 				.andExpect(header().string("Cache-Control", "no-store"))
 				.andExpect(content().bytes(assinado));
+		verify(servico).assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(true));
 	}
 }
