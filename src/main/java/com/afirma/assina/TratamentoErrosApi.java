@@ -1,0 +1,39 @@
+package com.afirma.assina;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.server.ResponseStatusException;
+
+@RestControllerAdvice
+public class TratamentoErrosApi {
+
+	@ExceptionHandler(MaxUploadSizeExceededException.class)
+	ResponseEntity<ErroApi> tamanhoExcedido() {
+		return resposta(HttpStatus.PAYLOAD_TOO_LARGE, "Arquivo excede limite permitido");
+	}
+
+	@ExceptionHandler({MethodArgumentNotValidException.class, MultipartException.class})
+	ResponseEntity<ErroApi> pedidoInvalido() {
+		return resposta(HttpStatus.BAD_REQUEST, "Pedido inválido");
+	}
+
+	@ExceptionHandler(ResponseStatusException.class)
+	ResponseEntity<ErroApi> erroConhecido(ResponseStatusException erro) {
+		HttpStatus status = HttpStatus.resolve(erro.getStatusCode().value());
+		if (status == null) {
+			status = HttpStatus.INTERNAL_SERVER_ERROR;
+		}
+		return resposta(status, erro.getReason() == null ? status.getReasonPhrase() : erro.getReason());
+	}
+
+	private ResponseEntity<ErroApi> resposta(HttpStatus status, String mensagem) {
+		return ResponseEntity.status(status)
+				.header("Cache-Control", "no-store")
+				.body(new ErroApi(status.name(), mensagem));
+	}
+}

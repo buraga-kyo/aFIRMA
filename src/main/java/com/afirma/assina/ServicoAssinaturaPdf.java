@@ -6,6 +6,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.MessageDigest;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -51,6 +52,10 @@ public class ServicoAssinaturaPdf {
 		if (chave == null || cadeia == null || cadeia.length == 0) {
 			throw new IllegalArgumentException("Certificado sem chave privada ou cadeia de certificados");
 		}
+		if (!(cadeia[0] instanceof X509Certificate folha)) {
+			throw new IllegalArgumentException("Certificado X.509 inválido");
+		}
+		folha.checkValidity();
 
 		ByteArrayOutputStream saida = new ByteArrayOutputStream();
 		PdfReader leitor = new PdfReader(pdf);
