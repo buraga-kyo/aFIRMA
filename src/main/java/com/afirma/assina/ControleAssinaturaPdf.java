@@ -34,7 +34,8 @@ public class ControleAssinaturaPdf {
 		ValidadorPedidoAssinatura.ArquivosValidados arquivos = validador.validar(pedido);
 		char[] senhaCertificado = pedido.getSenha().toCharArray();
 		try {
-			byte[] assinado = servico.assinar(arquivos.pdf(), arquivos.certificado(), senhaCertificado);
+			byte[] assinado = servico.assinar(arquivos.pdf(), arquivos.certificado(), senhaCertificado,
+					pedido.isPermitirCertificadoVencido());
 			return ResponseEntity.ok()
 					.header(HttpHeaders.CONTENT_DISPOSITION,
 							ContentDisposition.attachment().filename("documento-assinado.pdf").build().toString())

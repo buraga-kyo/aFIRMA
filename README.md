@@ -1,58 +1,105 @@
 # aFIRMA
 
-iniciando a migração para o Java
+### aFIRMA é uma acronimo recursivo para "A FIRma MAxima" 
+Todos os recursos para planejamento, execução de tarefas e gestão de relacionamento com clientes
+aFIRMA vai ter vai disponibilizar de forma gratuita, se você quiser fechar esse repositorio ou precisa de ajudar para implementar aFIRMA na sua firma
+entre em contato comigo por <sprtj@protonmail.com> eu aceito cripto como pagamento e se quiser me ajudar a comprar café para continuar desenvolvendo aFIRMA, eu, ficaria, agradicido ;)
 
-## API de assinatura
+#### BTC (Native SegWit) 
+```
+bc1qkvg28q9jatqm884ghkdvngzc38ahn9kxum4xkd
+```
+#### ETH 
+```
+0x1A461A6ef7Ba0d1715ca143Eb74F5A2Ad245AF1A
+```
+### em resumo aFIRMA é um ERP e CRM completo para qualquer empresa.
 
-`POST /api/pdfs/assinar` recebe `multipart/form-data` com os campos `pdf`,
-`certificado` (PKCS#12) e `senha`. Retorna `application/pdf` como anexo. O
-certificado e a senha ainda são enviados a cada requisição; não há integração
-com uma tabela de certificados neste projeto.
+por enquanto o que temos funcionando é a assinatura digital de documentos, a ideia é você usar o certificado da sua empresa (ou FIRMA rsrs) e pronto, vai sair assinando documentos com validade juridica sem ter que pagar 
+nada para ninguém, pois é XapZign, ZocuSign e etc vocês não são mais necessarios (mentira eles ainda tem muita coisa que não tem aqui, por enquanto....)
 
-A operação exige **as duas credenciais**:
+vou deixar o passo a passo de como assinar um PDF manualmente aqui, e cara, eu uso linux, se vira pra fazer no Ruindows ai valeu?!;
+Em breve receio ter que colocar essas instruções em outro arquivo, enfim por enquanto segue:
 
-- `Authorization: Bearer <JWT>` emitido pelo provedor configurado, com público
-  (`aud`) esperado e escopo `pdf.sign`.
-- `X-API-Key: <chave>` com pelo menos 32 caracteres. Defina
-  `APP_API_KEY_SHA256` com o SHA-256 hexadecimal da chave, nunca com a chave em
-  texto claro.
+### Requisitos minimos do sistema
+Java 25+  
+Qualquer docker moderno  
+Qualquer linuxzinho barato
 
-Configure `APP_JWT_ISSUER_URI`, `APP_JWT_AUDIENCE` e `APP_API_KEY_SHA256` no
-ambiente. O emissor JWT deve usar HTTPS. Sem essas variáveis, a aplicação não
-deve iniciar. Configure PostgreSQL por `SPRING_DATASOURCE_URL`,
-`SPRING_DATASOURCE_USERNAME` e `SPRING_DATASOURCE_PASSWORD`. Configure Redis
-por `SPRING_DATA_REDIS_HOST` e `SPRING_DATA_REDIS_PORT`. Exemplo para gerar a
-chave e seu resumo:
-
+### Gerar uma chave para a API
 ```sh
 openssl rand -hex 32
 printf '%s' 'CHAVE_GERADA' | sha256sum
 ```
+se o shar256sum gerar com um "tokentokenokentoken -" esse "-" não faz parte
 
-O limite inicial do PDF é 10 MiB. O administrador pode alterá-lo no PostgreSQL:
-
-```sql
-UPDATE configuracao_assinatura
-SET tamanho_maximo_pdf_bytes = 10485760
-WHERE id = 1;
+### Provedor de Identidade Oauth
+Vai precisar criar uma conta em https://manage.auth0.com/
+criar uma aplicação machine to machine
+em Permissions vai criar uma que se chama pdf.sign
+em Application Access vai permitir User-delegated Access e Client Access
+cara se ta confuso e não quer pagar pra eu configurar pra você vou te contar um segredo; joga em qualquer IA meia boca que ela vai configurar isso tudo ai.  
+De qualquer forma não estou satisfeito com esse serviço ai de Oauth, em breve, vou atraz de outra solução para segurança mas por enquanto é isso...
+Dito isto no QuickStart vc vai gerar o token em Ger Acess Token e ja vai ter o seu provedor e audience, agora é so jogar eles em uma variavel ambiente
+```sh
+export APP_JWT_ISSUER_URI='https://SEU-EMISSOR'
+export APP_JWT_AUDIENCE='SEU-PUBLICO'
+export APP_API_KEY_SHA256='SHA256_DA_CHAVE'
 ```
 
-O banco restringe o valor a 1–20 MiB. O servidor mantém teto fixo de 20 MiB
-por arquivo e 23 MiB por requisição. A API lê no máximo 2 MiB do certificado,
-confere o MIME declarado (`application/pdf`), o cabeçalho do buffer e a
-estrutura do PDF ao assinar. Requisições acima do limite retornam 413;
-MIME inválido retorna 415.
+### Agora vamos ver o postgres e redis; no compose.yaml do projeto você deve deixar correto onde os serviços estão rodando
 
-O Redis conta até 30 requisições por minuto por endereço remoto. A instância
-aceita no máximo 2 assinaturas simultâneas. Ajuste ambos em
-`app.assinatura` no `application.yaml`. Se Redis ou a configuração no banco
-falhar, a assinatura é recusada. O filtro usa o endereço da conexão; não confia
-em `X-Forwarded-For` enviado pelo cliente.
+```yaml
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=mydatabase'
+      - 'POSTGRES_PASSWORD=secret'
+      - 'POSTGRES_USER=myuser'
+    ports:
+      - '127.0.0.1:5432:5432'
+  redis:
+    image: 'redis:latest'
+    ports:
+      - '127.0.0.1:6379:6379'
+```
 
-Em produção, coloque a API atrás de proxy com TLS, limite de corpo, tempo
-máximo de upload e proteção contra DDoS. Restrinja acesso a PostgreSQL e Redis
-à rede privada. Configure o proxy para preservar o endereço real do cliente
-somente quando o proxy for confiável. O limite de código não substitui WAF,
-proteção de rede, varredura de arquivos nem atualização de dependências. Um
-PDF malicioso pode explorar falhas do parser antes da validação estrutural;
-execute o serviço com limites de CPU e memória.
+### Agora ta no hora de subir tudo (que temos ate agora hehe)
+```sh
+docker compose up -d
+```
+
+### Confira se respondem
+```sh
+docker compose exec postgres pg_isready -U myuser -d mydatabase
+docker compose exec redis redis-cli ping
+```
+
+Tomara que tenha saidas como "accepting connections" e "PONG" se não, bom, taca na IA, ela vai saber resolver kkk ou me paga...
+
+### Terminar de configurar mais variavel ambiente (se vc não sabe oq é isso, provavelmente vc é um vibecoder, sai daqui.)
+```sh
+export SPRING_DATASOURCE_URL='jdbc:postgresql://localhost:5432/mydatabase'
+export SPRING_DATASOURCE_USERNAME='myuser'
+export SPRING_DATASOURCE_PASSWORD='secret'
+export SPRING_DATA_REDIS_HOST='localhost'
+export SPRING_DATA_REDIS_PORT='6379'
+```
+
+### Iniciar a aplicação (e agora que a gente começa a orar também)
+```sh
+./mvnw spring-boot:run
+```
+
+### Assinar um PDF com certificado digital valido
+```curl
+curl -f 'http://localhost:8080/api/pdfs/assinar' \          
+-H 'Authorization: Bearer eyJhbGciOi1NiIsInR5cCI6IkpXVCIsImtpZCI6IjJ5dFNQMXlSVlNESENEbC1JeVEwNiJ9.eyJpc3MiOiJodHRwczovL2Rldi12cmI1cDhoN3RveWpzZnlyLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJCaUJpOWhWQnZ5ZWxPZ21HandCVzZBUjg1RUJGNldFNUBjbGllbnRzIiwiYXVkIjoiYWZpcm1hLmxvY2FsIiwiaWF0IjoxNzkyMDY0OTg5LCJleHAiOjE3OTIxNTEzODksInNjb3BlIjoicGRmLnNpZ24iLCJndHkiOiJjbGllbnQtY3JlZGVudGlhbHMiLCJhenAiOiJCaUJpOWhWQnZ5ZWxPZ21HandCVzZBUjg1RUJGNldFNSJ9.XUjrPXhq-lzj7voN-WfDE47aClJ18-2MsdxIrHkUDdKYDiVHVSu9dX8wi0lA4-WmTnHFVp_au22n2fFkj5eYUtiyuRnNzETJsMJrDfqUevfczk9XQ9JNdwi7Ul9DtEU4dUsL_RxhYIDfqbv8de_K4DrHP9oCnMoxoMXUW1sp8yxp33rCu4nK0aTdByNZB_UZUiabxOrmWUw0jM8X3kYVcIgcqwWA7YL4C2sedDO8m-CT6MQ6pAEsK-Z7LD7FRasvEMnvFka4GMW_g-ezGjA2fJU2JdFykHKV0E-rqBP5dPHO6OJ2yjMAvPbSrEpsx9QLgl3NOQyvk--jL5-TeBoofQ' \
+-H 'X-API-Key: 1b913c1ea24dafc2b46358f76779a7967a9630efea4cae21b1b7bf62c24' \
+-F 'pdf=@pdf.pdf;type=application/pdf' \
+-F 'certificado=@certificado.pfx' \
+-F 'senha=123123' \
+-F 'permitirCertificadoVencido=true' \
+-o documento-assinado.pdf
+```
