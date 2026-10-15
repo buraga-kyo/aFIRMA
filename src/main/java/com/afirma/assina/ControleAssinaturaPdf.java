@@ -4,16 +4,16 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -21,22 +21,25 @@ import org.springframework.web.server.ResponseStatusException;
 public class ControleAssinaturaPdf {
 
 	private final ServicoAssinaturaPdf servico;
+	private final ValidadorPedidoAssinatura validador;
 
-	public ControleAssinaturaPdf(ServicoAssinaturaPdf servico) {
+	public ControleAssinaturaPdf(ServicoAssinaturaPdf servico, ValidadorPedidoAssinatura validador) {
 		this.servico = servico;
+		this.validador = validador;
 	}
 
 	@PostMapping(value = "/assinar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 			produces = MediaType.APPLICATION_PDF_VALUE)
-	public ResponseEntity<byte[]> assinar(@RequestParam("pdf") MultipartFile pdf,
-			@RequestParam("certificado") MultipartFile certificado,
-			@RequestParam("senha") String senha) throws Exception {
-		char[] senhaCertificado = senha.toCharArray();
+	public ResponseEntity<byte[]> assinar(@Valid @ModelAttribute PedidoAssinaturaPdf pedido) throws Exception {
+		ValidadorPedidoAssinatura.ArquivosValidados arquivos = validador.validar(pedido);
+		char[] senhaCertificado = pedido.getSenha().toCharArray();
 		try {
-			byte[] assinado = servico.assinar(pdf.getBytes(), certificado.getBytes(), senhaCertificado);
+			byte[] assinado = servico.assinar(arquivos.pdf(), arquivos.certificado(), senhaCertificado);
 			return ResponseEntity.ok()
 					.header(HttpHeaders.CONTENT_DISPOSITION,
 							ContentDisposition.attachment().filename("documento-assinado.pdf").build().toString())
+					.header(HttpHeaders.CACHE_CONTROL, "no-store")
+					.header("X-Content-Type-Options", "nosniff")
 					.contentType(MediaType.APPLICATION_PDF)
 					.body(assinado);
 		} catch (IllegalArgumentException | GeneralSecurityException | IOException erro) {

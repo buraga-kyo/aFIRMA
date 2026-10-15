@@ -1,3 +1,26 @@
 spring:
   application:
     name: assina
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 23MB
+      file-size-threshold: 2MB
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  data:
+    redis:
+      connect-timeout: 1s
+      timeout: 1s
+      repositories:
+        enabled: false
+server:
+  max-http-request-header-size: 8KB
+  tomcat:
+    connection-timeout: 5s
+app:
+  assinatura:
+    requisicoes-por-minuto: 30
+    assinaturas-simultaneas: 2
