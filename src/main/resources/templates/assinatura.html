@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assinar PDF | aFIRMA</title>
+  <link rel="stylesheet" th:href="@{/css/assinatura.css}" href="/css/assinatura.css">
+  <script th:src="@{/js/assinatura.js}" src="/js/assinatura.js" defer></script>
+</head>
+<body>
+  <header class="topo">
+    <a class="marca" href="/" aria-label="aFIRMA, início">a<span>FIRMA</span><span class="marca-ponto">.</span></a>
+    <span class="topo-selo">ASSINATURA DIGITAL DE DOCUMENTOS</span>
+  </header>
+
+  <main>
+    <section class="apresentacao" aria-labelledby="titulo">
+      <div class="apresentacao-texto">
+        <span class="sobretitulo"><span class="indicador"></span> PDF ASSINADO, PRONTO PARA USAR</span>
+        <h1 id="titulo">ASSINE SEU<br><span>DOCUMENTO.</span></h1>
+        <p>Envie seu PDF e certificado digital. A gente prepara o arquivo assinado para baixar aqui mesmo.</p>
+      </div>
+      <div class="carimbo" aria-hidden="true"><span>RAIZ NO CAMPO</span><strong>✳</strong><span>OLHAR NO FUTURO</span></div>
+    </section>
+
+    <section class="area-trabalho" aria-label="Formulário de assinatura">
+      <div class="cabecalho-area"><span>01 / ASSINAR PDF</span><span>ARQUIVO PRONTO EM POUCOS PASSOS</span></div>
+      <form id="formulario-assinatura" class="formulario" th:action="@{/api/pdfs/assinar}" action="/api/pdfs/assinar" method="post" enctype="multipart/form-data">
+        <div class="etapa">
+          <div class="etapa-titulo"><span class="numero">01</span><div><h2>SEU DOCUMENTO</h2><p>Escolha um PDF de até 20 MB.</p></div></div>
+          <label class="zona-arquivo" for="pdf" id="zona-pdf">
+            <span class="icone-arquivo" aria-hidden="true">↥</span>
+            <strong id="nome-pdf">Clique para escolher seu PDF</strong>
+            <span>Ou arraste o arquivo para cá</span>
+            <input id="pdf" name="pdf" type="file" accept=".pdf,application/pdf" required>
+          </label>
+        </div>
+
+        <div class="etapa">
+          <div class="etapa-titulo"><span class="numero">02</span><div><h2>SEU CERTIFICADO</h2><p>Use o arquivo e a senha do certificado digital.</p></div></div>
+          <div class="campos">
+            <label class="campo campo-largo" for="certificado">ARQUIVO DO CERTIFICADO
+              <input id="certificado" name="certificado" type="file" accept=".p12,.pfx,application/x-pkcs12" required>
+            </label>
+            <label class="campo" for="senha">SENHA DO CERTIFICADO
+              <input id="senha" name="senha" type="password" maxlength="256" autocomplete="off" required placeholder="Digite sua senha">
+            </label>
+          </div>
+        </div>
+
+        <div class="etapa">
+          <div class="etapa-titulo"><span class="numero">03</span><div><h2>ACESSO À API</h2><p>Informe credenciais com permissão para assinar PDF.</p></div></div>
+          <div class="campos">
+            <label class="campo" for="chave-api">CHAVE DA API
+              <input id="chave-api" type="password" autocomplete="off" required placeholder="Sua chave de acesso">
+            </label>
+            <label class="campo" for="token">TOKEN JWT
+              <input id="token" type="password" autocomplete="off" required placeholder="Token com escopo pdf.sign">
+            </label>
+          </div>
+          <p class="nota-seguranca">Credenciais ficam apenas nesta página. Nenhum arquivo é salvo no navegador.</p>
+        </div>
+
+        <div class="rodape-formulario">
+          <p>Ao enviar, o documento será processado para assinatura.</p>
+          <button id="botao-assinar" type="submit"><span>ASSINAR DOCUMENTO</span><span aria-hidden="true">↗</span></button>
+        </div>
+      </form>
+
+      <div id="resultado" class="resultado" hidden aria-live="polite" role="status">
+        <div class="resultado-icone" aria-hidden="true">✓</div>
+        <div><h2>DOCUMENTO PRONTO</h2><p>Seu PDF assinado está disponível para download.</p></div>
+        <a id="baixar" class="botao-baixar" href="#" download="documento-assinado.pdf">BAIXAR PDF ↗</a>
+      </div>
+      <div id="erro" class="erro" hidden role="alert"></div>
+    </section>
+  </main>
+
+  <footer><span>aFIRMA © 2026</span><span>RAIZ NO CAMPO. OLHAR NO FUTURO.</span></footer>
+</body>
+</html>
