@@ -6,6 +6,7 @@
   <title>Assinar PDF | aFIRMA</title>
   <link rel="stylesheet" th:href="@{/css/assinatura.css}" href="/css/assinatura.css">
   <script th:src="@{/js/assinatura.js}" src="/js/assinatura.js" defer></script>
+  <script th:src="@{/js/blockchain.js}" src="/js/blockchain.js" defer></script>
 </head>
 <body>
   <header class="topo">
@@ -25,6 +26,10 @@
 
     <section class="area-trabalho" aria-label="Formulário de assinatura">
       <div class="cabecalho-area"><span>01 / ASSINAR PDF</span><span>ARQUIVO PRONTO EM POUCOS PASSOS</span></div>
+      <div class="modos-assinatura" role="group" aria-label="Tipo de assinatura">
+        <button id="modo-certificado" type="button" aria-pressed="true">CERTIFICADO DIGITAL</button>
+        <button id="modo-blockchain" type="button" aria-pressed="false">CARTEIRA BLOCKCHAIN</button>
+      </div>
       <form id="formulario-assinatura" class="formulario" th:action="@{/api/pdfs/assinar}" action="/api/pdfs/assinar" method="post" enctype="multipart/form-data">
         <div class="etapa">
           <div class="etapa-titulo"><span class="numero">01</span><div><h2>SEU DOCUMENTO</h2><p>Escolha um PDF de até 20 MB.</p></div></div>
@@ -62,6 +67,35 @@
           <button id="botao-assinar" type="submit"><span>ASSINAR DOCUMENTO</span><span aria-hidden="true">↗</span></button>
         </div>
       </form>
+
+      <section id="area-blockchain" hidden aria-label="Assinatura com carteira">
+        <div class="etapa">
+          <div class="etapa-titulo"><span class="numero">01</span><div><h2>SEU DOCUMENTO</h2><p>Escolha um PDF de até 20 MB.</p></div></div>
+          <label class="zona-arquivo" for="pdf-blockchain" id="zona-pdf-blockchain">
+            <span class="icone-arquivo" aria-hidden="true">↥</span>
+            <strong id="nome-pdf-blockchain">Clique para escolher seu PDF</strong>
+            <span>Ou arraste o arquivo para cá</span>
+            <input id="pdf-blockchain" type="file" accept=".pdf,application/pdf">
+          </label>
+          <div class="arquivo-acoes"><button id="remover-pdf-blockchain" class="botao-remover" type="button" hidden>REMOVER PDF</button><span id="estado-pdf-blockchain" role="status" aria-live="polite"></span></div>
+        </div>
+        <div class="etapa">
+          <div class="etapa-titulo"><span class="numero">02</span><div><h2>SUA CARTEIRA</h2><p>Conecte MetaMask na rede Ethereum Sepolia.</p></div></div>
+          <button id="conectar-carteira" class="botao-carteira" type="button">CONECTAR METAMASK</button>
+          <p id="estado-carteira" class="nota-seguranca" role="status" aria-live="polite">Nenhuma carteira conectada.</p>
+        </div>
+        <div class="rodape-formulario">
+          <p>web3 web3 WEB333333333</p>
+          <button id="assinar-blockchain" type="button">ASSINAR COM CARTEIRA ↗</button>
+        </div>
+        <p id="andamento-blockchain" class="andamento-blockchain" role="status" aria-live="polite"></p>
+        <div id="resultado-blockchain" class="resultado" hidden>
+          <div class="resultado-icone" aria-hidden="true">✓</div>
+          <div><h2>DOCUMENTO PRONTO</h2><p>Prova da carteira incluída no PDF.</p></div>
+          <a id="baixar-blockchain" class="botao-baixar" download="documento-blockchain.pdf">BAIXAR PDF ↗</a>
+        </div>
+        <div id="erro-blockchain" class="erro" hidden role="alert"></div>
+      </section>
 
       <div id="resultado" class="resultado" hidden aria-live="polite" role="status">
         <div class="resultado-icone" aria-hidden="true">✓</div>
