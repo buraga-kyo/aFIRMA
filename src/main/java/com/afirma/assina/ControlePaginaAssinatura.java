@@ -8,6 +8,11 @@ public class ControlePaginaAssinatura {
 
 	@GetMapping("/")
 	public String inicio() {
+		return "inicio";
+	}
+
+	@GetMapping("/assinatura")
+	public String assinatura() {
 		return "assinatura";
 	}
 }

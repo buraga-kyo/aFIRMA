@@ -1,134 +1,80 @@
-LICENÇA ASSINEAI DE USO INTERNO (ASSINEAI INTERNAL USE LICENSE) v1.0
-Baseada na PolyForm Internal Use License 1.0.0 (https://polyformproject.org/licenses/internal-use/1.0.0)
+LICENÇA aFIRMA DE USO INTERNO v2.0
 
-Copyright (c) 2024-2026 buraga-kyo. Todos os direitos reservados, exceto os expressamente concedidos abaixo.
-
-=====================================================================
-PORTUGUÊS (versão oficial; a tradução em inglês é apenas informativa)
-=====================================================================
+Copyright (c) 2024-2026 Matheus Braga Almeida.
+Todos os direitos reservados, exceto os expressamente concedidos nesta licença.
 
 1. ACEITAÇÃO
-Para obter qualquer licença sobre este software, você deve concordar com todos
-estes termos como condição e obrigação.
+Ao usar, copiar, modificar ou executar a aFIRMA, você aceita estes termos.
 
-2. LICENÇA DE COPYRIGHT
-O licenciante concede a você uma licença de copyright para o software, para
-fazer tudo o que você poderia fazer com o software se este fosse de domínio
-público, LIMITADO AO USO PERMITIDO (seção 4) e sujeito às demais condições
-desta licença.
+2. LICENÇA GRATUITA DE USO INTERNO
+Matheus Braga Almeida concede a você uma licença gratuita para usar, copiar,
+modificar e executar a aFIRMA nas operações da sua própria organização.
+Isso inclui os módulos atuais e futuros de assinatura, gestão, ERP e CRM
+disponibilizados sob esta licença.
 
-3. LICENÇA DE PATENTE
-O licenciante concede a você uma licença de patente para o software, cobrindo
-reivindicações de patente que o licenciante possa licenciar ou venha a
-licenciar e que você infringiria ao usar o software da forma permitida.
+Sua organização pode usar a aFIRMA para prestar seus serviços normais e cobrar
+por esses serviços. Por exemplo, pode gerir clientes, preparar contratos,
+convidar pessoas para assiná-los e cobrar pelo trabalho que realiza. Essa
+cobrança, por si só, não exige licença comercial da aFIRMA.
 
-4. USO PERMITIDO — USO INTERNO
-Você pode usar, copiar, modificar e executar o software SOMENTE para as
-operações internas da sua própria organização (empresa, órgão público,
-associação ou pessoa física). "Operações internas" inclui, sem limitação:
+Clientes, fornecedores e outros participantes externos podem acessar fluxos
+que sua organização disponibilize para tratar de negócios ou documentos dela.
+Esse acesso não concede a eles o direito de operar a aFIRMA para seus próprios
+negócios independentes.
 
-  a) assinar, carimbar, validar ou gerenciar documentos DOS QUAIS A SUA
-     ORGANIZAÇÃO É PARTE, autora, destinatária ou responsável legal;
-  b) assinar documentos com certificados digitais pertencentes à sua
-     organização ou aos seus colaboradores, sócios e representantes legais;
-  c) hospedar o software em sua própria infraestrutura ou em nuvem contratada
-     por você, para acesso exclusivo dos seus colaboradores;
-  d) fazer testes, avaliação, desenvolvimento e integração com sistemas da
-     sua própria organização.
+Você pode fazer modificações para uso interno, mas esta licença não autoriza
+distribuí-las a terceiros.
 
-Você também pode usar o software para uso pessoal, ensino e pesquisa.
+3. EXPLORAÇÃO DA aFIRMA POR TERCEIROS
+A licença gratuita não autoriza você a vender, licenciar, sublicenciar,
+redistribuir ou oferecer a aFIRMA, suas modificações ou suas funcionalidades
+como produto ou serviço a terceiros. Isso inclui SaaS, API, plataforma,
+white-label, revenda e serviço de assinatura ou de gestão prestado em nome de
+outras organizações, com ou sem cobrança.
 
-5. USO PROIBIDO — EXPLORAÇÃO COMERCIAL PARA TERCEIROS
-É EXPRESSAMENTE PROIBIDO, e constitui violação desta licença:
+Para qualquer dessas atividades, é necessário um acordo comercial separado,
+prévio e por escrito com Matheus Braga Almeida. Esta licença não estabelece
+preço nem concede autorização comercial automática.
 
-  a) vender, licenciar, sublicenciar, alugar ou de qualquer forma
-     comercializar o software, no todo ou em parte, modificado ou não;
-  b) oferecer o software, ou qualquer serviço baseado nele, a terceiros
-     como produto ou serviço (incluindo SaaS, API, white-label, marketplace,
-     revenda ou plataforma), gratuitamente ou mediante pagamento;
-  c) cobrar, receber ou solicitar qualquer contraprestação (dinheiro,
-     créditos, assinatura, publicidade, dados ou outra vantagem) para
-     assinar, carimbar, validar ou processar documentos de pessoas ou
-     organizações que não sejam a sua própria;
-  d) assinar documentos de terceiros em nome deles ou para eles, como
-     atividade de negócio, mesmo sem cobrança, quando isso constituir
-     prestação de serviço de assinatura a terceiros;
-  e) redistribuir o software ou obras derivadas a qualquer pessoa fora da
-     sua organização, exceto para prestadores de serviço contratados que o
-     operem exclusivamente em seu benefício e sob estes mesmos termos.
+4. PRESTADORES CONTRATADOS
+Você pode permitir que pessoas e empresas contratadas instalem, mantenham e
+operem a aFIRMA exclusivamente em benefício da sua organização. Elas devem
+cumprir estes termos. Essa permissão não as autoriza a revender a aFIRMA nem
+a oferecer suas funcionalidades a outros clientes como serviço próprio.
 
-Cada organização que deseje usar o software deve obtê-lo diretamente do
-licenciante (por exemplo, a partir do repositório oficial) e aceitar esta
-licença por conta própria.
+5. AVISOS E MARCA
+Mantenha este arquivo e os avisos de autoria nas cópias e modificações.
+Esta licença não concede direito de usar a marca, o nome ou os logotipos
+aFIRMA para divulgar um produto ou serviço próprio. É permitido identificar
+de forma factual a origem do software.
 
-6. PRESTADORES DE SERVIÇO
-Você pode permitir que consultores, integradores ou provedores de hospedagem
-contratados por você usem o software EXCLUSIVAMENTE para prestar serviços à
-sua organização, desde que eles cumpram esta licença e você responda por eles.
-Isso não autoriza tais prestadores a oferecer o software ou o serviço de
-assinatura a outros clientes.
+6. DIREITOS DE TERCEIROS
+Esta licença cobre apenas os direitos que Matheus Braga Almeida pode conceder.
+Bibliotecas, fontes e outros componentes de terceiros continuam sujeitos às
+respectivas licenças.
 
-7. AVISOS
-Você deve manter, em todas as cópias e obras derivadas, este arquivo LICENSE
-e os avisos de copyright, e não pode remover ou alterar indicações de origem.
+7. VIOLAÇÃO
+O uso fora dos limites desta licença não é autorizado. Se você violar seus
+termos, a licença termina. Na primeira violação, ela poderá ser restaurada
+se você cessar a violação e corrigir seus efeitos em até 30 dias após tomar
+conhecimento dela.
 
-8. MARCAS
-Esta licença não concede direito de uso do nome "AssineAi", logotipos ou
-outras marcas do licenciante, exceto para identificar de forma factual a
-origem do software.
+8. AUSÊNCIA DE GARANTIA
+A aFIRMA é fornecida no estado em que se encontra, sem garantia de adequação
+a uma finalidade específica ou de validade jurídica de qualquer resultado.
+Cabe a quem a utiliza verificar os requisitos legais e técnicos aplicáveis
+às suas operações.
 
-9. VIOLAÇÃO E TÉRMINO
-Se você violar qualquer termo desta licença, sua licença termina
-automaticamente. Se a violação for a primeira e você a cessar totalmente em
-até 30 dias após tomar conhecimento dela, sua licença é restaurada
-retroativamente; caso contrário, o término é definitivo. Qualquer uso após o
-término constitui infração de direitos autorais, sujeita às sanções da Lei
-9.610/98 (Lei de Direitos Autorais), da Lei 9.609/98 (Lei do Software) e
-demais normas aplicáveis.
+9. LICENCIAMENTO COMERCIAL
+Para negociar os usos descritos na seção 3, entre em contato com
+Matheus Braga Almeida: sprtj@protonmail.com
+Repositório: https://github.com/buraga-kyo/aFIRMA
 
-10. SEM OUTROS DIREITOS
-Estes termos não implicam nenhuma licença além das expressamente concedidas.
-
-11. SEM GARANTIA E LIMITAÇÃO DE RESPONSABILIDADE
-O SOFTWARE É FORNECIDO "NO ESTADO EM QUE SE ENCONTRA", SEM GARANTIAS DE
-QUALQUER TIPO, EXPRESSAS OU IMPLÍCITAS, INCLUINDO GARANTIAS DE
-COMERCIALIZAÇÃO, ADEQUAÇÃO A UM FIM ESPECÍFICO, NÃO INFRAÇÃO OU VALIDADE
-JURÍDICA DAS ASSINATURAS PRODUZIDAS. EM NENHUMA HIPÓTESE O LICENCIANTE SERÁ
-RESPONSÁVEL POR QUALQUER DANO DECORRENTE DO USO OU DA IMPOSSIBILIDADE DE
-USO DO SOFTWARE. A conformidade das assinaturas com a ICP-Brasil, MP
-2.200-2/2001, Lei 14.063/2020 e exigências do ITI é responsabilidade
-exclusiva de quem usa o software.
-
-12. LICENCIAMENTO COMERCIAL
-Quem desejar comercializar o software ou prestar serviços de assinatura a
-terceiros com ele deve obter uma licença comercial separada e por escrito do
-licenciante. Contato: através do repositório https://github.com/buraga-kyo/assineai
-
-13. DEFINIÇÕES
-"Licenciante": o titular dos direitos autorais indicado acima.
-"Software": o software disponibilizado sob estes termos, incluindo código-
-fonte, binários, documentação e obras derivadas.
-"Você": a pessoa física ou jurídica que aceita estes termos, incluindo suas
-afiliadas sob controle comum.
-"Sua organização": Você e as afiliadas que Você controla, é controlado ou
-está sob controle comum (mais de 50% do capital votante).
-"Terceiro": qualquer pessoa ou organização que não seja a sua organização.
-
-=====================================================================
-ENGLISH (informational translation; the Portuguese text prevails)
-=====================================================================
-
-Summary of terms. You may use, copy, modify and run the software only for
-the internal business operations of your own organization, including signing
-documents to which your organization is a party, using your organization's
-own digital certificates. You may NOT sell, license, redistribute or offer
-the software or any signing service based on it to third parties (SaaS, API,
-white-label, resale or otherwise), whether free or paid, and you may NOT
-charge or accept any consideration for signing, stamping, validating or
-processing documents of any person or organization other than your own.
-Contractors may operate the software solely on your behalf. Keep this LICENSE
-and all copyright notices. Any violation terminates the license (30-day cure
-for a first violation). No trademark rights are granted. THE SOFTWARE IS
-PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND; THE LICENSOR IS NOT LIABLE
-FOR ANY DAMAGES. Commercial licenses are available separately from the
-licensor.
+10. DEFINIÇÕES
+“aFIRMA” significa o software e a documentação deste repositório
+disponibilizados sob esta licença, incluindo os módulos que venham a ser
+acrescentados sob os mesmos termos.
+“Sua organização” significa você, se pessoa física, ou a pessoa jurídica
+que utiliza a aFIRMA em suas próprias operações.
+“Terceiro” significa qualquer pessoa ou organização distinta da sua,
+ressalvado o acesso limitado de participantes externos previsto na seção 2.
