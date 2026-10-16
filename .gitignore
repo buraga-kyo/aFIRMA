@@ -35,3 +35,8 @@ build/
 # Certificados com chave privada
 *.pfx
 *.pdf
+
+# Configuração local
+.env
+.env.*
+!.env.example

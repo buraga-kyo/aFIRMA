@@ -26,12 +26,15 @@ Java 25+
 Qualquer docker moderno  
 Qualquer linuxzinho barato
 
+### Configuração local
+O projeto lê `.env` na raiz. O Docker Compose também usa esse arquivo. Copie `.env.example` para `.env` se ainda não existir. Informe emissor e público do seu provedor OAuth. O arquivo `.env` fica fora do Git.
+
 ### Gerar uma chave para a API
 ```sh
 openssl rand -hex 32
 printf '%s' 'CHAVE_GERADA' | sha256sum
 ```
-se o shar256sum gerar com um "tokentokenokentoken -" esse "-" não faz parte
+Guarde a chave original em `APP_API_KEY` no `.env` para consultar quando for usar a tela. Coloque o resumo SHA-256 em `APP_API_KEY_SHA256`.
 
 ### Provedor de Identidade Oauth
 Vai precisar criar uma conta em https://manage.auth0.com/
@@ -40,12 +43,7 @@ em Permissions vai criar uma que se chama pdf.sign
 em Application Access vai permitir User-delegated Access e Client Access
 cara se ta confuso e não quer pagar pra eu configurar pra você vou te contar um segredo; joga em qualquer IA meia boca que ela vai configurar isso tudo ai.  
 De qualquer forma não estou satisfeito com esse serviço ai de Oauth, em breve, vou atraz de outra solução para segurança mas por enquanto é isso...
-Dito isto no QuickStart vc vai gerar o token em Ger Acess Token e ja vai ter o seu provedor e audience, agora é so jogar eles em uma variavel ambiente
-```sh
-export APP_JWT_ISSUER_URI='https://SEU-EMISSOR'
-export APP_JWT_AUDIENCE='SEU-PUBLICO'
-export APP_API_KEY_SHA256='SHA256_DA_CHAVE'
-```
+Dito isto no QuickStart vc vai gerar o token em Ger Acess Token. Coloque o emissor em `APP_JWT_ISSUER_URI` e o audience em `APP_JWT_AUDIENCE` no `.env`.
 
 ### Agora vamos ver o postgres e redis; no compose.yaml do projeto você deve deixar correto onde os serviços estão rodando
 
@@ -54,9 +52,9 @@ services:
   postgres:
     image: 'postgres:latest'
     environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
     ports:
       - '127.0.0.1:5432:5432'
   redis:
@@ -78,19 +76,14 @@ docker compose exec redis redis-cli ping
 
 Tomara que tenha saidas como "accepting connections" e "PONG" se não, bom, taca na IA, ela vai saber resolver kkk ou me paga...
 
-### Terminar de configurar mais variavel ambiente (se vc não sabe oq é isso, provavelmente vc é um vibecoder, sai daqui.)
-```sh
-export SPRING_DATASOURCE_URL='jdbc:postgresql://localhost:5432/mydatabase'
-export SPRING_DATASOURCE_USERNAME='myuser'
-export SPRING_DATASOURCE_PASSWORD='secret'
-export SPRING_DATA_REDIS_HOST='localhost'
-export SPRING_DATA_REDIS_PORT='6379'
-```
+### Conferir o .env
+Confira os dados do Postgres e Redis no `.env`. `SPRING_DATASOURCE_PASSWORD` precisa ser igual a `POSTGRES_PASSWORD`. Em banco já criado, mantenha a senha atual até alterar a senha do usuário no Postgres.
 
 ### Iniciar a aplicação (e agora que a gente começa a orar também)
 ```sh
-./mvnw spring-boot:run
+./iniciar.sh
 ```
+O script carrega `.env` e substitui valores antigos exportados no terminal.
 
 ### Assinar um PDF com certificado digital valido
 ```curl
