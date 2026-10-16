@@ -23,6 +23,24 @@ public class ValidadorPedidoAssinatura {
 	}
 
 	public ArquivosValidados validar(PedidoAssinaturaPdf pedido) {
+		byte[] dadosPdf = validarPdf(pedido.getPdf());
+		MultipartFile certificado = pedido.getCertificado();
+		if (certificado == null || certificado.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificado é obrigatório");
+		}
+		byte[] dadosCertificado = lerComLimite(certificado, TETO_CERTIFICADO_BYTES);
+		return new ArquivosValidados(dadosPdf, dadosCertificado);
+	}
+
+	public byte[] validarPdf(MultipartFile pdf) {
+		return validarPdf(pdf, 0);
+	}
+
+	public byte[] validarPdfAssinado(MultipartFile pdf) {
+		return validarPdf(pdf, 16 * 1024);
+	}
+
+	private byte[] validarPdf(MultipartFile pdf, int margem) {
 		long limite;
 		try {
 			limite = configuracoes.findById(1L)
@@ -35,18 +53,15 @@ public class ValidadorPedidoAssinatura {
 			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Limite de PDF inválido");
 		}
 
-		MultipartFile pdf = pedido.getPdf();
-		MultipartFile certificado = pedido.getCertificado();
-		if (pdf.isEmpty() || certificado.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "PDF e certificado são obrigatórios");
+		if (pdf == null || pdf.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "PDF é obrigatório");
 		}
 		verificarMimePdf(pdf.getContentType());
-		byte[] dadosPdf = lerComLimite(pdf, limite);
-		byte[] dadosCertificado = lerComLimite(certificado, TETO_CERTIFICADO_BYTES);
+		byte[] dadosPdf = lerComLimite(pdf, limite + margem);
 		if (!temCabecalhoPdf(dadosPdf)) {
 			throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Conteúdo não é PDF");
 		}
-		return new ArquivosValidados(dadosPdf, dadosCertificado);
+		return dadosPdf;
 	}
 
 	private void verificarMimePdf(String mime) {

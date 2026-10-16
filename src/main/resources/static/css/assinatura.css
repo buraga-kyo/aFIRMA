@@ -45,6 +45,10 @@ h1 span { color: var(--primary); }
 .cabecalho-area { display: flex; justify-content: space-between; gap: 20px; padding: 15px 32px; background: var(--secondary); font-size: 11px; font-weight: 800; letter-spacing: .12em; }
 .cabecalho-area span:first-child { color: var(--primary); }
 .cabecalho-area span:last-child { color: var(--muted-foreground); }
+.modos-assinatura { display: flex; gap: 12px; padding: 20px 40px; border-bottom: 2px solid var(--border); }
+.modos-assinatura button, .botao-carteira { padding: 12px 16px; border: 2px solid var(--border); background: var(--background); color: var(--foreground); font-size: 12px; font-weight: 800; cursor: pointer; }
+.modos-assinatura button[aria-pressed="true"], .botao-carteira:hover { border-color: var(--primary); color: var(--primary); }
+.andamento-blockchain { margin: 0 40px 30px; color: var(--muted-foreground); font-size: 14px; }
 .etapa { padding: 36px 40px 40px; border-bottom: 2px solid var(--border); }
 .etapa-titulo { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 25px; }
 .numero { color: var(--primary); font-family: 'Archivo Black', sans-serif; font-size: 16px; line-height: 1.8; }
@@ -98,6 +102,8 @@ footer { padding: 0 40px 30px; display: flex; justify-content: space-between; ga
   .area-trabalho { margin: 0 20px 50px; }
   .cabecalho-area { padding: 14px 20px; }
   .etapa { padding: 28px 20px; }
+  .modos-assinatura { padding: 18px 20px; flex-direction: column; }
+  .andamento-blockchain { margin: 0 20px 25px; }
   .campos { grid-template-columns: 1fr; }
   .rodape-formulario { padding: 25px 20px 30px; flex-direction: column; align-items: stretch; }
   .rodape-formulario button { width: 100%; }
