@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.time.Instant;
@@ -45,6 +46,22 @@ class ServicoAssinaturaPdfTest {
 		byte[] certificado = criarCertificado(true);
 		assertThrows(CertificateExpiredException.class,
 				() -> servico.assinar(criarPdf(), certificado, "senha-teste".toCharArray(), false));
+	}
+
+	@Test
+	void informaSenhaDoCertificadoIncorreta() throws Exception {
+		byte[] certificado = criarCertificado(false);
+		assertThrows(UnrecoverableKeyException.class,
+				() -> servico.assinar(criarPdf(), certificado, "senha-errada".toCharArray(), false));
+	}
+
+	@Test
+	void informaPdfInvalido() throws Exception {
+		byte[] certificado = criarCertificado(false);
+		IllegalArgumentException erro = assertThrows(IllegalArgumentException.class,
+				() -> servico.assinar("%PDF-1.7\nconteudo".getBytes(), certificado,
+						"senha-teste".toCharArray(), false));
+		assertEquals("PDF inválido ou protegido por senha", erro.getMessage());
 	}
 
 	@Test

@@ -3,7 +3,7 @@
 ### aFIRMA é uma acronimo recursivo para "A FIRma MAxima" 
 Todos os recursos para planejamento, execução de tarefas e gestão de relacionamento com clientes
 aFIRMA vai ter vai disponibilizar de forma gratuita, se você quiser fechar esse repositorio ou precisa de ajudar para implementar aFIRMA na sua firma
-entre em contato comigo por <sprtj@protonmail.com> eu aceito cripto como pagamento e se quiser me ajudar a comprar café para continuar desenvolvendo aFIRMA, eu, ficaria, agradicido ;)
+entre em contato comigo por <sprtj@protonmail.com> eu aceito cripto como pagamento e se quiser me ajudar a comprar café para continuar desenvolvendo aFIRMA, ficaria, agradicido ;)
 
 #### BTC (Native SegWit) 
 ```
@@ -41,7 +41,6 @@ Vai precisar criar uma conta em https://manage.auth0.com/
 criar uma aplicação machine to machine
 em Permissions vai criar uma que se chama pdf.sign
 em Application Access vai permitir User-delegated Access e Client Access
-cara se ta confuso e não quer pagar pra eu configurar pra você vou te contar um segredo; joga em qualquer IA meia boca que ela vai configurar isso tudo ai.  
 De qualquer forma não estou satisfeito com esse serviço ai de Oauth, em breve, vou atraz de outra solução para segurança mas por enquanto é isso...
 Dito isto no QuickStart vc vai gerar o token em Ger Acess Token. Coloque o emissor em `APP_JWT_ISSUER_URI` e o audience em `APP_JWT_AUDIENCE` no `.env`.
 
@@ -74,7 +73,7 @@ docker compose exec postgres pg_isready -U myuser -d mydatabase
 docker compose exec redis redis-cli ping
 ```
 
-Tomara que tenha saidas como "accepting connections" e "PONG" se não, bom, taca na IA, ela vai saber resolver kkk ou me paga...
+As respostas esperadas são "accepting connections" e "PONG".
 
 ### Conferir o .env
 Confira os dados do Postgres e Redis no `.env`. `SPRING_DATASOURCE_PASSWORD` precisa ser igual a `POSTGRES_PASSWORD`. Em banco já criado, mantenha a senha atual até alterar a senha do usuário no Postgres.
@@ -85,7 +84,29 @@ Confira os dados do Postgres e Redis no `.env`. `SPRING_DATASOURCE_PASSWORD` pre
 ```
 O script carrega `.env` e substitui valores antigos exportados no terminal.
 
-### Assinar um PDF com certificado digital valido
+## Para preguiçosos, tokens prontos...
+
+Para testar a assinatura em `http://127.0.0.1:8080/`, inicie com o perfil `local-test`:
+
+```sh
+./iniciar.sh -Dspring-boot.run.profiles=local-test
+```
+
+O perfil exige PostgreSQL e Redis configurados no `.env`, mas dispensa o provedor OAuth externo. Ele aceita apenas conexões em `127.0.0.1`. Informe na tela:
+
+
+### CHAVE DA API
+```text
+afirma-teste-local-2026-chave-api-exclusiva
+```
+### TOKEN JWT
+```text
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwODAvbG9jYWwtdGVzdCIsInN1YiI6InRlc3RlLWxvY2FsIiwiYXVkIjpbImFmaXJtYS5sb2NhbC10ZXN0Il0sImlhdCI6MTc5MjExOTYwMCwiZXhwIjoyMDk3MjczNjAwLCJzY29wZSI6InBkZi5zaWduIn0.n1fXvSU8qCLktT4SwVGcerEsfzXi8e7KVvTaT4XRSDU
+```
+## Para fodidos, certificados vencidos....
+Para testar com certificado vencido, coloque `APP_PERMITIR_CERTIFICADO_VENCIDO=true` no `.env` e reinicie a aplicação. O padrão é `false`. A opção vale para todas as assinaturas enquanto estiver ativa, inclusive pela tela. Ela permite apenas certificado vencido; PDF, chave privada e senha continuam obrigatórios. Volte para `false` após o teste.
+
+## Para quem não gosta de tela, vai toma no curl....
 ```curl
 curl -f 'http://localhost:8080/api/pdfs/assinar' \          
 -H 'Authorization: Bearer eyJhbGciOi1NiIsInR5cCI6IkpXVCIsImtpZCI6IjJ5dFNQMXlSVlNESENEbC1JeVEwNiJ9.eyJpc3MiOiJodHRwczovL2Rldi12cmI1cDhoN3RveWpzZnlyLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJCaUJpOWhWQnZ5ZWxPZ21HandCVzZBUjg1RUJGNldFNUBjbGllbnRzIiwiYXVkIjoiYWZpcm1hLmxvY2FsIiwiaWF0IjoxNzkyMDY0OTg5LCJleHAiOjE3OTIxNTEzODksInNjb3BlIjoicGRmLnNpZ24iLCJndHkiOiJjbGllbnQtY3JlZGVudGlhbHMiLCJhenAiOiJCaUJpOWhWQnZ5ZWxPZ21HandCVzZBUjg1RUJGNldFNSJ9.XUjrPXhq-lzj7voN-WfDE47aClJ18-2MsdxIrHkUDdKYDiVHVSu9dX8wi0lA4-WmTnHFVp_au22n2fFkj5eYUtiyuRnNzETJsMJrDfqUevfczk9XQ9JNdwi7Ul9DtEU4dUsL_RxhYIDfqbv8de_K4DrHP9oCnMoxoMXUW1sp8yxp33rCu4nK0aTdByNZB_UZUiabxOrmWUw0jM8X3kYVcIgcqwWA7YL4C2sedDO8m-CT6MQ6pAEsK-Z7LD7FRasvEMnvFka4GMW_g-ezGjA2fJU2JdFykHKV0E-rqBP5dPHO6OJ2yjMAvPbSrEpsx9QLgl3NOQyvk--jL5-TeBoofQ' \
@@ -93,6 +114,5 @@ curl -f 'http://localhost:8080/api/pdfs/assinar' \
 -F 'pdf=@pdf.pdf;type=application/pdf' \
 -F 'certificado=@certificado.pfx' \
 -F 'senha=123123' \
--F 'permitirCertificadoVencido=true' \
 -o documento-assinado.pdf
 ```

@@ -55,14 +55,26 @@ h1 span { color: var(--primary); }
 .zona-arquivo strong { font-weight: 800; }
 .zona-arquivo > span:last-of-type { color: var(--muted-foreground); font-size: 13px; }
 .zona-arquivo input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.arquivo-acoes { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 10px; color: var(--muted-foreground); font-size: 12px; letter-spacing: 0; }
+.arquivo-acoes.campo-largo { margin-top: -10px; }
+.botao-remover { padding: 7px 10px; border: 2px solid var(--accent); background: transparent; color: var(--foreground); font-size: 11px; font-weight: 800; cursor: pointer; }
+.botao-remover:hover { background: var(--secondary); }
 .icone-arquivo { color: var(--primary); font-size: 35px; line-height: 1; margin-bottom: 7px; }
 .campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .campo { display: flex; flex-direction: column; gap: 9px; color: var(--muted-foreground); font-size: 11px; font-weight: 800; letter-spacing: .1em; }
+.campo > label { cursor: pointer; }
 .campo-largo { grid-column: 1 / -1; }
 .campo input { min-width: 0; width: 100%; height: 52px; padding: 12px 15px; border: 2px solid var(--border); border-radius: 0; background: var(--background); color: var(--foreground); font-size: 14px; font-weight: 500; letter-spacing: 0; }
 .campo input::placeholder { color: var(--muted-foreground); opacity: .75; }
 .campo input[type=file] { padding: 11px; height: auto; min-height: 52px; }
 .campo input::file-selector-button { padding: 5px 13px; margin-right: 15px; border: 0; background: var(--primary); color: var(--background); font-weight: 800; cursor: pointer; }
+.entrada-senha { position: relative; }
+.entrada-senha input { padding-right: 55px; }
+.botao-olho { position: absolute; top: 2px; right: 2px; width: 48px; height: 48px; display: grid; place-items: center; border: 0; background: transparent; color: var(--muted-foreground); cursor: pointer; }
+.botao-olho:hover, .botao-olho[aria-pressed="true"] { color: var(--primary); }
+.botao-olho svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.olho-risco { display: none; }
+.botao-olho[aria-pressed="true"] .olho-risco { display: block; }
 .nota-seguranca { margin: 17px 0 0 0; color: var(--muted-foreground); font-size: 12px; }
 .rodape-formulario { padding: 27px 40px 34px; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
 .rodape-formulario p { max-width: 230px; margin: 0; color: var(--muted-foreground); font-size: 13px; }

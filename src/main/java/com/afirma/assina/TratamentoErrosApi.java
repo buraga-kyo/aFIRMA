@@ -8,9 +8,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.server.ResponseStatusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestControllerAdvice
 public class TratamentoErrosApi {
+	private static final Logger log = LoggerFactory.getLogger(TratamentoErrosApi.class);
 
 	@ExceptionHandler(MaxUploadSizeExceededException.class)
 	ResponseEntity<ErroApi> tamanhoExcedido() {
@@ -28,6 +31,7 @@ public class TratamentoErrosApi {
 		if (status == null) {
 			status = HttpStatus.INTERNAL_SERVER_ERROR;
 		}
+		log.warn("Pedido de assinatura recusado. Status: {}. Motivo: {}", status.value(), erro.getReason());
 		return resposta(status, erro.getReason() == null ? status.getReasonPhrase() : erro.getReason());
 	}
 
