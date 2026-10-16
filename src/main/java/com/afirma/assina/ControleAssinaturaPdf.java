@@ -2,9 +2,15 @@ package com.afirma.assina;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.UUID;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -15,17 +21,27 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/pdfs")
 public class ControleAssinaturaPdf {
+	private static final Logger log = LoggerFactory.getLogger(ControleAssinaturaPdf.class);
+	private static final Set<String> MOTIVOS_SEGUROS = Set.of(
+			"PDF e certificado são obrigatórios", "Certificado sem chave privada",
+			"Certificado sem chave privada ou cadeia de certificados", "Certificado X.509 inválido",
+			"Arquivo do certificado inválido", "PDF inválido ou protegido por senha");
 
 	private final ServicoAssinaturaPdf servico;
 	private final ValidadorPedidoAssinatura validador;
+	private final boolean permitirCertificadoVencido;
 
-	public ControleAssinaturaPdf(ServicoAssinaturaPdf servico, ValidadorPedidoAssinatura validador) {
+	public ControleAssinaturaPdf(ServicoAssinaturaPdf servico, ValidadorPedidoAssinatura validador,
+			@Value("${APP_PERMITIR_CERTIFICADO_VENCIDO:false}") boolean permitirCertificadoVencido) {
 		this.servico = servico;
 		this.validador = validador;
+		this.permitirCertificadoVencido = permitirCertificadoVencido;
 	}
 
 	@PostMapping(value = "/assinar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -35,7 +51,7 @@ public class ControleAssinaturaPdf {
 		char[] senhaCertificado = pedido.getSenha().toCharArray();
 		try {
 			byte[] assinado = servico.assinar(arquivos.pdf(), arquivos.certificado(), senhaCertificado,
-					pedido.isPermitirCertificadoVencido());
+					permitirCertificadoVencido);
 			return ResponseEntity.ok()
 					.header(HttpHeaders.CONTENT_DISPOSITION,
 							ContentDisposition.attachment().filename("documento-assinado.pdf").build().toString())
@@ -43,8 +59,28 @@ public class ControleAssinaturaPdf {
 					.header("X-Content-Type-Options", "nosniff")
 					.contentType(MediaType.APPLICATION_PDF)
 					.body(assinado);
-		} catch (IllegalArgumentException | GeneralSecurityException | IOException erro) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "PDF, certificado ou senha inválidos", erro);
+		} catch (CertificateExpiredException erro) {
+			log.warn("Assinatura recusada: certificado vencido");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificado vencido", erro);
+		} catch (CertificateNotYetValidException erro) {
+			log.warn("Assinatura recusada: certificado ainda não válido");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificado ainda não é válido", erro);
+		} catch (UnrecoverableKeyException erro) {
+			log.warn("Assinatura recusada: senha do certificado incorreta");
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Senha do certificado incorreta", erro);
+		} catch (IllegalArgumentException erro) {
+			String motivo = erro.getMessage() != null && MOTIVOS_SEGUROS.contains(erro.getMessage())
+					? erro.getMessage() : "PDF ou certificado inválido";
+			log.warn("Assinatura recusada: {}", motivo, erro);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, motivo, erro);
+		} catch (GeneralSecurityException | IOException erro) {
+			log.warn("Assinatura recusada: falha ao processar PDF ou certificado", erro);
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não foi possível processar o PDF ou certificado", erro);
+		} catch (Exception erro) {
+			String referencia = UUID.randomUUID().toString();
+			log.error("Falha interna ao assinar PDF. Referência {}", referencia, erro);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+					"Falha interna ao assinar. Referência: " + referencia, erro);
 		} finally {
 			Arrays.fill(senhaCertificado, '\0');
 		}

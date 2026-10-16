@@ -17,8 +17,6 @@ public class PedidoAssinaturaPdf {
 	@Size(max = 256)
 	private String senha;
 
-	private boolean permitirCertificadoVencido;
-
 	public MultipartFile getPdf() {
 		return pdf;
 	}
@@ -43,11 +41,4 @@ public class PedidoAssinaturaPdf {
 		this.senha = senha;
 	}
 
-	public boolean isPermitirCertificadoVencido() {
-		return permitirCertificadoVencido;
-	}
-
-	public void setPermitirCertificadoVencido(boolean permitirCertificadoVencido) {
-		this.permitirCertificadoVencido = permitirCertificadoVencido;
-	}
 }

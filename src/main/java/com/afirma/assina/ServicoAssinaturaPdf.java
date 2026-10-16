@@ -3,6 +3,7 @@ package com.afirma.assina;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.security.KeyStore;
+import java.security.UnrecoverableKeyException;
 import java.security.PrivateKey;
 import java.security.MessageDigest;
 import java.security.cert.Certificate;
@@ -34,7 +35,14 @@ public class ServicoAssinaturaPdf {
 		}
 
 		KeyStore armazenamento = KeyStore.getInstance("PKCS12");
-		armazenamento.load(new ByteArrayInputStream(certificado), senha);
+		try {
+			armazenamento.load(new ByteArrayInputStream(certificado), senha);
+		} catch (java.io.IOException erro) {
+			if (erro.getCause() instanceof UnrecoverableKeyException) {
+				throw new UnrecoverableKeyException("Senha do certificado incorreta");
+			}
+			throw new IllegalArgumentException("Arquivo do certificado inválido", erro);
+		}
 
 		String apelido = null;
 		Enumeration<String> apelidos = armazenamento.aliases();
@@ -66,7 +74,12 @@ public class ServicoAssinaturaPdf {
 		}
 
 		ByteArrayOutputStream saida = new ByteArrayOutputStream();
-		PdfReader leitor = new PdfReader(pdf);
+		PdfReader leitor;
+		try {
+			leitor = new PdfReader(pdf);
+		} catch (java.io.IOException erro) {
+			throw new IllegalArgumentException("PDF inválido ou protegido por senha", erro);
+		}
 		try {
 			PdfStamper assinador = PdfStamper.createSignature(leitor, saida, null, null, true);
 			PdfSignatureAppearance aparencia = assinador.getSignatureAppearance();

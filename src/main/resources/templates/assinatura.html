@@ -34,6 +34,7 @@
             <span>Ou arraste o arquivo para cá</span>
             <input id="pdf" name="pdf" type="file" accept=".pdf,application/pdf" required>
           </label>
+          <div class="arquivo-acoes"><button id="remover-pdf" class="botao-remover" type="button" hidden>REMOVER PDF</button><span id="estado-pdf" role="status" aria-live="polite"></span></div>
         </div>
 
         <div class="etapa">
@@ -42,21 +43,16 @@
             <label class="campo campo-largo" for="certificado">ARQUIVO DO CERTIFICADO
               <input id="certificado" name="certificado" type="file" accept=".p12,.pfx,application/x-pkcs12" required>
             </label>
-            <label class="campo" for="senha">SENHA DO CERTIFICADO
-              <input id="senha" name="senha" type="password" maxlength="256" autocomplete="off" required placeholder="Digite sua senha">
-            </label>
+            <div class="arquivo-acoes campo-largo"><button id="remover-certificado" class="botao-remover" type="button" hidden>REMOVER CERTIFICADO</button><span id="estado-certificado" role="status" aria-live="polite"></span></div>
+            <div class="campo"><label for="senha">SENHA DO CERTIFICADO</label><div class="entrada-senha"><input id="senha" name="senha" type="password" maxlength="256" autocomplete="off" required placeholder="Digite sua senha"><button type="button" class="botao-olho" data-alvo="senha" aria-label="Mostrar senha do certificado" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="olho-risco" d="M3 21 21 3"/></svg></button></div></div>
           </div>
         </div>
 
         <div class="etapa">
           <div class="etapa-titulo"><span class="numero">03</span><div><h2>ACESSO À API</h2><p>Informe credenciais com permissão para assinar PDF.</p></div></div>
           <div class="campos">
-            <label class="campo" for="chave-api">CHAVE DA API
-              <input id="chave-api" type="password" autocomplete="off" required placeholder="Sua chave de acesso">
-            </label>
-            <label class="campo" for="token">TOKEN JWT
-              <input id="token" type="password" autocomplete="off" required placeholder="Token com escopo pdf.sign">
-            </label>
+            <div class="campo"><label for="chave-api">CHAVE DA API</label><div class="entrada-senha"><input id="chave-api" type="password" autocomplete="off" required placeholder="Sua chave de acesso"><button type="button" class="botao-olho" data-alvo="chave-api" aria-label="Mostrar chave da API" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="olho-risco" d="M3 21 21 3"/></svg></button></div></div>
+            <div class="campo"><label for="token">TOKEN JWT</label><div class="entrada-senha"><input id="token" type="password" autocomplete="off" required placeholder="Token com escopo pdf.sign"><button type="button" class="botao-olho" data-alvo="token" aria-label="Mostrar token JWT" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="olho-risco" d="M3 21 21 3"/></svg></button></div></div>
           </div>
           <p class="nota-seguranca">Credenciais ficam apenas nesta página. Nenhum arquivo é salvo no navegador.</p>
         </div>
