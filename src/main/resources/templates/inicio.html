@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Assinatura digital com a cara do seu negócio. Conheça a aFIRMA.">
+  <title>aFIRMA | Assinatura digital com a cara do seu negócio</title>
+  <link rel="stylesheet" th:href="@{/css/inicio.css}" href="/css/inicio.css">
+</head>
+<body>
+  <header class="topo">
+    <a class="marca" th:href="@{/}" href="/" aria-label="aFIRMA, início">aFIRMA<span>.</span></a>
+    <a class="topo-acao" th:href="@{/assinatura}" href="/assinatura">ASSINAR DOCUMENTO <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="titulo">
+      <div class="hero-conteudo">
+        <span class="selo">AGORA COM PROVA DE ANTERIORIDADE</span>
+        <h1 id="titulo">ASSINATURA DIGITAL COM A <span>CARA DO SEU NEGÓCIO.</span></h1>
+        <p>Esqueça portais de assinatura confusos. Mande seus contratos direto pelo WhatsApp ou Telegram do cliente, com o tema da sua empresa e validade jurídica inquestionável.</p>
+        <div class="acoes">
+          <a class="botao botao-primario" th:href="@{/assinatura}" href="/assinatura">COMEÇAR AGORA <span aria-hidden="true">↗</span></a>
+          <a class="botao botao-secundario" href="#funcionalidades">VER RECURSOS <span aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+      <div class="hero-grafico" aria-hidden="true">
+        <div class="moldura moldura-externa"><div class="moldura moldura-interna"><span>aFIRMA.</span><div class="traco"></div><strong>DOCUMENTO<br>ASSINADO</strong><div class="traco curto"></div><small>RAIZ NO CAMPO.<br>OLHAR NO FUTURO.</small></div></div>
+        <div class="grafico-legenda">01 / ASSINATURA DIGITAL</div>
+      </div>
+    </section>
+
+    <section class="recursos" id="funcionalidades" aria-labelledby="titulo-recursos">
+      <div class="secao-cabecalho"><span>O QUE MOVE A FIRMA / 01 A 03</span><span>TECNOLOGIA COM PÉ NO CHÃO</span></div>
+      <div class="secao-intro"><h2 id="titulo-recursos">FEITO PARA NÃO<br><span>TRAVAR O NEGÓCIO.</span></h2><p>A burocracia não pode ser mais difícil que vender.</p></div>
+      <div class="grade-recursos">
+        <article class="recurso"><span class="recurso-numero">01 / CONVERSA</span><div class="recurso-simbolo" aria-hidden="true">↗</div><h3>Pelo Zap ou Telegram</h3><p>O cliente recebe o PDF e aceita ali mesmo no chat da sua empresa. Sem precisar baixar aplicativo ou criar senha.</p></article>
+        <article class="recurso"><span class="recurso-numero">02 / IDENTIDADE</span><div class="recurso-simbolo" aria-hidden="true">◫</div><h3>Estúdio de Marca</h3><p>Seu logo, sua cor, sua fonte. O relatório final sai parecendo um documento feito pela sua própria equipe.</p></article>
+        <article class="recurso"><span class="recurso-numero">03 / PROVA</span><div class="recurso-simbolo" aria-hidden="true">◇</div><h3>Rede Blockchain</h3><p>Cada assinatura e arquivo são ancorados de forma definitiva no tempo usando OpenTimestamps. Inviolável e verificável para sempre.</p></article>
+      </div>
+    </section>
+
+    <section class="chamada" aria-labelledby="titulo-chamada"><div><span class="selo">VAMOS TIRAR DO PAPEL</span><h2 id="titulo-chamada">PRONTO PARA FECHAR<br>CONTRATOS <span>MAIS RÁPIDO?</span></h2></div><a class="botao botao-primario" th:href="@{/assinatura}" href="/assinatura">TESTAR A PLATAFORMA <span aria-hidden="true">↗</span></a></section>
+  </main>
+  <footer><span>aFIRMA © 2026</span><span>Infraestrutura assinada com a vibração Roça Neon.</span><span>RAIZ NO CAMPO. OLHAR NO FUTURO.</span></footer>
+</body>
+</html>
