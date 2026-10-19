@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +32,14 @@ public class TratamentoErrosApi {
 		if (status == null) {
 			status = HttpStatus.INTERNAL_SERVER_ERROR;
 		}
-		log.warn("Pedido de assinatura recusado. Status: {}. Motivo: {}", status.value(), erro.getReason());
+		log.warn("Pedido recusado. Status: {}. Motivo: {}", status.value(), erro.getReason());
 		return resposta(status, erro.getReason() == null ? status.getReasonPhrase() : erro.getReason());
+	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	ResponseEntity<ErroApi> conflitoDeDados() {
+		return resposta(HttpStatus.CONFLICT, "Registro duplicado ou ainda em uso");
+
 	}
 
 	private ResponseEntity<ErroApi> resposta(HttpStatus status, String mensagem) {
