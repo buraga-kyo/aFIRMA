@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat | aFIRMA</title>
+  <link rel="stylesheet" href="/css/chat.css">
+  <script src="/js/chat.js" defer></script>
+</head>
+<body th:attr="data-token-teste=${tokenTeste},data-chave-teste=${chaveTeste}">
+  <header class="topo"><a href="/" class="marca">aFIRMA<span>.</span></a><span>ATENDIMENTO / WHATSAPP</span></header>
+  <main>
+    <section class="abertura"><p class="sobretitulo">CONVERSAS EM ORDEM</p><h1>ATENDA COM <em>CLAREZA.</em></h1><p>Canais, equipes e histórico no mesmo lugar.</p></section>
+    <section class="acesso painel" aria-label="Acesso ao chat">
+      <label for="token">Token de acesso</label>
+      <div class="linha"><input id="token" type="password" autocomplete="off" placeholder="Cole seu JWT"><label for="chave" class="sr">Chave de API</label><input id="chave" type="password" autocomplete="off" placeholder="Chave de API"><button id="entrar">Entrar</button><button id="teste" hidden>Usar credenciais locais</button></div>
+      <p id="aviso" role="status" aria-live="polite"></p>
+    </section>
+    <div id="aplicacao" hidden>
+      <section class="grade">
+        <aside class="painel lateral">
+          <div class="cabecalho-painel"><h2>FILA</h2><button id="atualizar">Atualizar</button></div>
+          <details><summary>Novo atendimento</summary><form id="form-novo-atendimento" class="form-novo"><label>Canal<select name="canal" required></select></label><label>Telefone com DDI<input name="telefone" required pattern="[0-9]{8,15}"></label><label>Nome do contato<input name="nome" maxlength="100"></label><label>Primeira mensagem<input name="texto" required maxlength="4096"></label><button>Iniciar</button></form></details>
+          <ul id="fila" class="lista"></ul>
+        </aside>
+        <section class="painel conversa">
+          <div class="cabecalho-painel"><h2 id="titulo-conversa">Selecione atendimento</h2><span id="estado"></span></div>
+          <div id="mensagens" class="mensagens" aria-live="polite"></div>
+          <div class="acoes"><button id="assumir" disabled>Assumir</button><button id="transferir" disabled>Transferir</button><button id="finalizar" disabled>Finalizar</button></div>
+          <form id="form-mensagem" class="linha"><label for="texto" class="sr">Mensagem</label><input id="texto" maxlength="4096" placeholder="Escreva mensagem" required disabled><button id="enviar" disabled>Enviar</button></form>
+        </section>
+      </section>
+      <details id="gestao" class="painel gestao"><summary>GESTÃO DE CANAIS E EQUIPE</summary>
+        <div class="gestao-grade">
+          <form id="form-setor"><h3>Novo setor</h3><label>Nome<input name="nome" required maxlength="80"></label><button>Criar setor</button></form>
+          <form id="form-atendente"><h3>Novo atendente</h3><label>Identidade JWT<input name="identidade" required maxlength="200"></label><label>Nome<input name="nome" required maxlength="100"></label><label>ID do setor<input name="setor" type="number" min="1"></label><button>Criar atendente</button></form>
+          <form id="form-canal"><h3>Novo canal Baileys</h3><label>Nome<input name="nome" required maxlength="80"></label><label>Telefone com DDI<input name="telefone" required pattern="[0-9]{8,15}"></label><label>ID do setor padrão<input name="setor" type="number" min="1"></label><button>Criar canal</button></form>
+        </div>
+        <div class="gestao-grade"><div><h3>Canais</h3><ul id="canais" class="lista"></ul></div><div><h3>Atendentes</h3><ul id="atendentes" class="lista"></ul></div><div><h3>Setores</h3><ul id="setores" class="lista"></ul></div></div>
+        <div id="qr" class="qr" hidden><h3>Escaneie QR no WhatsApp</h3><div id="qr-imagem"></div><p>QR expira; atualize se necessário.</p></div>
+      </details>
+    </div>
+  </main>
+</body>
+</html>

@@ -15,4 +15,9 @@ public class ControlePaginaAssinatura {
 	public String assinatura() {
 		return "assinatura";
 	}
+
+	@GetMapping("/advai")
+	public String advai() {
+		return "advai";
+	}
 }

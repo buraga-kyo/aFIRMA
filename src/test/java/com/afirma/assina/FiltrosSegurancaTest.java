@@ -48,6 +48,25 @@ class FiltrosSegurancaTest {
 	}
 
 	@Test
+	void exigeChaveApiNoChatMasUsaChaveInternaNaPonte() throws Exception {
+		String chave = "chave-de-teste-com-mais-de-trinta-e-dois-caracteres";
+		String resumo = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+				.digest(chave.getBytes(StandardCharsets.UTF_8)));
+		FiltroChaveApi filtro = new FiltroChaveApi(resumo);
+		MockHttpServletRequest chat = new MockHttpServletRequest("GET", "/api/chat/atendimentos");
+		chat.setServletPath("/api/chat/atendimentos");
+		MockHttpServletResponse recusada = new MockHttpServletResponse();
+		filtro.doFilter(chat, recusada, new MockFilterChain());
+		assertEquals(401, recusada.getStatus());
+
+		MockHttpServletRequest ponte = new MockHttpServletRequest("POST", "/api/chat/interno/eventos");
+		ponte.setServletPath("/api/chat/interno/eventos");
+		MockFilterChain cadeia = new MockFilterChain();
+		filtro.doFilter(ponte, new MockHttpServletResponse(), cadeia);
+		assertEquals(ponte, cadeia.getRequest());
+	}
+
+	@Test
 	void bloqueiaAcimaDoLimiteDeRequisicoes() throws Exception {
 		StringRedisTemplate redis = mock(StringRedisTemplate.class);
 		when(redis.execute(any(DefaultRedisScript.class), anyList(), any(String.class))).thenReturn(31L);

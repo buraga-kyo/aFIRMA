@@ -46,8 +46,11 @@ public class SegurancaApi {
 		http.csrf(csrf -> csrf.disable())
 				.sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(regras -> regras
-					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/css/**", "/js/**").permitAll()
+					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/chat", "/advai", "/css/**", "/js/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/blockchain/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/chat/interno/eventos").permitAll()
+						.requestMatchers("/api/chat/admin/**").hasAuthority("SCOPE_chat.manage")
+						.requestMatchers("/api/chat/**").hasAnyAuthority("SCOPE_chat.use", "SCOPE_chat.manage")
 						.requestMatchers(HttpMethod.POST, "/api/pdfs/assinar").hasAuthority("SCOPE_pdf.sign")
 						.anyRequest().denyAll())
 				.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
