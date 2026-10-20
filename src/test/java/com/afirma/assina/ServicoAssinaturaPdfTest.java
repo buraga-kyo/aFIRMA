@@ -1,10 +1,12 @@
 package com.afirma.assina;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
+import java.awt.image.BufferedImage;
 import java.math.BigInteger;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -13,6 +15,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateExpiredException;
 import java.time.Instant;
 import java.util.Date;
+import javax.imageio.ImageIO;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -23,10 +26,44 @@ import org.openpdf.text.Document;
 import org.openpdf.text.Paragraph;
 import org.openpdf.text.pdf.PdfReader;
 import org.openpdf.text.pdf.PdfWriter;
+import org.openpdf.text.pdf.parser.PdfTextExtractor;
 
 class ServicoAssinaturaPdfTest {
 
 	private final ServicoAssinaturaPdf servico = new ServicoAssinaturaPdf();
+
+	@Test
+	void paginaDaEmpresaIntegraAssinaturaDigital() throws Exception {
+		ByteArrayOutputStream imagem = new ByteArrayOutputStream();
+		ImageIO.write(new BufferedImage(16, 16, BufferedImage.TYPE_INT_RGB), "png", imagem);
+		byte[] assinado = servico.assinar(criarPdf(), criarCertificado(false),
+				"senha-teste".toCharArray(), false, true, "Empresa Exemplo", imagem.toByteArray());
+		try (PdfReader leitor = new PdfReader(assinado)) {
+			assertEquals(2, leitor.getNumberOfPages());
+			String pagina = new PdfTextExtractor(leitor).getTextFromPage(2);
+			assertTrue(pagina.contains("Empresa Exemplo"));
+			assertTrue(pagina.contains("SHA-256"));
+			assertTrue(pagina.contains("CN=Teste Empresa"));
+			assertFalse(pagina.contains("aFIRMA"));
+			var campos = leitor.getAcroFields();
+			assertTrue(campos.verifySignature(campos.getSignedFieldNames().getFirst()).verify());
+		}
+	}
+
+	@Test
+	void paginaPreservaAssinaturaAnterior() throws Exception {
+		byte[] certificado = criarCertificado(false);
+		byte[] anterior = servico.assinar(criarPdf(), certificado, "senha-teste".toCharArray(), false);
+		byte[] finalizado = servico.assinar(anterior, certificado, "senha-teste".toCharArray(),
+				false, true, "Empresa Exemplo", null);
+		try (PdfReader leitor = new PdfReader(finalizado)) {
+			var campos = leitor.getAcroFields();
+			assertEquals(2, campos.getSignedFieldNames().size());
+			for (String campo : campos.getSignedFieldNames()) {
+				assertTrue(campos.verifySignature(campo).verify());
+			}
+		}
+	}
 
 	@Test
 	void assinaPdfEVerificaIntegridade() throws Exception {
@@ -95,7 +132,7 @@ class ServicoAssinaturaPdfTest {
 		Instant agora = Instant.now();
 		Date inicio = Date.from(agora.minusSeconds(vencido ? 172800 : 60));
 		Date fim = Date.from(agora.plusSeconds(vencido ? -86400 : 86400));
-		X500Name nome = new X500Name("CN=Teste aFirma");
+		X500Name nome = new X500Name("CN=Teste Empresa");
 		var construtor = new JcaX509v3CertificateBuilder(nome, BigInteger.ONE, inicio, fim, nome, par.getPublic());
 		var assinador = new JcaContentSignerBuilder("SHA256withRSA").build(par.getPrivate());
 		Certificate certificado = new JcaX509CertificateConverter().getCertificate(construtor.build(assinador));

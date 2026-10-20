@@ -28,7 +28,8 @@ class ControleAssinaturaPdfTest {
 		when(configuracao.getTamanhoMaximoPdfBytes()).thenReturn(1024L);
 		when(repositorio.findById(1L)).thenReturn(Optional.of(configuracao));
 		ServicoAssinaturaPdf servico = mock(ServicoAssinaturaPdf.class);
-		when(servico.assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(false)))
+		when(servico.assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(false),
+				eq(false), eq(null), eq(null)))
 				.thenThrow(new UnrecoverableKeyException("Senha incorreta"));
 		var mvc = MockMvcBuilders.standaloneSetup(
 				new ControleAssinaturaPdf(servico, new ValidadorPedidoAssinatura(repositorio), false))
@@ -53,7 +54,8 @@ class ControleAssinaturaPdfTest {
 		when(repositorio.findById(1L)).thenReturn(Optional.of(configuracao));
 		ServicoAssinaturaPdf servico = mock(ServicoAssinaturaPdf.class);
 		byte[] assinado = "%PDF-assinado".getBytes(StandardCharsets.US_ASCII);
-		when(servico.assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(true)))
+		when(servico.assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(true),
+				eq(false), eq(null), eq(null)))
 				.thenReturn(assinado);
 		var controle = new ControleAssinaturaPdf(servico, new ValidadorPedidoAssinatura(repositorio), true);
 		var mvc = MockMvcBuilders.standaloneSetup(controle)
@@ -68,6 +70,33 @@ class ControleAssinaturaPdfTest {
 				.andExpect(status().isOk())
 				.andExpect(header().string("Cache-Control", "no-store"))
 				.andExpect(content().bytes(assinado));
-		verify(servico).assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(true));
+		verify(servico).assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(true),
+				eq(false), eq(null), eq(null));
+	}
+
+	@Test
+	void encaminhaEscolhaDaPaginaEIdentidadeDaEmpresa() throws Exception {
+		RepositorioConfiguracaoAssinatura repositorio = mock(RepositorioConfiguracaoAssinatura.class);
+		ConfiguracaoAssinatura configuracao = mock(ConfiguracaoAssinatura.class);
+		when(configuracao.getTamanhoMaximoPdfBytes()).thenReturn(1024L);
+		when(repositorio.findById(1L)).thenReturn(Optional.of(configuracao));
+		ServicoAssinaturaPdf servico = mock(ServicoAssinaturaPdf.class);
+		when(servico.assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(false),
+				eq(true), eq("Empresa Exemplo"), any(byte[].class)))
+				.thenReturn("%PDF-assinado".getBytes(StandardCharsets.US_ASCII));
+		var mvc = MockMvcBuilders.standaloneSetup(new ControleAssinaturaPdf(servico,
+				new ValidadorPedidoAssinatura(repositorio), false)).build();
+		mvc.perform(multipart("/api/pdfs/assinar")
+				.file(new MockMultipartFile("pdf", "arquivo.pdf", "application/pdf",
+						"%PDF-1.7\n".getBytes(StandardCharsets.US_ASCII)))
+				.file(new MockMultipartFile("certificado", "certificado.pfx", "application/octet-stream",
+						new byte[] {1, 2, 3}))
+				.file(new MockMultipartFile("imagemEmpresa", "marca.png", "image/png", new byte[] {1, 2}))
+				.param("senha", "senha-de-teste")
+				.param("paginaPersonalizada", "true")
+				.param("nomeEmpresa", "Empresa Exemplo"))
+				.andExpect(status().isOk());
+		verify(servico).assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(false),
+				eq(true), eq("Empresa Exemplo"), eq(new byte[] {1, 2}));
 	}
 }

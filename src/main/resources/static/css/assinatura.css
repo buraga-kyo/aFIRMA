@@ -24,7 +24,7 @@ a { color: inherit; }
 
 .topo, main, footer { max-width: 1280px; margin: 0 auto; }
 .topo { min-height: 90px; padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--border); }
-.marca { text-decoration: none; font-family: 'Archivo Black', sans-serif; font-size: 28px; letter-spacing: -.07em; }
+.marca { max-width: 70%; min-width: 0; overflow-wrap: anywhere; text-decoration: none; font-family: 'Archivo Black', sans-serif; font-size: 28px; letter-spacing: -.07em; }
 .marca span:first-child { letter-spacing: -.075em; }
 .marca-ponto { color: var(--primary); }
 .topo-selo { color: var(--muted-foreground); font-size: 11px; font-weight: 800; letter-spacing: .15em; }
@@ -50,6 +50,11 @@ h1 span { color: var(--primary); }
 .modos-assinatura button[aria-pressed="true"], .botao-carteira:hover { border-color: var(--primary); color: var(--primary); }
 .andamento-blockchain { margin: 0 40px 30px; color: var(--muted-foreground); font-size: 14px; }
 .etapa { padding: 36px 40px 40px; border-bottom: 2px solid var(--border); }
+.escolha-pagina { display: flex; align-items: center; gap: 12px; width: fit-content; cursor: pointer; font-weight: 700; }
+.campo-empresa { margin-bottom: 22px; }
+.escolha-pagina input { width: 20px; height: 20px; accent-color: var(--primary); }
+.personalizacao .campos { margin-top: 24px; }
+.personalizacao .nota-seguranca { margin: 0; }
 .etapa-titulo { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 25px; }
 .numero { color: var(--primary); font-family: 'Archivo Black', sans-serif; font-size: 16px; line-height: 1.8; }
 .etapa h2, .resultado h2 { margin: 0 0 4px; font-size: 21px; letter-spacing: -.02em; }

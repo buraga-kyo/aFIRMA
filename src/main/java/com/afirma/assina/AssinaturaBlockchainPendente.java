@@ -19,6 +19,9 @@ public class AssinaturaBlockchainPendente {
 	@Column(nullable = false, length = 42)
 	private String carteira;
 
+	@Column(name = "nome_empresa", nullable = false, length = 120)
+	private String nomeEmpresa;
+
 	@Column(name = "resumo_pdf", nullable = false, length = 66)
 	private String resumoPdf;
 
@@ -32,10 +35,11 @@ public class AssinaturaBlockchainPendente {
 	protected AssinaturaBlockchainPendente() {
 	}
 
-	public AssinaturaBlockchainPendente(UUID identificador, String carteira, String resumoPdf,
+	public AssinaturaBlockchainPendente(UUID identificador, String carteira, String nomeEmpresa, String resumoPdf,
 			byte[] pdfPreparado, Instant expiraEm) {
 		this.identificador = identificador;
 		this.carteira = carteira;
+		this.nomeEmpresa = nomeEmpresa;
 		this.resumoPdf = resumoPdf;
 		this.pdfPreparado = pdfPreparado;
 		this.expiraEm = expiraEm;
@@ -43,6 +47,7 @@ public class AssinaturaBlockchainPendente {
 
 	public UUID getIdentificador() { return identificador; }
 	public String getCarteira() { return carteira; }
+	public String getNomeEmpresa() { return nomeEmpresa; }
 	public String getResumoPdf() { return resumoPdf; }
 	public byte[] getPdfPreparado() { return pdfPreparado; }
 	public Instant getExpiraEm() { return expiraEm; }
