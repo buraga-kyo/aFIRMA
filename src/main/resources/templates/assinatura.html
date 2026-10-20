@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Assinar PDF | aFIRMA</title>
+  <title>Assinar PDF</title>
   <link rel="stylesheet" th:href="@{/css/assinatura.css}" href="/css/assinatura.css">
   <script th:src="@{/js/assinatura.js}" src="/js/assinatura.js" defer></script>
   <script th:src="@{/js/blockchain.js}" src="/js/blockchain.js" defer></script>
 </head>
 <body>
   <header class="topo">
-    <a class="marca" href="/" aria-label="aFIRMA, início">a<span>FIRMA</span><span class="marca-ponto">.</span></a>
+    <a class="marca" href="/" aria-label="Início"><span id="marca-empresa">SUA EMPRESA</span><span class="marca-ponto">.</span></a>
     <span class="topo-selo">ASSINATURA DIGITAL DE DOCUMENTOS</span>
   </header>
 
@@ -21,7 +21,7 @@
         <h1 id="titulo">ASSINE SEU<br><span>DOCUMENTO.</span></h1>
         <p>Envie seu PDF e certificado digital. A gente prepara o arquivo assinado para baixar aqui mesmo.</p>
       </div>
-      <div class="carimbo" aria-hidden="true"><span>RAIZ NO CAMPO</span><strong>✳</strong><span>OLHAR NO FUTURO</span></div>
+      <div class="carimbo" aria-hidden="true"><span>SEU DOCUMENTO</span><strong>✳</strong><span>SUA IDENTIDADE</span></div>
     </section>
 
     <section class="area-trabalho" aria-label="Formulário de assinatura">
@@ -30,6 +30,15 @@
         <button id="modo-certificado" type="button" aria-pressed="true">CERTIFICADO DIGITAL</button>
         <button id="modo-blockchain" type="button" aria-pressed="false">CARTEIRA BLOCKCHAIN</button>
       </div>
+      <section class="etapa personalizacao" aria-labelledby="titulo-personalizacao">
+        <div class="etapa-titulo"><span class="numero">✳</span><div><h2 id="titulo-personalizacao">IDENTIDADE DA EMPRESA</h2><p>Informe a empresa que assina. Escolha se o PDF receberá uma página de comprovante.</p></div></div>
+        <div class="campo campo-largo campo-empresa"><label for="nome-empresa">NOME DA EMPRESA</label><input id="nome-empresa" type="text" maxlength="120" autocomplete="organization" required placeholder="Nome da empresa que assina"></div>
+        <label class="escolha-pagina" for="pagina-personalizada"><input id="pagina-personalizada" type="checkbox"><span>Adicionar página personalizada ao PDF assinado</span></label>
+        <div id="campos-personalizacao" class="campos" hidden>
+          <div class="campo campo-largo"><label for="imagem-empresa">IMAGEM DA EMPRESA (PNG OU JPEG, ATÉ 1 MB)</label><input id="imagem-empresa" type="file" accept="image/png,image/jpeg"></div>
+          <p class="nota-seguranca campo-largo">A página usa o visual atual. Esta seção reunirá futuras opções de layout.</p>
+        </div>
+      </section>
       <form id="formulario-assinatura" class="formulario" th:action="@{/api/pdfs/assinar}" action="/api/pdfs/assinar" method="post" enctype="multipart/form-data">
         <div class="etapa">
           <div class="etapa-titulo"><span class="numero">01</span><div><h2>SEU DOCUMENTO</h2><p>Escolha um PDF de até 20 MB.</p></div></div>
@@ -106,6 +115,6 @@
     </section>
   </main>
 
-  <footer><span>aFIRMA © 2026</span><span>RAIZ NO CAMPO. OLHAR NO FUTURO.</span></footer>
+  <footer><span id="rodape-empresa">SUA EMPRESA</span><span>DOCUMENTOS ASSINADOS COM IDENTIDADE.</span></footer>
 </body>
 </html>

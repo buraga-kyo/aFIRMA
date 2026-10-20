@@ -12,6 +12,32 @@ const resultado = document.getElementById('resultado');
 const baixar = document.getElementById('baixar');
 const caixaErro = document.getElementById('erro');
 let enderecoArquivo = null;
+const escolhaPagina = document.getElementById('pagina-personalizada');
+const camposPersonalizacao = document.getElementById('campos-personalizacao');
+const nomeEmpresa = document.getElementById('nome-empresa');
+const imagemEmpresa = document.getElementById('imagem-empresa');
+nomeEmpresa.addEventListener('input', () => {
+  const nome = nomeEmpresa.value.trim() || 'SUA EMPRESA';
+  document.getElementById('marca-empresa').textContent = nome;
+  document.getElementById('rodape-empresa').textContent = nome;
+});
+
+escolhaPagina.addEventListener('change', () => {
+  camposPersonalizacao.hidden = !escolhaPagina.checked;
+  limparResultado();
+});
+
+function adicionarPersonalizacao(dados) {
+  dados.append('paginaPersonalizada', String(escolhaPagina.checked));
+  if (!nomeEmpresa.value.trim()) throw new Error('Informe o nome da empresa.');
+  dados.append('nomeEmpresa', nomeEmpresa.value.trim());
+  if (!escolhaPagina.checked) return;
+  const imagem = imagemEmpresa.files[0];
+  if (imagem && (imagem.size > 1024 * 1024 || !['image/png', 'image/jpeg'].includes(imagem.type))) {
+    throw new Error('Use imagem PNG ou JPEG de até 1 MB.');
+  }
+  if (imagem) dados.append('imagemEmpresa', imagem);
+}
 
 function mostrarNomePdf() {
   const arquivo = entradaPdf.files[0];
@@ -110,6 +136,7 @@ formulario.addEventListener('submit', async ocorrencia => {
 
   try {
     const dados = new FormData(formulario);
+    adicionarPersonalizacao(dados);
     const chave = document.getElementById('chave-api').value.trim();
     const token = document.getElementById('token').value.trim();
     const resposta = await fetch(formulario.action, {

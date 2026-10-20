@@ -17,6 +17,13 @@ public class PedidoAssinaturaPdf {
 	@Size(max = 256)
 	private String senha;
 
+	private boolean paginaPersonalizada;
+
+	@Size(max = 120)
+	private String nomeEmpresa;
+
+	private MultipartFile imagemEmpresa;
+
 	public MultipartFile getPdf() {
 		return pdf;
 	}
@@ -40,5 +47,12 @@ public class PedidoAssinaturaPdf {
 	public void setSenha(String senha) {
 		this.senha = senha;
 	}
+
+	public boolean isPaginaPersonalizada() { return paginaPersonalizada; }
+	public void setPaginaPersonalizada(boolean paginaPersonalizada) { this.paginaPersonalizada = paginaPersonalizada; }
+	public String getNomeEmpresa() { return nomeEmpresa; }
+	public void setNomeEmpresa(String nomeEmpresa) { this.nomeEmpresa = nomeEmpresa; }
+	public MultipartFile getImagemEmpresa() { return imagemEmpresa; }
+	public void setImagemEmpresa(MultipartFile imagemEmpresa) { this.imagemEmpresa = imagemEmpresa; }
 
 }

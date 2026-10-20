@@ -33,7 +33,8 @@ class ProtocoloBlockchainTest {
 		String resumoPdf = "0x" + "ab".repeat(32);
 		UUID identificador = UUID.randomUUID();
 		long prazo = 2_000_000_000L;
-		byte[] resumo = protocolo.resumoAssinatura(resumoPdf, carteira, identificador, prazo);
+		byte[] resumo = protocolo.resumoAssinatura(resumoPdf, carteira, identificador, prazo,
+				"Empresa Exemplo");
 		var dominio = new ECDomainParameters(curva.getCurve(), curva.getG(), curva.getN(), curva.getH());
 		var assinador = new ECDSASigner();
 		assinador.init(true, new ECPrivateKeyParameters(chavePrivada, dominio));
@@ -53,12 +54,14 @@ class ProtocoloBlockchainTest {
 		assinaturaBytes[64] = (byte) (27 + recuperacao);
 		String assinatura = "0x" + HexFormat.of().formatHex(assinaturaBytes);
 		assertEquals(carteira, protocolo.recuperarCarteira(resumoPdf, carteira, identificador,
-				prazo, assinatura));
+				prazo, assinatura, "Empresa Exemplo"));
 		assertNotEquals(carteira, protocolo.recuperarCarteira("0x" + "cd".repeat(32),
-				carteira, identificador, prazo, assinatura));
+				carteira, identificador, prazo, assinatura, "Empresa Exemplo"));
+		assertNotEquals(carteira, protocolo.recuperarCarteira(resumoPdf,
+				carteira, identificador, prazo, assinatura, "Outra Empresa"));
 		assertThrows(IllegalArgumentException.class,
 				() -> protocolo.recuperarCarteira(resumoPdf, carteira, identificador,
-						prazo + 1, assinatura.substring(0, 130) + "ff"));
+						prazo + 1, assinatura.substring(0, 130) + "ff", "Empresa Exemplo"));
 		assertEquals(7 + 32 + 32, protocolo.bytesHex(
 				protocolo.dadosTransacao(resumoPdf, assinatura), 71).length);
 	}

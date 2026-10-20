@@ -26,9 +26,12 @@ public class ControleAssinaturaBlockchain {
 
 	@PostMapping(value = "/preparar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ServicoAssinaturaBlockchain.Preparacao preparar(@RequestParam("pdf") MultipartFile pdf,
-			@RequestParam("carteira") String carteira) throws Exception {
+			@RequestParam("carteira") String carteira,
+			@RequestParam(value = "paginaPersonalizada", defaultValue = "false") boolean paginaPersonalizada,
+			@RequestParam(value = "nomeEmpresa", required = false) String nomeEmpresa,
+			@RequestParam(value = "imagemEmpresa", required = false) MultipartFile imagemEmpresa) throws Exception {
 		try {
-			return servico.preparar(pdf, carteira);
+			return servico.preparar(pdf, carteira, paginaPersonalizada, nomeEmpresa, imagemEmpresa);
 		} catch (IllegalArgumentException erro) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, erro.getMessage(), erro);
 		}

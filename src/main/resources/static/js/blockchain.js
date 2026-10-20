@@ -192,16 +192,17 @@ assinarBlockchain.addEventListener('click', async () => {
   assinarBlockchain.disabled = true;
   operacaoInterrompida = false;
   try {
-    const carteira = await conectarMetaMask();
-    andamentoBlockchain.textContent = 'Preparando PDF...';
     const dados = new FormData();
     dados.append('pdf', arquivo);
+    adicionarPersonalizacao(dados);
+    const carteira = await conectarMetaMask();
+    andamentoBlockchain.textContent = 'Preparando PDF...';
     dados.append('carteira', carteira);
     const resposta = await fetch('/api/blockchain/preparar', { method: 'POST', body: dados, cache: 'no-store' });
     if (!resposta.ok) throw new Error(await mensagemResposta(resposta));
     const preparo = await resposta.json();
     const mensagem = {
-      domain: { name: 'aFIRMA', version: '1', chainId: 11155111 },
+      domain: { name: preparo.nomeEmpresa, version: '1', chainId: 11155111 },
       types: {
         EIP712Domain: [
           { name: 'name', type: 'string' }, { name: 'version', type: 'string' },

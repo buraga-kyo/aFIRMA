@@ -38,7 +38,12 @@ public class ProtocoloBlockchain {
 
 	public String recuperarCarteira(String resumoPdf, String carteira, UUID identificador,
 			long prazo, String assinatura) {
-		byte[] digest = resumoAssinatura(resumoPdf, carteira, identificador, prazo);
+		return recuperarCarteira(resumoPdf, carteira, identificador, prazo, assinatura, "aFIRMA");
+	}
+
+	public String recuperarCarteira(String resumoPdf, String carteira, UUID identificador,
+			long prazo, String assinatura, String nomeEmpresa) {
+		byte[] digest = resumoAssinatura(resumoPdf, carteira, identificador, prazo, nomeEmpresa);
 		byte[] dadosAssinatura = bytesHex(assinatura, 65);
 		BigInteger r = new BigInteger(1, Arrays.copyOfRange(dadosAssinatura, 0, 32));
 		BigInteger s = new BigInteger(1, Arrays.copyOfRange(dadosAssinatura, 32, 64));
@@ -73,11 +78,19 @@ public class ProtocoloBlockchain {
 	}
 
 	byte[] resumoAssinatura(String resumoPdf, String carteira, UUID identificador, long prazo) {
+		return resumoAssinatura(resumoPdf, carteira, identificador, prazo, "aFIRMA");
+	}
+
+	byte[] resumoAssinatura(String resumoPdf, String carteira, UUID identificador, long prazo,
+			String nomeEmpresa) {
 		if (prazo < 0) throw new IllegalArgumentException("Prazo inválido");
+		if (nomeEmpresa == null || nomeEmpresa.isBlank() || nomeEmpresa.length() > 120) {
+			throw new IllegalArgumentException("Nome da empresa inválido");
+		}
 		byte[] resumo = bytesHex(resumoPdf, 32);
 		byte[] endereco = bytesHex(carteira, 20);
 		byte[] identificadorBytes = bytesHex(identificadorAssinado(identificador), 32);
-		byte[] dominio = keccak(juntar(TIPO_DOMINIO, hashTexto("aFIRMA"), hashTexto("1"),
+		byte[] dominio = keccak(juntar(TIPO_DOMINIO, hashTexto(nomeEmpresa), hashTexto("1"),
 				uint256(REDE_SEPOLIA)));
 		byte[] mensagem = keccak(juntar(TIPO_ASSINATURA, resumo, juntar(new byte[12], endereco),
 				identificadorBytes, uint256(prazo)));

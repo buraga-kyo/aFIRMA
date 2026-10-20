@@ -31,7 +31,10 @@ public class ControleAssinaturaPdf {
 	private static final Set<String> MOTIVOS_SEGUROS = Set.of(
 			"PDF e certificado são obrigatórios", "Certificado sem chave privada",
 			"Certificado sem chave privada ou cadeia de certificados", "Certificado X.509 inválido",
-			"Arquivo do certificado inválido", "PDF inválido ou protegido por senha");
+			"Arquivo do certificado inválido", "PDF inválido ou protegido por senha",
+			"Informe o nome da empresa (até 120 caracteres)",
+			"A imagem da empresa deve ter até 1 MB", "Use imagem PNG ou JPEG da empresa",
+			"Imagem da empresa inválida", "Nome da empresa muito longo para a página");
 
 	private final ServicoAssinaturaPdf servico;
 	private final ValidadorPedidoAssinatura validador;
@@ -50,8 +53,10 @@ public class ControleAssinaturaPdf {
 		ValidadorPedidoAssinatura.ArquivosValidados arquivos = validador.validar(pedido);
 		char[] senhaCertificado = pedido.getSenha().toCharArray();
 		try {
+			byte[] imagem = pedido.isPaginaPersonalizada() && pedido.getImagemEmpresa() != null
+					? pedido.getImagemEmpresa().getBytes() : null;
 			byte[] assinado = servico.assinar(arquivos.pdf(), arquivos.certificado(), senhaCertificado,
-					permitirCertificadoVencido);
+					permitirCertificadoVencido, pedido.isPaginaPersonalizada(), pedido.getNomeEmpresa(), imagem);
 			return ResponseEntity.ok()
 					.header(HttpHeaders.CONTENT_DISPOSITION,
 							ContentDisposition.attachment().filename("documento-assinado.pdf").build().toString())
