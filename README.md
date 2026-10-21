@@ -92,6 +92,12 @@ Para testar a assinatura em `http://127.0.0.1:8080/`, inicie com o perfil `local
 ./iniciar.sh -Dspring-boot.run.profiles=local-test
 ```
 
+### Convites para signatários
+
+Abra `http://127.0.0.1:8080/preparar-assinaturas`. Informe empresa, PDF, chave da API e token JWT. Adicione até 20 signatários e posicione até 100 campos de assinatura, rubrica ou selfie. Clique na página para criar cada campo e arraste para ajustar. Gere os convites e copie os links; eles aparecem somente na resposta de criação e expiram em 7 dias. Compartilhe cada link com o signatário correspondente.
+
+Cada signatário lê o PDF no próprio link, desenha assinatura e rubrica, envia selfie quando solicitada e confirma o aceite. O PDF é atualizado com as marcas assim que cada pessoa assina; os próximos signatários e o criador podem baixar essa versão atual. O link comprova posse do convite; esta etapa não verifica identidade por e-mail ou biometria. Quando todos concluírem, volte à página de preparação, atualize o estado e finalize com o certificado digital da empresa. O PDF final inclui as marcas nos lugares escolhidos e uma assinatura criptográfica sobre o documento completo. Após a finalização, os links permitem baixar o PDF final por mais 7 dias.
+
 O perfil exige PostgreSQL e Redis configurados no `.env`, mas dispensa o provedor OAuth externo. Ele aceita apenas conexões em `127.0.0.1`. Informe na tela:
 
 
