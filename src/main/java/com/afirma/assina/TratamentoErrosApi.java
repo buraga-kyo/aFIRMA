@@ -1,5 +1,10 @@
 package com.afirma.assina;
 
+import java.io.IOException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -40,6 +45,37 @@ public class TratamentoErrosApi {
 	ResponseEntity<ErroApi> conflitoDeDados() {
 		return resposta(HttpStatus.CONFLICT, "Registro duplicado ou ainda em uso");
 
+	}
+
+	@ExceptionHandler(UnrecoverableKeyException.class)
+	ResponseEntity<ErroApi> senhaCertificadoIncorreta() {
+		return resposta(HttpStatus.BAD_REQUEST, "Senha do certificado incorreta");
+	}
+
+	@ExceptionHandler(CertificateExpiredException.class)
+	ResponseEntity<ErroApi> certificadoVencido() {
+		return resposta(HttpStatus.BAD_REQUEST, "Certificado vencido");
+	}
+
+	@ExceptionHandler(CertificateNotYetValidException.class)
+	ResponseEntity<ErroApi> certificadoFuturo() {
+		return resposta(HttpStatus.BAD_REQUEST, "Certificado ainda não válido");
+	}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	ResponseEntity<ErroApi> dadosInvalidos() {
+		return resposta(HttpStatus.BAD_REQUEST, "Dados inválidos");
+	}
+
+	@ExceptionHandler(IOException.class)
+	ResponseEntity<ErroApi> arquivoInvalido() {
+		return resposta(HttpStatus.BAD_REQUEST, "PDF ou imagem inválidos");
+	}
+
+	@ExceptionHandler(Exception.class)
+	ResponseEntity<ErroApi> falhaInterna(Exception erro) {
+		log.error("Falha interna na API", erro);
+		return resposta(HttpStatus.INTERNAL_SERVER_ERROR, "Falha interna ao processar pedido");
 	}
 
 	private ResponseEntity<ErroApi> resposta(HttpStatus status, String mensagem) {

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Preparar assinaturas</title>
+  <link rel="stylesheet" th:href="@{/css/assinatura.css}" href="/css/assinatura.css">
+  <link rel="stylesheet" th:href="@{/css/envelopes.css}" href="/css/envelopes.css">
+  <script th:src="@{/js/preparar-assinaturas.js}" src="/js/preparar-assinaturas.js" defer></script>
+</head>
+<body>
+  <header class="topo"><a class="marca" href="/assinatura">SUA EMPRESA<span class="marca-ponto">.</span></a><span class="topo-selo">PREPARAR ASSINATURAS</span></header>
+  <main>
+    <section class="apresentacao"><div class="apresentacao-texto"><span class="sobretitulo"><span class="indicador"></span> CONVITES INDIVIDUAIS</span><h1>PREPARE O<br><span>DOCUMENTO.</span></h1><p>Adicione signatários. Posicione assinatura, rubrica e selfie nas páginas do PDF.</p></div></section>
+    <section class="area-trabalho" aria-label="Preparação das assinaturas">
+      <div class="cabecalho-area"><span>01 / DADOS DO DOCUMENTO</span><span>CONVITES COM PRAZO DE 7 DIAS</span></div>
+      <div class="etapa campos">
+        <div class="campo campo-largo"><label for="empresa">NOME DA EMPRESA</label><input id="empresa" maxlength="120" required placeholder="Empresa que solicita as assinaturas"></div>
+        <div class="campo campo-largo"><label for="arquivo-pdf">DOCUMENTO PDF</label><input id="arquivo-pdf" type="file" accept="application/pdf,.pdf" required></div>
+        <div class="campo"><label for="chave-api">CHAVE DA API</label><input id="chave-api" type="password" autocomplete="off" required></div>
+        <div class="campo"><label for="token">TOKEN JWT</label><input id="token" type="password" autocomplete="off" required></div>
+        <div class="campo-largo"><button id="abrir-pdf" class="botao-carteira" type="button">ABRIR PDF PARA POSICIONAR CAMPOS</button></div>
+      </div>
+      <div class="cabecalho-area"><span>02 / SIGNATÁRIOS</span><span>UM LINK PARA CADA PESSOA</span></div>
+      <div class="etapa">
+        <div id="lista-signatarios" class="lista-signatarios"></div>
+        <button id="adicionar-signatario" class="botao-carteira" type="button">+ ADICIONAR SIGNATÁRIO</button>
+      </div>
+      <div class="cabecalho-area"><span>03 / POSICIONAR CAMPOS</span><span>CLIQUE NA PÁGINA; ARRASTE PARA AJUSTAR</span></div>
+      <div class="etapa">
+        <div class="campos">
+          <div class="campo"><label for="signatario-atual">SIGNATÁRIO</label><select id="signatario-atual"></select></div>
+          <div class="campo"><label for="tipo-campo">CAMPO</label><select id="tipo-campo"><option value="ASSINATURA">Assinatura</option><option value="RUBRICA">Rubrica</option><option value="SELFIE">Selfie</option></select></div>
+        </div>
+        <div class="paginacao"><button id="pagina-anterior" type="button">← ANTERIOR</button><span id="numero-pagina">Abra o PDF para começar.</span><button id="pagina-seguinte" type="button">PRÓXIMA →</button></div>
+        <div id="visualizador" class="visualizador" hidden><img id="imagem-pagina" alt="Prévia da página do PDF"><div id="camada-campos" class="camada-campos"></div></div>
+        <p class="nota-seguranca">Posições acompanham tamanho de cada página. Remova campo pelo botão ×.</p>
+      </div>
+      <div class="rodape-formulario"><p>Links de convite aparecem após preparar. Compartilhe cada link com respectivo signatário.</p><button id="criar-envelope" type="button">GERAR CONVITES ↗</button></div>
+      <div id="erro-preparacao" class="erro" role="alert" hidden></div>
+      <section id="resultado-convites" class="etapa" hidden><h2>CONVITES CRIADOS</h2><p>Copie os links agora. Eles aparecem apenas nesta criação.</p><p id="identificador-envelope"></p><div id="lista-convites" class="lista-convites"></div><button id="atualizar-estado" class="botao-carteira" type="button">ATUALIZAR ESTADO</button><p id="estado-envelope" role="status"></p></section>
+      <section id="finalizacao" class="etapa" hidden><h2>FINALIZAR COM CERTIFICADO DA EMPRESA</h2><p id="aviso-finalizacao">Acompanhe o PDF atualizado após cada assinatura.</p><div class="campos"><div class="campo campo-largo"><label for="certificado-final">CERTIFICADO PFX OU P12</label><input id="certificado-final" type="file" accept=".pfx,.p12" required></div><div class="campo"><label for="senha-final">SENHA</label><input id="senha-final" type="password" autocomplete="off" required></div><div class="campo-largo"><label class="escolha-pagina"><input id="pagina-final" type="checkbox">Adicionar página de comprovante da empresa</label></div><div class="campo campo-largo" id="grupo-imagem-final" hidden><label for="imagem-final">IMAGEM DA EMPRESA (OPCIONAL)</label><input id="imagem-final" type="file" accept="image/png,image/jpeg"></div></div><button id="finalizar-envelope" class="botao-carteira" type="button">ASSINAR PDF FINAL</button><a id="baixar-final" class="botao-baixar" hidden download="documento-assinado.pdf">BAIXAR PDF ↗</a></section>
+    </section>
+  </main>
+  <footer><span id="rodape-empresa">SUA EMPRESA</span><span>DOCUMENTOS ASSINADOS COM IDENTIDADE.</span></footer>
+</body>
+</html>

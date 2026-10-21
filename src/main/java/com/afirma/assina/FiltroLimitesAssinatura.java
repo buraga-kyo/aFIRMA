@@ -45,7 +45,9 @@ public class FiltroLimitesAssinatura extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest requisicao) {
 		return !"/api/pdfs/assinar".equals(requisicao.getServletPath())
-				&& !requisicao.getServletPath().startsWith("/api/blockchain/");
+				&& !requisicao.getServletPath().startsWith("/api/blockchain/")
+				&& !requisicao.getServletPath().startsWith("/api/envelopes")
+				&& !requisicao.getServletPath().startsWith("/api/convites/");
 	}
 
 	@Override

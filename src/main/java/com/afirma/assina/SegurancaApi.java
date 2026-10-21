@@ -46,7 +46,11 @@ public class SegurancaApi {
 		http.csrf(csrf -> csrf.disable())
 				.sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(regras -> regras
-					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/chat", "/advai", "/css/**", "/js/**").permitAll()
+					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/preparar-assinaturas",
+							"/convite/**", "/chat", "/advai", "/css/**", "/js/**").permitAll()
+					.requestMatchers("/api/convites/**").permitAll()
+					.requestMatchers("/api/envelopes/**").hasAuthority("SCOPE_pdf.sign")
+					.requestMatchers(HttpMethod.POST, "/api/envelopes").hasAuthority("SCOPE_pdf.sign")
 						.requestMatchers(HttpMethod.POST, "/api/blockchain/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/chat/interno/eventos").permitAll()
 						.requestMatchers("/api/chat/admin/**").hasAuthority("SCOPE_chat.manage")

@@ -16,6 +16,12 @@ public class ControlePaginaAssinatura {
 		return "assinatura";
 	}
 
+	@GetMapping("/preparar-assinaturas")
+	public String prepararAssinaturas() { return "preparar-assinaturas"; }
+
+	@GetMapping("/convite/{token}")
+	public String convite() { return "convite"; }
+
 	@GetMapping("/advai")
 	public String advai() {
 		return "advai";
