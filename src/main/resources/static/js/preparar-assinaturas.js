@@ -19,6 +19,22 @@ let enderecoImagem = null;
 let identificadorEnvelope = new URLSearchParams(location.search).get('envelope');
 let enderecoFinal = null;
 
+if (new URLSearchParams(location.search).get('origem') === 'advai') {
+  const transferencia = sessionStorage.getItem('advai-proposta-pdf');
+  sessionStorage.removeItem('advai-proposta-pdf');
+  if (transferencia) {
+    try {
+      const dados = JSON.parse(transferencia);
+      const bytes = Uint8Array.from(atob(dados.conteudo.split(',')[1]), letra => letra.charCodeAt(0));
+      const arquivos = new DataTransfer();
+      arquivos.items.add(new File([bytes], 'proposta.pdf', { type: 'application/pdf' }));
+      arquivoPdf.files = arquivos.files;
+      empresa.value = dados.empresa;
+      empresa.dispatchEvent(new Event('input'));
+    } catch { mostrarErro('Não foi possível carregar a proposta. Selecione o PDF manualmente.'); }
+  }
+}
+
 empresa.addEventListener('input', () => {
   document.querySelector('.marca').firstChild.textContent = empresa.value.trim() || 'SUA EMPRESA';
   document.getElementById('rodape-empresa').textContent = empresa.value.trim() || 'SUA EMPRESA';

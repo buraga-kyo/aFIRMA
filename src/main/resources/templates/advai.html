@@ -1,20 +1,26 @@
 <!doctype html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Conheça o ADVai, futuro módulo da aFirma para gerar documentos jurídicos para sua empresa.">
-  <title>ADVai | Documentos jurídicos para sua empresa</title>
-  <link rel="stylesheet" th:href="@{/css/inicio.css}" href="/css/inicio.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>aFIRMA > ADVai</title>
+  <link rel="stylesheet" href="/css/inicio.css"><link rel="stylesheet" href="/css/advai.css">
+  <script src="/js/advai.js" defer></script>
 </head>
 <body class="pagina-advai">
-  <header class="topo"><a class="marca marca-principal" th:href="@{/}" href="/" aria-label="aFIRMA, início">aFIRMA<span>.</span></a><div class="marcas-variantes" aria-hidden="true"><span>aFirma.</span><span>aFirma.</span><span>aFirma.</span><span>aFirma.</span><span>aFirma.</span><span>aFirma.</span><span>aFirma.</span><span>aFirma.</span><span>aFirma.</span><span>aFirma.</span></div></header>
-  <main class="advai-conteudo">
-    <section class="advai-hero" aria-labelledby="advai-titulo">
-      <div class="advai-copia"><span class="selo">EM PREPARAÇÃO / MÓDULO 03</span><span class="advai-simbolo" aria-hidden="true">§</span><h1 id="advai-titulo">O JURÍDICO<br>VAI <span>ADIANTE.</span></h1><p>Conheça o ADVai: o futuro módulo especialista em gerar os documentos jurídicos de que sua empresa precisa. Você informa o contexto do negócio, e o ADVai prepara o documento para revisão.</p><a class="botao botao-primario" th:href="@{/}" href="/">EXPLORAR A FIRMA <span aria-hidden="true">↗</span></a></div>
-      <div class="advai-cartaz" aria-hidden="true"><span>ADVai / aFIRMA</span><div class="advai-folha"><span>DOCUMENTO</span><span class="advai-linha"></span><span class="advai-linha curta"></span><span class="advai-linha"></span><strong>§</strong></div><span>EM BREVE · 03 / 03</span></div>
-    </section>
+  <header class="topo"><a class="marca" href="/" aria-label="aFIRMA, página inicial">aFIRMA<span>.</span></a><a class="topo-acao" href="/preparar-assinaturas">ASSINATURAS ↗</a></header>
+  <main class="advai-pagina">
+    <section class="advai-abertura"><span class="selo">Gerador de PROPOSTAS</span><h1>PROPOSTAS QUE<br><span>VÃO ADIANTE.</span></h1><p>Escolha serviços, ajuste o texto e gere uma proposta com o nome da sua empresa. Revise o documento antes de enviar.</p></section>
+    <div id="erro-advai" class="advai-erro" role="alert" hidden></div>
+    <div class="advai-grade">
+      <form id="formulario-proposta" class="advai-formulario">
+        <section class="advai-bloco"><h2>01 / IDENTIFICAÇÃO</h2><div class="advai-campos"><label>EMPRESA<input id="empresa" maxlength="120" required placeholder="Nome da empresa"></label><label>CLIENTE<input id="cliente" maxlength="120" required placeholder="Nome do cliente"></label><label>E-MAIL DO CLIENTE<input id="email" type="email" maxlength="254" required placeholder="cliente@exemplo.com"></label><label>TÍTULO DA PROPOSTA<input id="titulo" maxlength="160" required value="Proposta de serviços jurídicos"></label></div></section>
+        <section class="advai-bloco"><h2>02 / SERVIÇOS</h2><p>Selecione os serviços ou adicione um serviço próprio. Edite o texto de cada item na proposta.</p><div id="catalogo" class="advai-catalogo"></div><div class="advai-campos"><label>NOVO SERVIÇO<input id="novo-servico" maxlength="160" placeholder="Título do serviço"></label><label>DESCRIÇÃO<textarea id="nova-descricao" maxlength="2000" rows="2" placeholder="Descreva a entrega"></textarea></label></div><button id="adicionar-servico" type="button" class="botao botao-secundario">ADICIONAR SERVIÇO +</button><div id="servicos-escolhidos"></div></section>
+        <section class="advai-bloco"><h2>03 / CONTEÚDO</h2><label>APRESENTAÇÃO<textarea id="introducao" maxlength="4000" rows="4" required>Apresentamos esta proposta para atender às necessidades informadas pelo cliente.</textarea></label><label>ESCOPO E ENTREGAS<textarea id="escopo" maxlength="8000" rows="5" required>Os serviços selecionados serão prestados conforme as condições descritas nesta proposta.</textarea></label><div class="advai-campos"><label>HONORÁRIOS (R$)<input id="valor" type="number" min="0.01" max="100000000" step="0.01" required></label><label>DESCONTO À VISTA (%)<input id="desconto" type="number" min="0" max="100" step="0.01" value="0" required></label></div><label>PRAZO<textarea id="prazo" maxlength="1000" rows="2" required>Prazo a combinar após aprovação da proposta.</textarea></label><label>CONDIÇÕES<textarea id="condicoes" maxlength="4000" rows="4" required>A execução começa após a aprovação da proposta e o envio dos documentos necessários.</textarea></label></section>
+        <section class="advai-bloco"><h2>04 / ACESSO</h2><p>Use a chave da API e o token JWT para gerar os arquivos.</p><label>CHAVE DA API<input id="chave-api" type="password" autocomplete="off" required></label><label>TOKEN JWT<textarea id="token" rows="3" autocomplete="off" required></textarea></label><div class="advai-acoes"><button type="button" id="baixar-pdf" class="botao botao-primario">GERAR PDF ↗</button><button type="button" id="baixar-docx" class="botao botao-secundario">GERAR DOCX ↗</button><button type="button" id="preparar-assinatura" class="botao botao-secundario">PREPARAR ASSINATURA ↗</button></div><p>Revise o texto antes de gerar. A assinatura usa o PDF desta proposta.</p></section>
+      </form>
+      <aside class="advai-previa"><div class="advai-previa-topo">PRÉVIA DA PROPOSTA <span>ATUALIZA AO DIGITAR</span></div><article id="previa-documento" class="advai-folha-documento"></article></aside>
+    </div>
   </main>
-  <footer><span>aFIRMA © 2026</span><span>RAIZ NO CAMPO. OLHAR NO FUTURO.</span></footer>
+  <footer><span id="rodape-empresa">SUA EMPRESA</span><span>PROPOSTAS JURÍDICAS.</span></footer>
 </body>
 </html>
