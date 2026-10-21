@@ -92,7 +92,12 @@ Para testar a assinatura em `http://127.0.0.1:8080/`, inicie com o perfil `local
 ./iniciar.sh -Dspring-boot.run.profiles=local-test
 ```
 
+### ADVai: propostas jurídicas
+
+Abra `http://127.0.0.1:8080/advai` no perfil `local-test`. Informe a empresa, o cliente, os serviços, honorários e textos. Após preencher a chave da API e o JWT, o catálogo do projeto `gerador-de-propostas-advocaticias` fica disponível; você também pode adicionar serviços próprios e editar os itens escolhidos. Gere PDF ou DOCX. O botão **Preparar assinatura** leva o PDF gerado à tela de convites. Revise o conteúdo antes do envio. A redação é baseada nos campos preenchidos; esta versão ainda não chama um provedor de IA.
+
 ### Convites para signatários
+
 
 Abra `http://127.0.0.1:8080/preparar-assinaturas`. Informe empresa, PDF, chave da API e token JWT. Adicione até 20 signatários e posicione até 100 campos de assinatura, rubrica ou selfie. Clique na página para criar cada campo e arraste para ajustar. Gere os convites e copie os links; eles aparecem somente na resposta de criação e expiram em 7 dias. Compartilhe cada link com o signatário correspondente.
 

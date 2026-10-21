@@ -49,6 +49,7 @@ public class SegurancaApi {
 					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/preparar-assinaturas",
 							"/convite/**", "/chat", "/advai", "/css/**", "/js/**").permitAll()
 					.requestMatchers("/api/convites/**").permitAll()
+					.requestMatchers("/api/advai/**").hasAuthority("SCOPE_pdf.sign")
 					.requestMatchers("/api/envelopes/**").hasAuthority("SCOPE_pdf.sign")
 					.requestMatchers(HttpMethod.POST, "/api/envelopes").hasAuthority("SCOPE_pdf.sign")
 						.requestMatchers(HttpMethod.POST, "/api/blockchain/**").permitAll()
