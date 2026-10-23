@@ -3,13 +3,15 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const makeWASocket = require('@whiskeysockets/baileys').default;
-const { useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const { useMultiFileAuthState, DisconnectReason, downloadMediaMessage } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const QRCode = require('qrcode');
 process.umask(0o077);
 
 const chave = process.env.APP_CHAT_BRIDGE_KEY || '';
 const backend = process.env.APP_CHAT_BACKEND_URL || 'http://127.0.0.1:8080';
+const chatwoot = process.env.APP_CHATWOOT_API_URL || '';
+const caixaChatwoot = process.env.APP_CHATWOOT_INBOX_ID || '';
 const porta = Number(process.env.APP_CHAT_BRIDGE_PORT || 8091);
 const diretorio = path.resolve(process.env.APP_CHAT_AUTH_DIR || './dados');
 if (chave.length < 32) throw new Error('APP_CHAT_BRIDGE_KEY exige 32 caracteres ou mais');
@@ -48,10 +50,37 @@ async function entregar(arquivo) {
   try {
     const evento = JSON.parse(await fs.readFile(arquivo, 'utf8'));
     await postar(evento);
+    if (chatwoot && caixaChatwoot && evento.tipo === 'mensagem') await postarChatwoot(evento);
     await fs.unlink(arquivo);
   } catch (erro) {
     if (erro.code !== 'ENOENT') console.error('Evento pendente:', erro.message);
   }
+}
+
+async function pedirChatwoot(caminho, dados) {
+  const resposta = await fetch(`${chatwoot.replace(/\/$/, '')}/public/api/v1/inboxes/${encodeURIComponent(caixaChatwoot)}${caminho}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(dados),
+    signal: AbortSignal.timeout(10000)
+  });
+  if (!resposta.ok) throw new Error(`Chatwoot respondeu ${resposta.status}`);
+  return resposta.json();
+}
+
+async function postarChatwoot(evento) {
+  const contato = `${evento.canalId}-${evento.telefone}`;
+  await pedirChatwoot('/contacts', {
+    source_id: contato,
+    identifier: contato,
+    name: evento.nome || evento.telefone,
+    phone_number: `+${evento.telefone}`
+  });
+  const conversa = await pedirChatwoot(`/contacts/${encodeURIComponent(contato)}/conversations`, {});
+  await pedirChatwoot(`/contacts/${encodeURIComponent(contato)}/conversations/${conversa.id}/messages`, {
+    content: evento.texto,
+    source_id: `${evento.canalId}-${evento.identificador}`
+  });
 }
 
 async function reenviarPendencias() {
@@ -115,11 +144,25 @@ async function conectar(id) {
     for (const mensagem of messages) {
       const jid = mensagem.key.remoteJid || '';
       const texto = textoMensagem(mensagem);
-      if (mensagem.key.fromMe || !jid.endsWith('@s.whatsapp.net') || !texto) continue;
+      const corpo = mensagem.message || {};
+      const midia = corpo.imageMessage || corpo.videoMessage || corpo.audioMessage || corpo.documentMessage;
+      if (mensagem.key.fromMe || !jid.endsWith('@s.whatsapp.net') || (!texto && !midia)) continue;
       const telefone = jid.split('@')[0];
       if (!/^\d{8,15}$/.test(telefone) || !mensagem.key.id) continue;
-      await publicar({ tipo: 'mensagem', canalId: id, identificador: mensagem.key.id,
-        telefone, nome: mensagem.pushName || null, texto });
+      const evento = { tipo: 'mensagem', canalId: id, identificador: mensagem.key.id,
+        telefone, nome: mensagem.pushName || null, texto: texto || '[anexo]' };
+      if (midia) {
+        try {
+          if (Number(midia.fileLength || 0) > 15 * 1024 * 1024) throw new Error('Arquivo grande demais');
+          const conteudo = await downloadMediaMessage(mensagem, 'buffer', {},
+            { logger: pino({ level: 'silent' }), reuploadRequest: cliente.updateMediaMessage });
+          if (conteudo.length > 15 * 1024 * 1024) throw new Error('Arquivo grande demais');
+          evento.conteudo = conteudo.toString('base64');
+          evento.tipoMime = midia.mimetype || 'application/octet-stream';
+          evento.nomeArquivo = midia.fileName || `anexo-${mensagem.key.id}`;
+        } catch (erro) { console.error('Anexo recebido:', erro.message); }
+      }
+      await publicar(evento);
     }
   });
 }
@@ -133,11 +176,11 @@ async function desconectar(id) {
   finally { await publicar({ tipo: 'estado', canalId: id, estado: 'DESCONECTADO' }); }
 }
 
-async function corpoJson(requisicao) {
+async function corpoJson(requisicao, limite = 16384) {
   let texto = '';
   for await (const parte of requisicao) {
     texto += parte;
-    if (texto.length > 16384) throw new Error('Corpo grande demais');
+    if (texto.length > limite) throw new Error('Corpo grande demais');
   }
   return JSON.parse(texto);
 }
@@ -177,6 +220,23 @@ http.createServer(async (requisicao, resposta) => {
       const cliente = sessoes.get(id)?.cliente;
       if (!cliente?.user) throw new Error('Canal desconectado');
       const enviada = await cliente.sendMessage(`${dados.telefone}@s.whatsapp.net`, { text: dados.texto });
+      respostaJson(resposta, 200, { identificador: enviada.key.id });
+    } else if (requisicao.method === 'POST' && partes[3] === 'arquivos') {
+      const dados = await corpoJson(requisicao, 22 * 1024 * 1024);
+      if (!/^\d{8,15}$/.test(dados.telefone) || !/^[\w.+-]+\/[\w.+-]+$/.test(dados.tipoMime) ||
+          typeof dados.conteudo !== 'string' || dados.conteudo.length > 21 * 1024 * 1024 ||
+          typeof dados.nome !== 'string' || dados.nome.length > 255) throw new Error('Arquivo inválido');
+      const cliente = sessoes.get(id)?.cliente;
+      if (!cliente?.user) throw new Error('Canal desconectado');
+      const conteudo = Buffer.from(dados.conteudo, 'base64');
+      if (!conteudo.length || conteudo.length > 15 * 1024 * 1024) throw new Error('Arquivo inválido');
+      const tipo = dados.tipoMime.startsWith('image/') ? 'image' :
+        dados.tipoMime.startsWith('video/') ? 'video' :
+        dados.tipoMime.startsWith('audio/') ? 'audio' : 'document';
+      const arquivo = { [tipo]: conteudo, mimetype: dados.tipoMime };
+      if (tipo === 'document') arquivo.fileName = dados.nome;
+      if (dados.legenda && tipo !== 'audio' && tipo !== 'document') arquivo.caption = dados.legenda;
+      const enviada = await cliente.sendMessage(`${dados.telefone}@s.whatsapp.net`, arquivo);
       respostaJson(resposta, 200, { identificador: enviada.key.id });
     } else respostaJson(resposta, 404, { erro: 'Rota não encontrada' });
   } catch (erro) {

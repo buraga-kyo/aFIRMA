@@ -1,0 +1,6 @@
+.faixa em{color:var(--lima)}
+.submenu{margin-bottom:14px}
+#painel-qr{border-top-color:var(--laranja)}
+#imagem-qr{display:block;max-width:min(100%,350px);padding:12px;background:white;border-radius:8px}
+#estado-qr{margin:8px 0 15px}
+.campos button[type=submit]{min-height:46px}

@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TalkAtive | aFIRMA</title>
+  <link rel="stylesheet" href="/css/chat-integrado.css">
+  <script src="/js/chat-integrado.js" defer></script>
+</head>
+<body class="pagina-chatwoot">
+  <iframe id="chatwoot" th:src="${urlChat}" title="Central de atendimento TalkAtive" allow="clipboard-read; clipboard-write"></iframe>
+</body>
+</html>

@@ -5,6 +5,13 @@ import java.security.MessageDigest;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.time.Instant;
+import java.util.HexFormat;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -32,19 +39,38 @@ public class ChatControle {
 	public record Disponibilidade(String estado) {}
 	public record Transferencia(Long setorId, Long atendenteId) {}
 	public record Texto(String texto) {}
+	public record Avaliacao(int nota) {}
+	public record PedidoSugestao(long agenteId) {}
 	public record NovoAtendimento(UUID canalId, String telefone, String nome, Long setorId, String texto) {}
 	public record Evento(String tipo, UUID canalId, String estado, String identificador,
-			String telefone, String nome, String texto) {}
+			String telefone, String nome, String texto, String tipoMime,
+			String nomeArquivo, String conteudo) {}
 
 	private final ChatServico servico;
 	private final ChatTransporte transporte;
 	private final byte[] chaveInterna;
+	private final byte[] segredoChatwoot;
+	private final UUID canalChatwoot;
+	private final int caixaChatwoot;
+	private final ObjectMapper json;
+	private final ServicoArquivosChat arquivos;
+	private final ServicoBots bots;
 
-	public ChatControle(ChatServico servico, ChatTransporte transporte,
-			@Value("${APP_CHAT_BRIDGE_KEY:}") String chaveInterna) {
+	public ChatControle(ChatServico servico, ChatTransporte transporte, ObjectMapper json,
+			ServicoArquivosChat arquivos, ServicoBots bots,
+			@Value("${APP_CHAT_BRIDGE_KEY:}") String chaveInterna,
+			@Value("${APP_CHATWOOT_WEBHOOK_SECRET:}") String segredoChatwoot,
+			@Value("${APP_CHATWOOT_CANAL_ID:}") String canalChatwoot,
+			@Value("${APP_CHATWOOT_INBOX_NUMERO:0}") int caixaChatwoot) {
 		this.servico = servico;
 		this.transporte = transporte;
+		this.json = json;
+		this.arquivos = arquivos;
+		this.bots = bots;
 		this.chaveInterna = chaveInterna.getBytes(StandardCharsets.UTF_8);
+		this.segredoChatwoot = segredoChatwoot.getBytes(StandardCharsets.UTF_8);
+		this.canalChatwoot = canalChatwoot.isBlank() ? null : UUID.fromString(canalChatwoot);
+		this.caixaChatwoot = caixaChatwoot;
 	}
 
 	@GetMapping("/admin/setores")
@@ -111,24 +137,49 @@ public class ChatControle {
 	@PostMapping("/admin/canais/{id}/conectar")
 	public void conectar(@PathVariable UUID id) {
 		servico.conferirCanalAtivo(id);
+		if (!"BAILEYS".equals(servico.provedorCanal(id)))
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Conexão por QR indisponível");
 		transporte.conectar(id);
 	}
 
 	@PostMapping("/admin/canais/{id}/desconectar")
-	public void desconectar(@PathVariable UUID id) { transporte.desconectar(id); }
+	public void desconectar(@PathVariable UUID id) {
+		servico.conferirCanalAtivo(id);
+		if (!"BAILEYS".equals(servico.provedorCanal(id)))
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Canal oficial não usa sessão local");
+		transporte.desconectar(id);
+	}
+
+	@DeleteMapping("/admin/canais/{id}")
+	public void excluirCanal(@PathVariable UUID id) {
+		servico.conferirCanalAtivo(id);
+		if ("BAILEYS".equals(servico.provedorCanal(id))) transporte.desconectar(id);
+		servico.ativarCanal(id, false);
+	}
 
 	@PutMapping("/admin/canais/{id}/ativo")
 	public void ativarCanal(@PathVariable UUID id, @RequestBody Map<String, Boolean> pedido) {
 		if (!pedido.containsKey("ativo")) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+		String provedor = servico.provedorCanal(id);
 		servico.ativarCanal(id, pedido.get("ativo"));
-		if (!pedido.get("ativo")) transporte.desconectar(id);
+		if (!pedido.get("ativo") && "BAILEYS".equals(provedor)) transporte.desconectar(id);
 	}
 
 	@GetMapping("/admin/canais/{id}/qr")
-	public Map<String, String> qr(@PathVariable UUID id) { return Map.of("qr", servico.qr(id)); }
+	public Map<String, String> qr(@PathVariable UUID id) {
+		if (!"BAILEYS".equals(servico.provedorCanal(id)))
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "QR indisponível");
+		return Map.of("qr", servico.qr(id));
+	}
 
 	@GetMapping("/atendimentos")
 	public List<Map<String, Object>> fila(Authentication usuario) { return servico.fila(usuario); }
+
+	@GetMapping("/atendimentos/finalizados")
+	public List<Map<String, Object>> finalizados(Authentication usuario) { return servico.finalizados(usuario); }
+
+	@GetMapping("/admin/indicadores")
+	public List<Map<String, Object>> indicadores(Authentication usuario) { return servico.indicadores(usuario); }
 
 	@GetMapping("/canais")
 	public List<Map<String, Object>> canaisDisponiveis() { return servico.canaisDisponiveis(); }
@@ -155,6 +206,30 @@ public class ChatControle {
 		servico.enviarAvisoEncerramento(servico.finalizar(id, usuario));
 	}
 
+	@PostMapping("/atendimentos/{id}/reativar")
+	public void reativar(@PathVariable UUID id, Authentication usuario) { servico.reativar(id, usuario); }
+
+	@GetMapping("/atendimentos/{id}/historico-contato")
+	public List<Map<String, Object>> historicoContato(@PathVariable UUID id, Authentication usuario) {
+		return servico.historicoContato(id, usuario);
+	}
+
+	@PostMapping("/atendimentos/{id}/sugestao-ia")
+	public Map<String, String> sugerirResposta(@PathVariable UUID id, @RequestBody PedidoSugestao pedido,
+			Authentication usuario) {
+		return Map.of("texto", servico.sugerirResposta(id, pedido.agenteId(), usuario));
+	}
+
+	@PostMapping("/atendimentos/{id}/lidas")
+	public void marcarComoLidas(@PathVariable UUID id, Authentication usuario) {
+		servico.marcarComoLidas(id, usuario);
+	}
+
+	@PostMapping("/atendimentos/{id}/avaliacao")
+	public void avaliar(@PathVariable UUID id, @RequestBody Avaliacao pedido, Authentication usuario) {
+		servico.avaliar(id, pedido.nota(), usuario);
+	}
+
 	@GetMapping("/atendimentos/{id}/mensagens")
 	public List<Map<String, Object>> mensagens(@PathVariable UUID id, Authentication usuario) {
 		return servico.mensagens(id, usuario);
@@ -170,6 +245,14 @@ public class ChatControle {
 		servico.enviar(id, pedido.texto(), usuario);
 	}
 
+	@PostMapping("/atendimentos/{id}/mensagens/{mensagem}/lida")
+	public void marcarMensagemLida(@PathVariable UUID id, @PathVariable long mensagem,
+			Authentication usuario) { servico.marcarMensagemLida(id, mensagem, usuario); }
+
+	@DeleteMapping("/atendimentos/{id}/mensagens/{mensagem}")
+	public void ocultarMensagem(@PathVariable UUID id, @PathVariable long mensagem,
+			Authentication usuario) { servico.ocultarMensagem(id, mensagem, usuario); }
+
 	@PostMapping("/interno/eventos")
 	public void evento(@RequestHeader(value = "X-Chat-Bridge-Key", required = false) String chave,
 			@RequestBody Evento evento) {
@@ -180,9 +263,53 @@ public class ChatControle {
 		if (evento == null || evento.canalId() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 		switch (evento.tipo()) {
 			case "estado" -> servico.estadoCanal(evento.canalId(), evento.estado());
-			case "mensagem" -> servico.receber(evento.canalId(), evento.identificador(),
-					evento.telefone(), evento.nome(), evento.texto());
+			case "mensagem" -> {
+				if (evento.conteudo() == null) {
+					boolean nova = servico.receber(evento.canalId(), evento.identificador(),
+							evento.telefone(), evento.nome(), evento.texto());
+					if (nova) bots.enviarResposta(bots.processarEntrada(
+							evento.canalId(), evento.telefone(), evento.texto(), evento.identificador()));
+				}
+				else arquivos.receber(evento.canalId(), evento.identificador(), evento.telefone(),
+						evento.nome(), evento.texto(), evento.nomeArquivo(), evento.tipoMime(), evento.conteudo());
+			}
 			default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Evento inválido");
+		}
+	}
+
+	@PostMapping("/interno/chatwoot")
+	public void respostaChatwoot(@RequestHeader(value = "X-Chatwoot-Timestamp", required = false) String instante,
+			@RequestHeader(value = "X-Chatwoot-Signature", required = false) String assinatura,
+			@RequestBody byte[] corpo) {
+		if (segredoChatwoot.length < 32 || canalChatwoot == null || caixaChatwoot < 1)
+			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE);
+		try {
+			long segundos = Long.parseLong(instante);
+			if (Math.abs(Instant.now().getEpochSecond() - segundos) > 300)
+				throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+			Mac mac = Mac.getInstance("HmacSHA256");
+			mac.init(new SecretKeySpec(segredoChatwoot, "HmacSHA256"));
+			byte[] esperado = mac.doFinal((instante + "." + new String(corpo, StandardCharsets.UTF_8))
+					.getBytes(StandardCharsets.UTF_8));
+			byte[] recebido = assinatura != null && assinatura.matches("sha256=[0-9a-fA-F]{64}")
+					? HexFormat.of().parseHex(assinatura.substring(7)) : new byte[0];
+			if (!MessageDigest.isEqual(esperado, recebido))
+				throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+			JsonNode evento = json.readTree(corpo);
+			if (!"message_created".equals(evento.path("event").asText())
+					|| !"outgoing".equals(evento.path("message_type").asText())
+					|| evento.path("private").asBoolean()
+					|| evento.path("inbox").path("id").asInt() != caixaChatwoot) return;
+			String telefone = evento.path("conversation").path("meta").path("sender")
+					.path("phone_number").asText().replaceFirst("^\\+", "");
+			String texto = evento.path("content").asText();
+			if (!telefone.matches("[0-9]{8,15}") || texto.isBlank())
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Resposta sem destino ou texto");
+			transporte.enviar(canalChatwoot, telefone, texto);
+		} catch (ResponseStatusException erro) {
+			throw erro;
+		} catch (Exception erro) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Webhook inválido", erro);
 		}
 	}
 }
