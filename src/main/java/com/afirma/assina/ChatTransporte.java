@@ -7,6 +7,8 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Base64;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -21,13 +23,17 @@ public class ChatTransporte {
 	private final ObjectMapper json;
 	private final URI base;
 	private final String chave;
+	private final JdbcTemplate banco;
+	private final ServicoCanalOficial oficial;
 
-	public ChatTransporte(ObjectMapper json,
+	public ChatTransporte(ObjectMapper json, JdbcTemplate banco, ServicoCanalOficial oficial,
 			@Value("${APP_CHAT_BRIDGE_URL:http://127.0.0.1:8091}") String url,
 			@Value("${APP_CHAT_BRIDGE_KEY:}") String chave) {
 		this.json = json;
 		this.base = URI.create(url);
 		this.chave = chave;
+		this.banco = banco;
+		this.oficial = oficial;
 	}
 
 	private JsonNode chamar(String metodo, String caminho, Object corpo) {
@@ -35,7 +41,8 @@ public class ChatTransporte {
 				"Ponte WhatsApp sem chave configurada");
 		try {
 			HttpRequest.Builder pedido = HttpRequest.newBuilder(base.resolve(caminho))
-					.timeout(Duration.ofSeconds(15)).header("X-Chat-Bridge-Key", chave);
+					.timeout(Duration.ofSeconds(caminho.endsWith("/arquivos") ? 60 : 15))
+					.header("X-Chat-Bridge-Key", chave);
 			if (corpo == null) pedido.method(metodo, HttpRequest.BodyPublishers.noBody());
 			else pedido.header("Content-Type", "application/json")
 					.method(metodo, HttpRequest.BodyPublishers.ofString(json.writeValueAsString(corpo)));
@@ -65,10 +72,30 @@ public class ChatTransporte {
 		return chamar("GET", "/sessoes/" + canal + "/estado", null).path("estado").asText();
 	}
 	public String enviar(UUID canal, String telefone, String texto) {
+		String provedor = banco.queryForObject("SELECT provedor FROM chat_canal WHERE id = ?", String.class, canal);
+		if ("META".equals(provedor)) return oficial.enviar(canal, telefone, texto);
 		String identificador = chamar("POST", "/sessoes/" + canal + "/mensagens",
 				Map.of("telefone", telefone, "texto", texto)).path("identificador").asText();
 		if (identificador.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
 				"WhatsApp não confirmou mensagem");
+		return identificador;
+	}
+
+	public String enviarArquivo(UUID canal, String telefone, String nome,
+			String tipoMime, byte[] conteudo, String legenda) {
+		String provedor = banco.queryForObject("SELECT provedor FROM chat_canal WHERE id = ?", String.class, canal);
+		if ("META".equals(provedor))
+			return oficial.enviarArquivo(canal, telefone, nome, tipoMime, conteudo, legenda);
+		Map<String, String> corpo = new java.util.HashMap<>();
+		corpo.put("telefone", telefone);
+		corpo.put("nome", nome);
+		corpo.put("tipoMime", tipoMime);
+		corpo.put("conteudo", Base64.getEncoder().encodeToString(conteudo));
+		if (legenda != null) corpo.put("legenda", legenda);
+		String identificador = chamar("POST", "/sessoes/" + canal + "/arquivos", corpo)
+				.path("identificador").asText();
+		if (identificador.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+				"Canal não confirmou o arquivo");
 		return identificador;
 	}
 }

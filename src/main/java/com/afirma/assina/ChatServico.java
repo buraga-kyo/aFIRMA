@@ -20,10 +20,13 @@ public class ChatServico {
 	private static final Logger log = LoggerFactory.getLogger(ChatServico.class);
 	private final NamedParameterJdbcTemplate banco;
 	private final ChatTransporte transporte;
+	private final ServicoInteligenciaConversacional inteligencia;
 
-	public ChatServico(NamedParameterJdbcTemplate banco, ChatTransporte transporte) {
+	public ChatServico(NamedParameterJdbcTemplate banco, ChatTransporte transporte,
+			ServicoInteligenciaConversacional inteligencia) {
 		this.banco = banco;
 		this.transporte = transporte;
+		this.inteligencia = inteligencia;
 	}
 
 	private static MapSqlParameterSource parametros(Object... pares) {
@@ -172,14 +175,17 @@ public class ChatServico {
 			um("SELECT id FROM chat_setor WHERE id = :id AND ativo = TRUE", parametros("id", setor));
 		UUID id = UUID.randomUUID();
 		return um("""
-				INSERT INTO chat_canal(id, nome, telefone, setor_padrao_id, inatividade_minutos, mensagem_encerramento)
-				VALUES (:id, :nome, :telefone, :setor, :inatividade, :encerramento) RETURNING *
+				INSERT INTO chat_canal(id, nome, telefone, setor_padrao_id, inatividade_minutos,
+				finalizar_por_inatividade, mensagem_encerramento, mensagem_inatividade)
+				VALUES (:id, :nome, :telefone, :setor, :inatividade,
+				:finalizar, :encerramento, :encerramento) RETURNING *
 				""", parametros("id", id, "nome", nome.trim(), "telefone", telefone,
-					"setor", setor, "inatividade", inatividade, "encerramento", encerramento));
+					"setor", setor, "inatividade", inatividade, "finalizar", inatividade != null,
+					"encerramento", encerramento));
 	}
 
 	public List<Map<String, Object>> canais() {
-		return banco.queryForList("SELECT * FROM chat_canal ORDER BY nome", parametros());
+		return banco.queryForList("SELECT * FROM chat_canal WHERE ativo = TRUE ORDER BY nome", parametros());
 	}
 
 	public List<Map<String, Object>> canaisDisponiveis() {
@@ -189,7 +195,7 @@ public class ChatServico {
 	}
 
 	public List<UUID> canaisAtivos() {
-		return banco.query("SELECT id FROM chat_canal WHERE ativo = TRUE", parametros(),
+		return banco.query("SELECT id FROM chat_canal WHERE ativo = TRUE AND provedor = 'BAILEYS'", parametros(),
 				(resultado, linha) -> resultado.getObject("id", UUID.class));
 	}
 
@@ -198,19 +204,22 @@ public class ChatServico {
 	@Transactional
 	public List<AvisoEncerramento> finalizarInativos() {
 		List<Map<String, Object>> vencidos = banco.queryForList("""
-				SELECT a.id, a.canal_id, contato.telefone, canal.mensagem_encerramento
+				SELECT a.id, a.canal_id, contato.telefone,
+				COALESCE(canal.mensagem_inatividade, canal.mensagem_encerramento) AS mensagem_encerramento
 				FROM chat_atendimento a
 				JOIN chat_canal canal ON canal.id = a.canal_id
 				JOIN chat_contato contato ON contato.id = a.contato_id
-				WHERE a.estado <> 'FINALIZADO' AND canal.inatividade_minutos IS NOT NULL
-				AND a.atualizado_em < NOW() - (canal.inatividade_minutos * INTERVAL '1 minute')
-				ORDER BY a.atualizado_em LIMIT 100 FOR UPDATE OF a SKIP LOCKED
+				WHERE a.estado = 'EM_ANDAMENTO' AND canal.ativo = TRUE
+				AND canal.finalizar_por_inatividade AND canal.inatividade_minutos IS NOT NULL
+				AND a.ultima_mensagem_cliente_em IS NOT NULL
+				AND a.ultima_mensagem_cliente_em <= NOW() - (canal.inatividade_minutos * INTERVAL '1 minute')
+				ORDER BY a.ultima_mensagem_cliente_em LIMIT 100 FOR UPDATE OF a SKIP LOCKED
 				""", parametros());
 		for (Map<String, Object> vencido : vencidos) {
 			UUID id = (UUID) vencido.get("id");
 			banco.update("""
 					UPDATE chat_atendimento SET estado = 'FINALIZADO', finalizado_em = NOW(),
-					atualizado_em = NOW() WHERE id = :id
+					contexto_ia = NULL, atualizado_em = NOW() WHERE id = :id
 					""", parametros("id", id));
 			acao(id, "SISTEMA", "FINALIZADO_INATIVO", null);
 		}
@@ -221,10 +230,12 @@ public class ChatServico {
 
 	public void registrarAvisoEncerramento(AvisoEncerramento aviso, String externo) {
 		banco.update("""
-				INSERT INTO chat_mensagem(atendimento_id, canal_id, identificador_externo, sentido, estado, texto)
-				VALUES (:atendimento, :canal, :externo, 'SAIDA', 'ENVIADA', :texto)
+				INSERT INTO chat_mensagem(empresa_id, atendimento_id, contato_id, canal_id,
+				identificador_externo, sentido, estado, texto, destinatario)
+				SELECT empresa_id,id,contato_id,canal_id,:externo,'SAIDA','ENVIADA',:texto,:telefone
+				FROM chat_atendimento WHERE id=:atendimento
 				""", parametros("atendimento", aviso.atendimento(), "canal", aviso.canal(),
-					"externo", externo, "texto", aviso.texto()));
+					"externo", externo, "texto", aviso.texto(), "telefone", aviso.telefone()));
 	}
 
 	public void enviarAvisoEncerramento(AvisoEncerramento aviso) {
@@ -245,10 +256,14 @@ public class ChatServico {
 			um("SELECT id FROM chat_setor WHERE id = :id AND ativo = TRUE", parametros("id", setor));
 		exigir(banco.update("""
 				UPDATE chat_canal SET nome = :nome, setor_padrao_id = :setor,
-				inatividade_minutos = :inatividade, mensagem_encerramento = :encerramento,
+				inatividade_minutos = :inatividade,
+				finalizar_por_inatividade = :finalizar,
+				mensagem_encerramento = :encerramento,
+				mensagem_inatividade = :encerramento,
 				atualizado_em = NOW() WHERE id = :id
 				""", parametros("id", id, "nome", nome.trim(), "setor", setor,
-					"inatividade", inatividade, "encerramento", encerramento)) == 1,
+					"inatividade", inatividade, "finalizar", inatividade != null,
+					"encerramento", encerramento)) == 1,
 				HttpStatus.NOT_FOUND, "Canal não encontrado");
 	}
 
@@ -256,27 +271,36 @@ public class ChatServico {
 		um("SELECT id FROM chat_canal WHERE id = :id AND ativo = TRUE", parametros("id", id));
 	}
 
+	public String provedorCanal(UUID id) {
+		return (String) um("SELECT provedor FROM chat_canal WHERE id=:id", parametros("id", id))
+				.get("provedor");
+	}
+
 	@Transactional
 	public UUID iniciar(UUID canal, String telefone, String nome, Long setor, Authentication usuario) {
 		exigir(telefone != null && telefone.matches("[0-9]{8,15}"),
 				HttpStatus.BAD_REQUEST, "Telefone inválido");
 		Map<String, Object> canalRegistrado = um("""
-				SELECT id, setor_padrao_id FROM chat_canal WHERE id = :id AND ativo = TRUE FOR UPDATE
+				SELECT id, empresa_id, setor_padrao_id FROM chat_canal
+				WHERE id = :id AND ativo = TRUE FOR UPDATE
 				""", parametros("id", canal));
+		long empresa = ((Number) canalRegistrado.get("empresa_id")).longValue();
 		Long setorEscolhido = setor == null ? (Long) canalRegistrado.get("setor_padrao_id") : setor;
 		long atendente = agente(usuario);
 		conferirSetor(atendente, setorEscolhido);
 		Map<String, Object> contato = um("""
-				INSERT INTO chat_contato(telefone, nome) VALUES (:telefone, :nome)
-				ON CONFLICT (telefone) DO UPDATE SET nome = COALESCE(NULLIF(EXCLUDED.nome, ''), chat_contato.nome)
+				INSERT INTO chat_contato(empresa_id, telefone, nome)
+				VALUES (:empresa, :telefone, :nome)
+				ON CONFLICT (empresa_id, telefone) DO UPDATE SET nome = COALESCE(NULLIF(EXCLUDED.nome, ''), chat_contato.nome)
 				RETURNING id
-				""", parametros("telefone", telefone, "nome", nome));
+				""", parametros("empresa", empresa, "telefone", telefone, "nome", nome));
 		UUID id = UUID.randomUUID();
 		banco.update("""
-				INSERT INTO chat_atendimento(id, canal_id, contato_id, setor_id, atendente_id, estado)
-				VALUES (:id, :canal, :contato, :setor, :atendente, 'EM_ANDAMENTO')
+			INSERT INTO chat_atendimento(id, empresa_id, canal_id, contato_id,
+			setor_id, atendente_id, estado)
+			VALUES (:id, :empresa, :canal, :contato, :setor, :atendente, 'EM_ANDAMENTO')
 				""", parametros("id", id, "canal", canal, "contato", contato.get("id"),
-					"setor", setorEscolhido, "atendente", atendente));
+					"empresa", empresa, "setor", setorEscolhido, "atendente", atendente));
 		acao(id, usuario.getName(), "CRIADO", "Atendimento iniciado pelo atendente");
 		return id;
 	}
@@ -284,7 +308,9 @@ public class ChatServico {
 	@Transactional
 	public void ativarCanal(UUID id, boolean ativo) {
 		exigir(banco.update("""
-				UPDATE chat_canal SET ativo = :ativo, conexao = 'DESCONECTADO', atualizado_em = NOW()
+				UPDATE chat_canal SET ativo = :ativo,
+				conexao = CASE WHEN :ativo AND provedor='META' THEN 'CONECTADO' ELSE 'DESCONECTADO' END,
+				atualizado_em = NOW()
 				WHERE id = :id
 				""", parametros("id", id, "ativo", ativo)) == 1,
 				HttpStatus.NOT_FOUND, "Canal não encontrado");
@@ -306,46 +332,57 @@ public class ChatServico {
 	}
 
 	@Transactional
-	public void receber(UUID canal, String identificador, String telefone, String nome, String texto) {
+	public boolean receber(UUID canal, String identificador, String telefone, String nome, String texto) {
 		exigir(identificador != null && !identificador.isBlank() && telefone != null
 				&& telefone.matches("[0-9]{8,15}") && texto != null && !texto.isBlank(),
 				HttpStatus.BAD_REQUEST, "Mensagem inválida");
 		Map<String, Object> dadosCanal = um("""
-				SELECT id, setor_padrao_id FROM chat_canal WHERE id = :id AND ativo = TRUE FOR UPDATE
+				SELECT id, empresa_id, setor_padrao_id FROM chat_canal
+				WHERE id = :id AND ativo = TRUE FOR UPDATE
 				""", parametros("id", canal));
+		long empresa = ((Number) dadosCanal.get("empresa_id")).longValue();
 		Long repetida = banco.queryForObject("""
 				SELECT COUNT(*) FROM chat_mensagem WHERE canal_id = :canal AND identificador_externo = :externo
 				""", parametros("canal", canal, "externo", identificador), Long.class);
-		if (repetida != null && repetida > 0) return;
+		if (repetida != null && repetida > 0) return false;
 		Map<String, Object> contato = um("""
-				INSERT INTO chat_contato(telefone, nome) VALUES (:telefone, :nome)
-				ON CONFLICT (telefone) DO UPDATE SET nome = COALESCE(NULLIF(EXCLUDED.nome, ''), chat_contato.nome)
+			INSERT INTO chat_contato(empresa_id, telefone, nome) VALUES (:empresa, :telefone, :nome)
+				ON CONFLICT (empresa_id, telefone) DO UPDATE SET nome = COALESCE(NULLIF(EXCLUDED.nome, ''), chat_contato.nome)
 				RETURNING id
-				""", parametros("telefone", telefone, "nome", nome));
+			""", parametros("empresa", empresa, "telefone", telefone, "nome", nome));
 		long contatoId = ((Number) contato.get("id")).longValue();
 		List<Map<String, Object>> abertos = banco.queryForList("""
 				SELECT id FROM chat_atendimento
-				WHERE canal_id = :canal AND contato_id = :contato AND estado <> 'FINALIZADO' FOR UPDATE
-				""", parametros("canal", canal, "contato", contatoId));
+				WHERE canal_id = :canal AND contato_id = :contato
+				AND empresa_id = :empresa AND estado <> 'FINALIZADO' FOR UPDATE
+				""", parametros("canal", canal, "contato", contatoId, "empresa", empresa));
 		UUID atendimento;
 		if (abertos.isEmpty()) {
 			atendimento = UUID.randomUUID();
 			banco.update("""
-				INSERT INTO chat_atendimento(id, canal_id, contato_id, setor_id, estado)
-				VALUES (:id, :canal, :contato, :setor, 'PENDENTE')
+				INSERT INTO chat_atendimento(id, empresa_id, canal_id, contato_id, setor_id, estado)
+				VALUES (:id, :empresa, :canal, :contato, :setor, 'PENDENTE')
 				""", parametros("id", atendimento, "canal", canal, "contato", contatoId,
-						"setor", dadosCanal.get("setor_padrao_id")));
+						"empresa", empresa, "setor", dadosCanal.get("setor_padrao_id")));
 			acao(atendimento, "SISTEMA", "CRIADO", "Mensagem recebida");
 		} else {
 			atendimento = (UUID) abertos.getFirst().get("id");
 		}
 		banco.update("""
-				INSERT INTO chat_mensagem(atendimento_id, canal_id, identificador_externo, sentido, estado, texto)
-				VALUES (:atendimento, :canal, :externo, 'ENTRADA', 'RECEBIDA', :texto)
+				INSERT INTO chat_mensagem(empresa_id, atendimento_id, contato_id, canal_id,
+				identificador_externo, sentido, estado, texto, remetente, ocorrida_em)
+				VALUES (:empresa, :atendimento, :contato, :canal, :externo,
+				'ENTRADA', 'RECEBIDA', :texto, :telefone, NOW())
 				""", parametros("atendimento", atendimento, "canal", canal,
-					"externo", identificador, "texto", texto));
-		banco.update("UPDATE chat_atendimento SET atualizado_em = NOW() WHERE id = :id",
+					"empresa", empresa, "contato", contatoId,
+					"externo", identificador, "texto", texto, "telefone", telefone));
+		banco.update("""
+			UPDATE chat_atendimento SET atualizado_em = NOW(),
+			mensagens_nao_lidas = mensagens_nao_lidas + 1,
+			ultima_mensagem_cliente_em = NOW() WHERE id = :id
+			""",
 				parametros("id", atendimento));
+		return true;
 	}
 
 	public List<Map<String, Object>> fila(Authentication usuario) {
@@ -363,6 +400,9 @@ public class ChatServico {
 				       a.iniciado_em, a.atualizado_em, c.telefone, c.nome AS contato_nome
 				FROM chat_atendimento a JOIN chat_contato c ON c.id = a.contato_id
 				WHERE a.estado <> 'FINALIZADO'
+				AND NOT EXISTS (SELECT 1 FROM chat_bot_sessao sessao
+				 WHERE sessao.canal_id=a.canal_id AND sessao.contato_id=a.contato_id
+				 AND sessao.estado='ATIVA' AND NOT jsonb_exists(sessao.dados,'AtendimentoId'))
 				""" + filtro + " ORDER BY a.atualizado_em DESC LIMIT 200",
 				parametros("identidade", usuario.getName()));
 	}
@@ -400,6 +440,10 @@ public class ChatServico {
 				UPDATE chat_atendimento SET atendente_id = :atendente, estado = 'EM_ANDAMENTO',
 				atualizado_em = NOW() WHERE id = :id
 				""", parametros("atendente", atendente, "id", id));
+		banco.update("""
+			UPDATE chat_bot_sessao SET estado='CANCELADA',atualizada_em=NOW()
+			WHERE canal_id=:canal AND contato_id=:contato AND estado='ATIVA'
+			""", parametros("canal", ticket.get("canal_id"), "contato", ticket.get("contato_id")));
 		acao(id, usuario.getName(), "ASSUMIDO", null);
 	}
 
@@ -474,6 +518,56 @@ public class ChatServico {
 				""", parametros("id", id));
 	}
 
+	@Transactional
+	public void marcarComoLidas(UUID id, Authentication usuario) {
+		Map<String, Object> ticket = atendimento(id);
+		conferirLeitura(ticket, usuario);
+		banco.update("UPDATE chat_atendimento SET mensagens_nao_lidas = 0 WHERE id = :id",
+				parametros("id", id));
+	}
+
+	@Transactional
+	public void avaliar(UUID id, int nota, Authentication usuario) {
+		exigir(nota >= 1 && nota <= 5, HttpStatus.BAD_REQUEST, "Avaliação inválida");
+		Map<String, Object> ticket = atendimento(id);
+		conferirLeitura(ticket, usuario);
+		exigir("FINALIZADO".equals(ticket.get("estado")), HttpStatus.CONFLICT,
+				"Atendimento ainda aberto");
+		banco.update("UPDATE chat_atendimento SET avaliacao=:nota WHERE id=:id",
+				parametros("id", id, "nota", nota));
+	}
+
+	public List<Map<String, Object>> finalizados(Authentication usuario) {
+		boolean gestor = usuario.getAuthorities().stream()
+				.anyMatch(permissao -> permissao.getAuthority().equals("SCOPE_chat.manage"));
+		String filtro = gestor ? "" : "AND a.atendente_id = (SELECT id FROM chat_atendente WHERE identidade=:identidade AND ativo)";
+		return banco.queryForList("""
+			SELECT a.id,a.protocolo,a.canal_id,a.estado,a.iniciado_em,a.finalizado_em,
+			a.duracao_segundos,a.espera_segundos,a.avaliacao,c.nome AS contato_nome,c.telefone
+			FROM chat_atendimento a JOIN chat_contato c ON c.id=a.contato_id
+			WHERE a.estado='FINALIZADO'
+			""" + filtro + " ORDER BY a.finalizado_em DESC LIMIT 200",
+				parametros("identidade", usuario.getName()));
+	}
+
+	public List<Map<String, Object>> indicadores(Authentication usuario) {
+		exigir(usuario.getAuthorities().stream().anyMatch(
+				permissao -> permissao.getAuthority().equals("SCOPE_chat.manage")),
+				HttpStatus.FORBIDDEN, "Gestão necessária");
+		return banco.queryForList("""
+			SELECT canal.id AS canal_id,canal.nome AS canal,
+			count(a.id) AS total,
+			count(a.id) FILTER (WHERE a.estado='PENDENTE') AS pendentes,
+			count(a.id) FILTER (WHERE a.estado='EM_ANDAMENTO') AS em_andamento,
+			count(a.id) FILTER (WHERE a.estado='FINALIZADO') AS finalizados,
+			avg(a.duracao_segundos) FILTER (WHERE a.estado='FINALIZADO') AS duracao_media_segundos,
+			avg(a.espera_segundos) FILTER (WHERE a.estado='FINALIZADO') AS espera_media_segundos,
+			avg(a.avaliacao) AS avaliacao_media
+			FROM chat_canal canal LEFT JOIN chat_atendimento a ON a.canal_id=canal.id
+			GROUP BY canal.id,canal.nome ORDER BY canal.nome
+			""", parametros());
+	}
+
 	public List<Map<String, Object>> acoes(UUID id, Authentication usuario) {
 		Map<String, Object> ticket = um("SELECT * FROM chat_atendimento WHERE id = :id", parametros("id", id));
 		conferirLeitura(ticket, usuario);
@@ -481,6 +575,73 @@ public class ChatServico {
 				SELECT ator, tipo, descricao, criado_em FROM chat_acao
 				WHERE atendimento_id = :id ORDER BY id
 				""", parametros("id", id));
+	}
+
+	@Transactional
+	public void reativar(UUID id, Authentication usuario) {
+		Map<String, Object> ticket = atendimento(id);
+		conferirResponsavel(ticket, usuario);
+		exigir("FINALIZADO".equals(ticket.get("estado")), HttpStatus.CONFLICT,
+				"Atendimento não está finalizado");
+		Long abertos = banco.queryForObject("""
+			SELECT count(*) FROM chat_atendimento WHERE canal_id=:canal AND contato_id=:contato
+			AND estado<>'FINALIZADO' AND id<>:id
+			""", parametros("canal", ticket.get("canal_id"), "contato", ticket.get("contato_id"),
+				"id", id), Long.class);
+		exigir(abertos != null && abertos == 0, HttpStatus.CONFLICT,
+				"Já existe atendimento aberto para este contato");
+		banco.update("""
+			UPDATE chat_atendimento SET estado='PENDENTE',atendente_id=NULL,
+			finalizado_em=NULL,duracao_segundos=NULL,espera_segundos=NULL,atualizado_em=NOW()
+			WHERE id=:id
+			""", parametros("id", id));
+		acao(id, usuario.getName(), "REATIVADO", null);
+	}
+
+	public List<Map<String, Object>> historicoContato(UUID id, Authentication usuario) {
+		Map<String, Object> ticket = um("SELECT * FROM chat_atendimento WHERE id=:id",
+				parametros("id", id));
+		conferirLeitura(ticket, usuario);
+		return banco.queryForList("""
+			SELECT id,protocolo,canal_id,estado,iniciado_em,finalizado_em,
+			atendente_id,setor_id,avaliacao
+			FROM chat_atendimento WHERE contato_id=:contato AND empresa_id=:empresa
+			ORDER BY iniciado_em DESC LIMIT 100
+			""", parametros("contato", ticket.get("contato_id"), "empresa", ticket.get("empresa_id")));
+	}
+
+	public String sugerirResposta(UUID id, long agenteIa, Authentication usuario) {
+		Map<String, Object> ticket = um("SELECT * FROM chat_atendimento WHERE id=:id",
+				parametros("id", id));
+		conferirLeitura(ticket, usuario);
+		exigir(!"FINALIZADO".equals(ticket.get("estado")), HttpStatus.CONFLICT,
+				"Atendimento finalizado");
+		return inteligencia.responder(((Number) ticket.get("empresa_id")).longValue(), agenteIa, id);
+	}
+
+	@Transactional
+	public void marcarMensagemLida(UUID id, long mensagem, Authentication usuario) {
+		Map<String, Object> ticket = atendimento(id);
+		conferirLeitura(ticket, usuario);
+		if (banco.update("""
+			UPDATE chat_mensagem SET lida_em=NOW(),confirmacao=3
+			WHERE id=:mensagem AND atendimento_id=:atendimento AND empresa_id=:empresa
+			""", parametros("mensagem", mensagem, "atendimento", id,
+				"empresa", ticket.get("empresa_id"))) != 1)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+	}
+
+	@Transactional
+	public void ocultarMensagem(UUID id, long mensagem, Authentication usuario) {
+		Map<String, Object> ticket = atendimento(id);
+		conferirResponsavel(ticket, usuario);
+		if (banco.update("""
+			UPDATE chat_mensagem SET excluida=TRUE,texto=NULL
+			WHERE id=:mensagem AND atendimento_id=:atendimento AND empresa_id=:empresa
+			""", parametros("mensagem", mensagem, "atendimento", id,
+				"empresa", ticket.get("empresa_id"))) != 1)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		acao(id, usuario.getName(), "MENSAGEM_OCULTADA", "Mensagem " + mensagem);
 	}
 
 	public void enviar(UUID id, String texto, Authentication usuario) {
@@ -494,15 +655,22 @@ public class ChatServico {
 		Map<String, Object> contato = um("SELECT telefone FROM chat_contato WHERE id = :id",
 				parametros("id", ticket.get("contato_id")));
 		long mensagem = ((Number) um("""
-				INSERT INTO chat_mensagem(atendimento_id, canal_id, sentido, estado, texto)
-				VALUES (:atendimento, :canal, 'SAIDA', 'ENVIANDO', :texto) RETURNING id
-				""", parametros("atendimento", id, "canal", canal, "texto", texto)).get("id")).longValue();
+				INSERT INTO chat_mensagem(empresa_id,atendimento_id,contato_id,canal_id,
+				sentido,estado,texto,destinatario,enviada_por_atendente)
+				VALUES (:empresa,:atendimento,:contato,:canal,'SAIDA','ENVIANDO',:texto,:telefone,TRUE)
+				RETURNING id
+				""", parametros("empresa", ticket.get("empresa_id"), "atendimento", id,
+					"contato", ticket.get("contato_id"), "canal", canal,
+					"telefone", contato.get("telefone"), "texto", texto)).get("id")).longValue();
 		try {
 			String externo = transporte.enviar(canal, (String) contato.get("telefone"), texto);
 			banco.update("""
 				UPDATE chat_mensagem SET estado = 'ENVIADA', identificador_externo = :externo WHERE id = :id
 				""", parametros("externo", externo, "id", mensagem));
-			banco.update("UPDATE chat_atendimento SET atualizado_em = NOW() WHERE id = :id",
+			banco.update("""
+				UPDATE chat_atendimento SET atualizado_em = NOW(),
+				primeira_resposta_em=COALESCE(primeira_resposta_em,NOW()) WHERE id = :id
+				""",
 					parametros("id", id));
 		} catch (RuntimeException erro) {
 			banco.update("UPDATE chat_mensagem SET estado = 'FALHOU' WHERE id = :id",
@@ -513,8 +681,9 @@ public class ChatServico {
 
 	private void acao(UUID atendimento, String ator, String tipo, String descricao) {
 		banco.update("""
-				INSERT INTO chat_acao(atendimento_id, ator, tipo, descricao)
-				VALUES (:atendimento, :ator, :tipo, :descricao)
+				INSERT INTO chat_acao(empresa_id, atendimento_id, ator, tipo, descricao)
+				SELECT empresa_id, id, :ator, :tipo, :descricao
+				FROM chat_atendimento WHERE id = :atendimento
 				""", parametros("atendimento", atendimento, "ator", ator,
 					"tipo", tipo, "descricao", descricao));
 	}

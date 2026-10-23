@@ -1,0 +1,34 @@
+.faixa em{color:var(--lima)}
+.submenu{margin-bottom:14px}
+.filtro-ia{display:flex;align-items:end;gap:10px;margin:22px 0 0;padding:15px;border:1px solid var(--linha);border-radius:14px;background:#11291c}
+.filtro-ia label{flex:1;display:grid;gap:7px;color:var(--lima);font-size:10px;font-weight:800;letter-spacing:.14em}
+.filtro-ia input{width:100%;min-height:47px;padding:10px 14px;border:1px solid var(--linha);border-radius:8px;background:var(--fundo);color:var(--texto);font:500 13px Inter,sans-serif;letter-spacing:0}
+.filtro-ia button{min-height:47px;white-space:nowrap}
+.filtros-ia{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 0;color:var(--apoio);font-size:11px}
+.filtros-ia span{padding:6px 10px;border:1px solid var(--linha);border-radius:999px;background:#214331}
+#painel-detalhes{border-top-color:var(--laranja)}
+#lista-detalhes .registro{align-items:stretch}
+.abas-bot{display:flex;align-items:end;gap:4px;grid-column:1/-1;margin:6px 0 0;border-bottom:2px solid var(--linha);overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.abas-bot::-webkit-scrollbar{display:none}
+.abas-bot button{min-height:44px;margin-bottom:-2px;border:2px solid var(--linha);border-radius:14px 14px 0 0;background:#214331;color:var(--apoio);white-space:nowrap;box-shadow:none}
+.abas-bot button:hover{box-shadow:none}
+.abas-bot button[aria-selected=true]{border-color:var(--lima);border-bottom-color:var(--painel);background:var(--painel);color:var(--lima)}
+.grupo-bot{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:18px;padding:22px;border:1px solid var(--linha);border-radius:0 10px 10px;background:#11291c}
+.grupo-bot[hidden]{display:none}
+.grupo-bot h3{grid-column:1/-1;margin:0;color:var(--lima);font:18px 'Archivo Black',sans-serif}
+.grupo-bot p{grid-column:1/-1;margin:0;color:var(--apoio);font-size:12px}
+.grupo-bot label:has(textarea){grid-column:1/-1}
+.grupo-bot pre{grid-column:1/-1;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--apoio);font-size:11px}
+.horarios{grid-column:1/-1;display:grid;gap:8px}
+.horarios.desabilitados{opacity:.4}
+.horario-dia{display:grid;grid-template-columns:minmax(110px,1fr) repeat(2,minmax(110px,170px)) 120px;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--linha);border-radius:8px;background:var(--painel)}
+.horario-dia label{display:flex;align-items:center;gap:8px;min-width:0}
+.horario-dia input[type=time]{min-height:38px}
+.grupo-bot .ajuda{grid-column:1/-1;border-left:3px solid var(--laranja);padding:8px 12px;background:#1a3525}
+.grupo-bot[data-grupo=fluxo] textarea{min-height:420px}
+.barra-fluxo{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--apoio);font-size:12px;font-weight:700}
+.bot-acoes-form{grid-column:1/-1;display:flex;gap:10px;justify-content:flex-end;padding-top:4px}
+.bot-acoes-form button{min-width:155px}
+.bot-sessoes{grid-column:1/-1;display:grid;gap:10px}
+.bot-sessoes .registro{background:var(--painel)}
+@media(max-width:760px){.filtro-ia{flex-direction:column;align-items:stretch}.horario-dia{grid-template-columns:1fr 1fr}.horario-dia>label:first-child{grid-column:1/-1}.horario-dia input[type=time]{width:100%}.grupo-bot{padding:14px}}

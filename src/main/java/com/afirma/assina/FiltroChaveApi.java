@@ -29,7 +29,9 @@ public class FiltroChaveApi extends OncePerRequestFilter {
 		return !"/api/pdfs/assinar".equals(caminho)
 				&& !caminho.startsWith("/api/advai/")
 				&& !caminho.startsWith("/api/envelopes")
-				&& (!caminho.startsWith("/api/chat/") || "/api/chat/interno/eventos".equals(caminho));
+				&& !caminho.startsWith("/api/relacionamento/")
+				&& (!caminho.startsWith("/api/chat/") || "/api/chat/interno/eventos".equals(caminho)
+					|| "/api/chat/interno/chatwoot".equals(caminho));
 	}
 
 	@Override

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Canais | TalkAtive | aFIRMA</title>
+  <link rel="stylesheet" href="/css/chat-integrado.css">
+  <link rel="stylesheet" href="/css/chat-tabela.css">
+  <link rel="stylesheet" href="/css/chat-canais.css">
+  <script src="/js/chat-canais.js" defer></script>
+</head>
+<body th:attr="data-token-teste=${tokenTeste},data-chave-teste=${chaveTeste}">
+  <header class="topo">
+    <a class="marca" href="/" aria-label="aFIRMA, início">aFIRMA<span>.</span></a>
+    <nav aria-label="Módulos da aFirma">
+      <a href="/assinatura">AssineAi</a>
+      <a class="ativo" href="/chat">TalkAtive</a>
+      <a href="/advai">ADVai</a>
+    </nav>
+    <span class="identificador">GESTÃO DE CANAIS</span>
+  </header>
+  <main>
+    <div class="faixa">
+      <div><span class="etiqueta">02 / TALKATIVE</span><h1>CANAIS <em>DA FIRMA.</em></h1></div>
+      <p>Cadastre, conecte e acompanhe números WhatsApp.</p>
+    </div>
+    <nav class="submenu" aria-label="Gestão TalkAtive">
+      <a href="/chat">Conversas</a>
+      <a href="/chat/canais" aria-current="page">Canais</a>
+      <a href="/chat/gestao">Gestão</a>
+    </nav>
+    <p id="aviso" role="status" aria-live="polite"></p>
+    <section id="acesso" class="painel">
+      <h2>ACESSO À GESTÃO</h2>
+      <p>Use credenciais da aFIRMA com permissão para gerir o chat.</p>
+      <form id="form-acesso" class="campos">
+        <label>Token de acesso<input name="token" type="password" autocomplete="off" required></label>
+        <label>Chave de API<input name="chave" type="password" autocomplete="off" required></label>
+        <button type="submit">Carregar canais</button>
+        <button id="teste" type="button" hidden>Usar credenciais locais</button>
+      </form>
+    </section>
+    <div id="gestao" hidden>
+      <section class="painel painel-tabela">
+        <div class="cabecalho"><div><small>CANAIS DA FIRMA</small><h2>CANAIS CADASTRADOS</h2></div><div class="acoes-topo"><button id="atualizar" type="button" class="secundario">Atualizar</button><button id="novo-canal" type="button">Novo canal</button></div></div>
+        <div class="barra-tabela"><label class="busca-tabela"><span>BUSCA NOS CANAIS</span><input id="busca-canais" type="search" placeholder="Nome, número ou estado" autocomplete="off"></label><div class="resumo-tabela"><span id="resumo-canais"></span><span id="selecionados-canais"></span><button id="exportar-canais" type="button" class="secundario" disabled>Exportar seleção</button></div></div>
+        <div class="grade-rolagem"><table class="tabela-firma" id="canais"><thead><tr><th class="selecao"><input id="selecionar-todos-canais" type="checkbox" aria-label="Selecionar todos os canais"></th><th><span>Canal</span></th><th><span>Telefone</span></th><th><span>Conexão</span></th><th><span>Situação</span></th><th><span>Ações</span></th></tr></thead><tbody></tbody></table></div>
+      </section>
+      <section id="painel-cadastro-canal" class="painel painel-formulario" hidden>
+        <div class="cabecalho"><h2>NOVO CANAL WHATSAPP</h2><button id="fechar-canal" type="button" class="secundario">Fechar</button></div>
+        <p>O cadastro nasce na aFIRMA. A conexão usa a ponte Baileys atual.</p>
+        <form id="form-canal" class="campos">
+          <label>Nome<input name="nome" maxlength="80" required></label>
+          <label>Telefone com DDI<input name="telefone" inputmode="numeric" pattern="[0-9]{8,15}" required></label>
+          <label>Setor padrão<select name="setor"><option value="">Sem setor padrão</option></select></label>
+          <button type="submit">Criar canal</button>
+        </form>
+      </section>
+      <section id="painel-qr" class="painel" hidden>
+        <h2>CONEXÃO WHATSAPP</h2>
+        <p id="estado-qr"></p>
+        <img id="imagem-qr" alt="QR para conectar canal WhatsApp" hidden>
+        <button id="atualizar-qr" type="button">Atualizar QR</button>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

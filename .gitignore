@@ -44,3 +44,4 @@ build/
 # Sessões WhatsApp e dependências Node
 chat-baileys/dados/
 chat-baileys/node_modules/
+chat-arquivos/

@@ -47,14 +47,20 @@ public class SegurancaApi {
 				.sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(regras -> regras
 					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/preparar-assinaturas",
-							"/convite/**", "/chat", "/advai", "/css/**", "/js/**").permitAll()
+							"/convite/**", "/chat", "/chat/canais", "/chat/gestao",
+							"/advai", "/css/**", "/js/**").permitAll()
 					.requestMatchers("/api/convites/**").permitAll()
 					.requestMatchers("/api/advai/**").hasAuthority("SCOPE_pdf.sign")
 					.requestMatchers("/api/envelopes/**").hasAuthority("SCOPE_pdf.sign")
 					.requestMatchers(HttpMethod.POST, "/api/envelopes").hasAuthority("SCOPE_pdf.sign")
 						.requestMatchers(HttpMethod.POST, "/api/blockchain/**").permitAll()
 						.requestMatchers(HttpMethod.POST, "/api/chat/interno/eventos").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/chat/interno/chatwoot").permitAll()
+						.requestMatchers("/api/canais/oficiais/webhook").permitAll()
+						.requestMatchers("/api/canais/oficiais/**").hasAuthority("SCOPE_chat.manage")
+						.requestMatchers("/api/integracoes/v1/**").permitAll()
 						.requestMatchers("/api/chat/admin/**").hasAuthority("SCOPE_chat.manage")
+						.requestMatchers("/api/relacionamento/**").hasAuthority("SCOPE_chat.manage")
 						.requestMatchers("/api/chat/**").hasAnyAuthority("SCOPE_chat.use", "SCOPE_chat.manage")
 						.requestMatchers(HttpMethod.POST, "/api/pdfs/assinar").hasAuthority("SCOPE_pdf.sign")
 						.anyRequest().denyAll())
