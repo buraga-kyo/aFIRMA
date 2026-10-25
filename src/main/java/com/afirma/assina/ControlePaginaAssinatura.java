@@ -16,6 +16,11 @@ public class ControlePaginaAssinatura {
 		return "assinatura";
 	}
 
+	@GetMapping("/assinatura/documentos")
+	public String documentos() {
+		return "documentos-assinatura";
+	}
+
 	@GetMapping("/preparar-assinaturas")
 	public String prepararAssinaturas() { return "preparar-assinaturas"; }
 

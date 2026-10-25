@@ -117,7 +117,16 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwODAvbG9
 ## Para fodidos, certificados vencidos....
 Para testar com certificado vencido, coloque `APP_PERMITIR_CERTIFICADO_VENCIDO=true` no `.env` e reinicie a aplicação. O padrão é `false`. A opção vale para todas as assinaturas enquanto estiver ativa, inclusive pela tela. Ela permite apenas certificado vencido; PDF, chave privada e senha continuam obrigatórios. Volte para `false` após o teste.
 
+## Lista de documentos do AssineAi
+
+Abra `http://127.0.0.1:8080/assinatura/documentos`. A tela exige chave da API e JWT com escopo `pdf.sign`; no perfil `local-test`, use as credenciais locais descritas acima. O título abre o PDF, e a lista mostra os envelopes criados pelo usuário autenticado. A exclusão é lógica e invalida os convites do documento.
+
+Para guardar novos PDFs no MinIO, configure `ASSINEAI_MINIO_ENDPOINT`, `ASSINEAI_MINIO_ACCESS_KEY`, `ASSINEAI_MINIO_SECRET_KEY` e `ASSINEAI_MINIO_BUCKET` no `.env` (veja `.env.example`), depois execute `docker compose up -d`. Registros antigos com PDF no PostgreSQL continuam legíveis. Sem essas variáveis, o armazenamento anterior continua ativo.
+
+O plano de busca usa GPT quando `ASSINEAI_GPT_API_KEY` está configurada; `ASSINEAI_GPT_MODEL` é opcional. A API apenas retorna o plano, e a tela pede confirmação antes de aplicar os filtros. O contrato próprio do sprintIA ainda não foi fornecido.
+
 ## Para quem não gosta de tela, vai toma no curl....
+
 ```curl
 curl -f 'http://localhost:8080/api/pdfs/assinar' \          
 -H 'Authorization: Bearer eyJhbGciOi1NiIsInR5cCI6IkpXVCIsImtpZCI6IjJ5dFNQMXlSVlNESENEbC1JeVEwNiJ9.eyJpc3MiOiJodHRwczovL2Rldi12cmI1cDhoN3RveWpzZnlyLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJCaUJpOWhWQnZ5ZWxPZ21HandCVzZBUjg1RUJGNldFNUBjbGllbnRzIiwiYXVkIjoiYWZpcm1hLmxvY2FsIiwiaWF0IjoxNzkyMDY0OTg5LCJleHAiOjE3OTIxNTEzODksInNjb3BlIjoicGRmLnNpZ24iLCJndHkiOiJjbGllbnQtY3JlZGVudGlhbHMiLCJhenAiOiJCaUJpOWhWQnZ5ZWxPZ21HandCVzZBUjg1RUJGNldFNSJ9.XUjrPXhq-lzj7voN-WfDE47aClJ18-2MsdxIrHkUDdKYDiVHVSu9dX8wi0lA4-WmTnHFVp_au22n2fFkj5eYUtiyuRnNzETJsMJrDfqUevfczk9XQ9JNdwi7Ul9DtEU4dUsL_RxhYIDfqbv8de_K4DrHP9oCnMoxoMXUW1sp8yxp33rCu4nK0aTdByNZB_UZUiabxOrmWUw0jM8X3kYVcIgcqwWA7YL4C2sedDO8m-CT6MQ6pAEsK-Z7LD7FRasvEMnvFka4GMW_g-ezGjA2fJU2JdFykHKV0E-rqBP5dPHO6OJ2yjMAvPbSrEpsx9QLgl3NOQyvk--jL5-TeBoofQ' \

@@ -10,7 +10,7 @@
   <script th:src="@{/js/preparar-assinaturas.js}" src="/js/preparar-assinaturas.js" defer></script>
 </head>
 <body>
-  <header class="topo"><a class="marca" href="/assinatura">SUA EMPRESA<span class="marca-ponto">.</span></a><span class="topo-selo">PREPARAR ASSINATURAS</span></header>
+  <header class="topo"><a class="marca" href="/assinatura">aFIRMA<span class="marca-ponto">.</span></a><span class="topo-selo">PREPARAR ASSINATURAS</span></header>
   <main>
     <section class="apresentacao"><div class="apresentacao-texto"><span class="sobretitulo"><span class="indicador"></span> CONVITES INDIVIDUAIS</span><h1>PREPARE O<br><span>DOCUMENTO.</span></h1><p>Adicione signatários. Posicione assinatura, rubrica e selfie nas páginas do PDF.</p></div></section>
     <section class="area-trabalho" aria-label="Preparação das assinaturas">
@@ -43,6 +43,6 @@
       <section id="finalizacao" class="etapa" hidden><h2>FINALIZAR COM CERTIFICADO DA EMPRESA</h2><p id="aviso-finalizacao">Acompanhe o PDF atualizado após cada assinatura.</p><div class="campos"><div class="campo campo-largo"><label for="certificado-final">CERTIFICADO PFX OU P12</label><input id="certificado-final" type="file" accept=".pfx,.p12" required></div><div class="campo"><label for="senha-final">SENHA</label><input id="senha-final" type="password" autocomplete="off" required></div><div class="campo-largo"><label class="escolha-pagina"><input id="pagina-final" type="checkbox">Adicionar página de comprovante da empresa</label></div><div class="campo campo-largo" id="grupo-imagem-final" hidden><label for="imagem-final">IMAGEM DA EMPRESA (OPCIONAL)</label><input id="imagem-final" type="file" accept="image/png,image/jpeg"></div></div><button id="finalizar-envelope" class="botao-carteira" type="button">ASSINAR PDF FINAL</button><a id="baixar-final" class="botao-baixar" hidden download="documento-assinado.pdf">BAIXAR PDF ↗</a></section>
     </section>
   </main>
-  <footer><span id="rodape-empresa">SUA EMPRESA</span><span>DOCUMENTOS ASSINADOS COM IDENTIDADE.</span></footer>
+  <footer><span id="rodape-empresa">aFIRMA.</span><span>DOCUMENTOS ASSINADOS COM IDENTIDADE.</span></footer>
 </body>
 </html>
