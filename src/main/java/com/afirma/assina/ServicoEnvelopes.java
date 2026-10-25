@@ -33,17 +33,19 @@ public class ServicoEnvelopes {
 	private final ValidadorPedidoAssinatura validador;
 	private final ServicoCamposPdf pdfs;
 	private final ServicoAssinaturaPdf assinador;
+	private final ArmazenamentoMinio armazenamento;
 
 	public ServicoEnvelopes(RepositorioEnvelopeAssinatura envelopes,
 			RepositorioSignatarioEnvelope signatarios, RepositorioCampoAssinatura campos,
 			ValidadorPedidoAssinatura validador, ServicoCamposPdf pdfs,
-			ServicoAssinaturaPdf assinador) {
+			ServicoAssinaturaPdf assinador, ArmazenamentoMinio armazenamento) {
 		this.envelopes = envelopes;
 		this.signatarios = signatarios;
 		this.campos = campos;
 		this.validador = validador;
 		this.pdfs = pdfs;
 		this.assinador = assinador;
+		this.armazenamento = armazenamento;
 	}
 
 	@Transactional
@@ -62,8 +64,11 @@ public class ServicoEnvelopes {
 		if (nomeArquivo.length() > 255) nomeArquivo = nomeArquivo.substring(0, 255);
 		UUID identificador = UUID.randomUUID();
 		Instant agora = Instant.now();
-		envelopes.save(new EnvelopeAssinatura(identificador, pedido.nomeEmpresa().strip(),
-				nomeArquivo, criador, pdf, agora, agora.plusSeconds(7 * 86400)));
+		EnvelopeAssinatura novoEnvelope = new EnvelopeAssinatura(identificador, pedido.nomeEmpresa().strip(),
+				nomeArquivo, criador, pdf, agora, agora.plusSeconds(7 * 86400));
+		if (armazenamento.ativo())
+			novoEnvelope.guardarOriginalNoMinio(armazenamento.guardar(identificador, "original", pdf));
+		envelopes.save(novoEnvelope);
 		List<ConviteCriado> convites = new ArrayList<>();
 		int totalCampos = 0;
 		for (SignatarioNovo novo : pedido.signatarios()) {
@@ -120,12 +125,13 @@ public class ServicoEnvelopes {
 		SignatarioEnvelope signatario = obterConvite(token);
 		EnvelopeAssinatura envelope = envelopes.findById(signatario.getEnvelopeId())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		validarAtivo(envelope);
 		validarPrazoConvite(envelope);
 		List<CampoResposta> posicoes = campos.findBySignatarioId(signatario.getId()).stream()
 				.map(campo -> new CampoResposta(campo.getTipo(), campo.getPagina(), campo.getPosicaoX(),
 						campo.getPosicaoY(), campo.getLargura(), campo.getAltura())).toList();
 		int paginas;
-		try { paginas = pdfs.paginas(envelope.getPdfAtual()); }
+		try { paginas = pdfs.paginas(pdfAtual(envelope)); }
 		catch (Exception falha) { throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR); }
 		return new DadosConvite(envelope.getNomeEmpresa(), envelope.getNomeDocumento(), paginas,
 				signatario.getNome(), signatario.getAssinadoEm() != null,
@@ -137,6 +143,7 @@ public class ServicoEnvelopes {
 		SignatarioEnvelope signatario = obterConvite(token);
 		EnvelopeAssinatura envelope = envelopes.findById(signatario.getEnvelopeId())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		validarAtivo(envelope);
 		validarPrazoConvite(envelope);
 		return pdfDisponivel(envelope);
 	}
@@ -152,10 +159,11 @@ public class ServicoEnvelopes {
 		if (signatario.getAssinadoEm() == null) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 		EnvelopeAssinatura envelope = envelopes.findById(signatario.getEnvelopeId())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		validarAtivo(envelope);
 		validarPrazoConvite(envelope);
-		if (envelope.getPdfFinal() == null) throw new ResponseStatusException(HttpStatus.CONFLICT,
+		if (!temFinal(envelope)) throw new ResponseStatusException(HttpStatus.CONFLICT,
 				"Documento ainda não finalizado");
-		return envelope.getPdfFinal();
+		return pdfFinal(envelope);
 	}
 
 	@Transactional
@@ -167,6 +175,7 @@ public class ServicoEnvelopes {
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Convite inválido"));
 		EnvelopeAssinatura envelope = envelopes.buscarParaFinalizar(convidado.getEnvelopeId())
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		validarAtivo(envelope);
 		SignatarioEnvelope signatario = signatarios.buscarConviteParaAssinar(resumoConvite)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Convite inválido"));
 		if (Instant.now().isAfter(envelope.getExpiraEm())) throw new ResponseStatusException(HttpStatus.GONE,
@@ -180,11 +189,13 @@ public class ServicoEnvelopes {
 		byte[] fotografia = validarMarca(selfie, tipos.contains(CampoAssinatura.Tipo.SELFIE));
 		String ip = enderecoIp == null ? "" : enderecoIp.substring(0, Math.min(64, enderecoIp.length()));
 		signatario.assinar(desenho, inicial, fotografia, ip, Instant.now());
-		if (envelope.getPdfFinal() != null) throw new ResponseStatusException(HttpStatus.CONFLICT,
+		if (temFinal(envelope)) throw new ResponseStatusException(HttpStatus.CONFLICT,
 				"Documento já finalizado");
 		List<SignatarioEnvelope> participantes = envelope.temPdfAtual()
 				? List.of(signatario) : signatarios.findByEnvelopeIdOrderByNome(envelope.getId());
-		envelope.atualizarPdf(pdfs.aplicar(envelope.getPdfAtual(), marcas(participantes)));
+		byte[] atualizado = pdfs.aplicar(pdfAtual(envelope), marcas(participantes));
+		if (armazenamento.ativo()) envelope.guardarAtualNoMinio(armazenamento.guardar(envelope.getId(), "atual", atualizado));
+		else envelope.atualizarPdf(atualizado);
 	}
 
 	@Transactional
@@ -192,8 +203,9 @@ public class ServicoEnvelopes {
 			boolean paginaPersonalizada, MultipartFile imagemEmpresa) throws Exception {
 		EnvelopeAssinatura envelope = envelopes.buscarParaFinalizar(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		validarAtivo(envelope);
 		if (!envelope.getCriador().equals(criador)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-		if (envelope.getPdfFinal() != null) return envelope.getPdfFinal();
+		if (temFinal(envelope)) return pdfFinal(envelope);
 		List<SignatarioEnvelope> participantes = signatarios.findByEnvelopeIdOrderByNome(id);
 		if (participantes.isEmpty() || participantes.stream().anyMatch(s -> s.getAssinadoEm() == null)) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Ainda há assinaturas pendentes");
@@ -202,14 +214,15 @@ public class ServicoEnvelopes {
 			throw erro("Certificado e senha são obrigatórios");
 		}
 		if (certificado.getSize() > 2 * 1024 * 1024) throw erro("Certificado deve ter até 2 MB");
-		byte[] pdf = envelope.temPdfAtual() ? envelope.getPdfAtual()
-				: pdfs.aplicar(envelope.getPdfOriginal(), marcas(participantes));
+		byte[] pdf = envelope.temPdfAtual() ? pdfAtual(envelope)
+				: pdfs.aplicar(pdfOriginal(envelope), marcas(participantes));
 		byte[] marcaEmpresa = imagemEmpresa == null ? null : validarImagem(imagemEmpresa, false);
 		char[] segredo = senha.toCharArray();
 		try {
 			byte[] finalizado = assinador.assinar(pdf, certificado.getBytes(), segredo, false,
 					paginaPersonalizada, envelope.getNomeEmpresa(), marcaEmpresa);
 			envelope.finalizar(finalizado, Instant.now());
+			if (armazenamento.ativo()) envelope.guardarFinalNoMinio(armazenamento.guardar(envelope.getId(), "final", finalizado));
 			participantes.forEach(SignatarioEnvelope::limparImagens);
 			return finalizado;
 		} finally {
@@ -224,10 +237,29 @@ public class ServicoEnvelopes {
 	}
 
 	private byte[] pdfDisponivel(EnvelopeAssinatura envelope) throws Exception {
-		if (envelope.getPdfFinal() != null) return envelope.getPdfFinal();
-		if (envelope.temPdfAtual()) return envelope.getPdfAtual();
-		return pdfs.aplicar(envelope.getPdfOriginal(),
+		if (temFinal(envelope)) return pdfFinal(envelope);
+		if (envelope.temPdfAtual()) return pdfAtual(envelope);
+		return pdfs.aplicar(pdfOriginal(envelope),
 				marcas(signatarios.findByEnvelopeIdOrderByNome(envelope.getId())));
+	}
+
+	private boolean temFinal(EnvelopeAssinatura envelope) {
+		return envelope.getPdfFinal() != null || envelope.getPdfFinalChaveMinio() != null;
+	}
+
+	private byte[] pdfOriginal(EnvelopeAssinatura envelope) {
+		return envelope.getPdfOriginalChaveMinio() == null ? envelope.getPdfOriginal()
+				: armazenamento.ler(envelope.getPdfOriginalChaveMinio());
+	}
+
+	private byte[] pdfAtual(EnvelopeAssinatura envelope) {
+		return envelope.getPdfAtualChaveMinio() != null ? armazenamento.ler(envelope.getPdfAtualChaveMinio())
+				: envelope.temPdfAtual() ? envelope.getPdfAtual() : pdfOriginal(envelope);
+	}
+
+	private byte[] pdfFinal(EnvelopeAssinatura envelope) {
+		return envelope.getPdfFinalChaveMinio() == null ? envelope.getPdfFinal()
+				: armazenamento.ler(envelope.getPdfFinalChaveMinio());
 	}
 
 	private List<ServicoCamposPdf.Marca> marcas(List<SignatarioEnvelope> participantes) {
@@ -249,8 +281,13 @@ public class ServicoEnvelopes {
 	private EnvelopeAssinatura obterEnvelope(UUID id, String criador) {
 		EnvelopeAssinatura envelope = envelopes.findById(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+		validarAtivo(envelope);
 		if (!envelope.getCriador().equals(criador)) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		return envelope;
+	}
+
+	private void validarAtivo(EnvelopeAssinatura envelope) {
+		if (envelope.getExcluidoEm() != null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 	}
 
 	private SignatarioEnvelope obterConvite(String token) {

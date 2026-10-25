@@ -36,8 +36,8 @@ if (new URLSearchParams(location.search).get('origem') === 'advai') {
 }
 
 empresa.addEventListener('input', () => {
-  document.querySelector('.marca').firstChild.textContent = empresa.value.trim() || 'SUA EMPRESA';
-  document.getElementById('rodape-empresa').textContent = empresa.value.trim() || 'SUA EMPRESA';
+  document.querySelector('.marca').firstChild.textContent = empresa.value.trim() || 'aFIRMA.';
+  document.getElementById('rodape-empresa').textContent = empresa.value.trim() || 'aFIRMA.';
 });
 
 function mostrarErro(mensagem) {
