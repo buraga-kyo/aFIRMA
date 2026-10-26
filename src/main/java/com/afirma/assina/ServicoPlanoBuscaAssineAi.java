@@ -1,15 +1,9 @@
 package com.afirma.assina;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import org.springframework.core.env.Environment;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,48 +14,49 @@ import tools.jackson.databind.ObjectMapper;
 public class ServicoPlanoBuscaAssineAi {
 	public record Etapa(String op, String column, String type, String value, String from, String to, String dir) { }
 	public record Plano(List<Etapa> steps, String summary) { }
-	private final Environment ambiente;
+	
 	private final ObjectMapper json;
-	private final HttpClient cliente = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+	private final ChatClient chatClient;
 
-	public ServicoPlanoBuscaAssineAi(Environment ambiente, ObjectMapper json) {
-		this.ambiente = ambiente;
+	public ServicoPlanoBuscaAssineAi(ObjectMapper json, ChatClient.Builder chatClientBuilder) {
 		this.json = json;
+		this.chatClient = chatClientBuilder.build();
 	}
 
 	public Plano interpretar(String consulta) {
 		if (consulta == null || consulta.isBlank() || consulta.length() > 500)
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consulta inválida");
-		String chave = ambiente.getProperty("ASSINEAI_GPT_API_KEY");
-		if (chave == null || chave.isBlank())
-			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-					"Configure ASSINEAI_GPT_API_KEY para habilitar o plano de IA");
-		String modelo = ambiente.getProperty("ASSINEAI_GPT_MODEL", "gpt-4o-mini");
-		String instrucao = "Converta a intenção em operações da tabela de documentos de assinatura. "
-				+ "Responda APENAS JSON: {\"steps\":[{\"op\":\"column-filter\",\"column\":\"status\",\"type\":\"equals\",\"value\":\"Pendente\"}],\"summary\":\"...\"}. "
-				+ "Colunas: id,titulo,data,responsavel,status,quantidadeAssinaturas,signatarios. "
-				+ "Operações: column-filter com type equals ou contains e value; column-filter com type range, from e to; "
-				+ "sort com column e dir asc ou desc. Máximo 5 etapas. "
-				+ "Não invente campos nem operações; se não puder representar, retorne steps vazio. Não execute nada.";
+
+		String instrucao = "Você é um assistente de conversão de filtros. Converta a busca do usuário em operações para uma tabela de documentos. "
+				+ "Responda EXCLUSIVAMENTE em formato JSON puro, sem blocos markdown (```json). "
+				+ "Formato exigido: {\"steps\":[{\"op\":\"column-filter\",\"column\":\"status\",\"type\":\"equals\",\"value\":\"Assinado\"}],\"summary\":\"...\"}. "
+				+ "Colunas aceitas: id, titulo, data, responsavel, status, quantidadeAssinaturas, signatarios. "
+				+ "Operações suportadas: 'column-filter' com type 'equals' ou 'contains' e 'value'; ou type 'range' com 'from' e 'to'. "
+				+ "Ordenação: op 'sort' com 'column' e 'dir' ('asc' ou 'desc'). "
+				+ "Mapeamento obrigatório: 'assinados' ou 'concluídos' -> status equals 'Assinado'. 'pendentes' -> status equals 'Pendente'. 'andamento' ou 'progresso' -> status equals 'Em Processo'. "
+				+ "Retorne no máximo 5 etapas. Não invente campos. Se não entender, retorne steps vazio.";
+		
 		try {
-			String corpo = json.writeValueAsString(Map.of("model", modelo, "temperature", 0,
-					"max_tokens", 500, "messages", List.of(
-						Map.of("role", "system", "content", instrucao),
-						Map.of("role", "user", "content", consulta))));
-			HttpRequest pedido = HttpRequest.newBuilder(URI.create("https://api.openai.com/v1/chat/completions"))
-					.timeout(Duration.ofSeconds(25)).header("Authorization", "Bearer " + chave)
-					.header("Content-Type", "application/json")
-					.POST(HttpRequest.BodyPublishers.ofString(corpo)).build();
-			HttpResponse<String> resposta = cliente.send(pedido, HttpResponse.BodyHandlers.ofString());
-			if (resposta.statusCode() < 200 || resposta.statusCode() >= 300)
-				throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "GPT recusou a consulta");
-			JsonNode resultado = json.readTree(json.readTree(resposta.body()).path("choices").path(0)
-					.path("message").path("content").asText(""));
+			String jsonResponse = this.chatClient.prompt()
+					.system(instrucao)
+					.user(consulta)
+					.call()
+					.content();
+					
+			if (jsonResponse == null) {
+				throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "IA não retornou resposta");
+			}
+
+			jsonResponse = jsonResponse.replace("```json", "").replace("```", "").trim();
+			JsonNode resultado = json.readTree(jsonResponse);
+
 			if (!resultado.path("steps").isArray() || resultado.path("steps").size() > 5)
 				throw new IllegalArgumentException("Plano inválido");
+				
 			List<Etapa> etapas = new ArrayList<>();
 			List<String> campos = List.of("id", "titulo", "data", "responsavel", "status",
 					"quantidadeAssinaturas", "signatarios");
+					
 			for (JsonNode item : resultado.path("steps")) {
 				Etapa etapa = new Etapa(item.path("op").asText(""), item.path("column").asText(""),
 						item.path("type").asText(""), item.path("value").asText(""),
@@ -71,11 +66,14 @@ public class ServicoPlanoBuscaAssineAi {
 					throw new IllegalArgumentException("Operação fora da interface");
 				etapas.add(etapa);
 			}
+			
 			return new Plano(etapas, resultado.path("summary").asText("").substring(0,
 						Math.min(200, resultado.path("summary").asText("").length())));
 		} catch (ResponseStatusException erro) { throw erro; }
 		catch (Exception erro) {
 			if (erro instanceof InterruptedException) Thread.currentThread().interrupt();
+			System.err.println("Erro ao chamar a IA: " + erro.getMessage());
+			erro.printStackTrace();
 			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Não foi possível gerar o plano", erro);
 		}
 	}

@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import java.io.IOException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -50,6 +52,77 @@ public class ControleDocumentosAssinatura {
 							pessoas.stream().map(p -> new SignatarioLista(p.getNome(), p.getEmail(),
 									p.getAssinadoEm())).toList());
 				}).toList();
+	}
+
+	@GetMapping(value = "/importar/modelo", produces = "text/csv")
+	public ResponseEntity<byte[]> modeloImportacao() {
+		String cabecalho = "titulo;data;responsavel;status;quantidadeAssinaturas;signatarios\n";
+		String exemplo = "Contrato de Prestação de Serviços;25/10/2026;João da Silva;Pendente;2;joao@empresa.com,maria@empresa.com\n";
+		byte[] conteudo = (cabecalho + exemplo).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+		return ResponseEntity.ok()
+				.header("Content-Disposition", "attachment; filename=\"modelo_importacao.csv\"")
+				.body(conteudo);
+	}
+
+	@PostMapping(value = "/importar", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Transactional
+	public ResponseEntity<String> importarDocumentos(@org.springframework.web.bind.annotation.RequestParam("arquivo") org.springframework.web.multipart.MultipartFile arquivo, Principal usuario) {
+		if (arquivo.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Arquivo vazio");
+		}
+		String nomeArquivo = arquivo.getOriginalFilename();
+		if (nomeArquivo == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome de arquivo inválido");
+		}
+		String nomeLower = nomeArquivo.toLowerCase();
+		if (!nomeLower.endsWith(".csv") && !nomeLower.endsWith(".xlsx") && !nomeLower.endsWith(".xls")) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Apenas arquivos Excel ou CSV são permitidos");
+		}
+
+		if (nomeLower.endsWith(".csv")) {
+			try {
+				String conteudoCsv = new String(arquivo.getBytes(), java.nio.charset.StandardCharsets.UTF_8);
+				String[] linhas = conteudoCsv.split("\n");
+				java.time.format.DateTimeFormatter formatador = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+				java.time.ZoneId zone = java.time.ZoneId.systemDefault();
+				for (int i = 1; i < linhas.length; i++) {
+					String linha = linhas[i].trim();
+					if (linha.isEmpty()) continue;
+					String[] colunas = linha.split(";");
+					if (colunas.length >= 6) {
+						String titulo = colunas[0].trim();
+						String dataTexto = colunas[1].trim();
+						String responsavel = colunas[2].trim();
+						String signatariosRaw = colunas[5].trim();
+						try {
+							java.time.LocalDate dataLocal = java.time.LocalDate.parse(dataTexto, formatador);
+							Instant criadoEm = dataLocal.atStartOfDay(zone).toInstant();
+							UUID envelopeId = UUID.randomUUID();
+							EnvelopeAssinatura env = new EnvelopeAssinatura(envelopeId, "Importação via CSV", titulo, usuario.getName(), new byte[0], criadoEm, criadoEm.plusSeconds(86400 * 30));
+							envelopes.save(env);
+							
+							if (!signatariosRaw.isEmpty()) {
+								String[] emails = signatariosRaw.split(",");
+								for (String email : emails) {
+									email = email.trim();
+									if (!email.isEmpty()) {
+										signatarios.save(new SignatarioEnvelope(UUID.randomUUID(), envelopeId, email, email, UUID.randomUUID().toString().replace("-", "")));
+									}
+								}
+							}
+						} catch (java.time.format.DateTimeParseException ex) {
+							throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Data inválida na linha " + (i + 1) + ". O formato esperado é dd/MM/yyyy");
+						}
+					}
+				}
+			} catch (IOException e) {
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erro ao ler arquivo");
+			}
+		}
+
+		return ResponseEntity.ok()
+				.contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+				.body("{\"mensagem\":\"Importação concluída com sucesso\"}");
 	}
 
 	@PatchMapping("/{id}")
