@@ -1,4 +1,11 @@
 spring:
+  ai:
+    openai:
+      api-key: ${APP_IA_TOKEN_PRINCIPAL:}
+      base-url: ${APP_IA_BASE_URL:https://generativelanguage.googleapis.com/v1beta/openai/}
+      chat:
+        options:
+          model: ${APP_IA_MODEL:gemini-2.5-pro}
   config:
     import: optional:file:./.env[.properties]
   application:

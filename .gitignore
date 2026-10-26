@@ -45,3 +45,5 @@ build/
 chat-baileys/dados/
 chat-baileys/node_modules/
 chat-arquivos/
+.tarefa
+

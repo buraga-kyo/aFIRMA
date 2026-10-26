@@ -6,28 +6,55 @@
   <title>Documentos · AssineAi</title>
   <link rel="stylesheet" href="/css/assinatura.css">
   <link rel="stylesheet" href="/css/documentos-assinatura.css">
+  <script src="/js/tabela-core.js" defer></script>
   <script src="/js/documentos-assinatura.js" defer></script>
 </head>
-<body>
+<body th:attr="data-token-teste=${tokenTeste},data-chave-teste=${chaveTeste}">
 <header class="topo topo-documentos">
   <a class="marca" href="/" aria-label="aFIRMA, início">aFIRMA<span class="marca-ponto">.</span></a>
   <nav aria-label="Módulos da aFirma"><a class="ativo" href="/assinatura">AssineAi</a><a href="/chat">TalkAtive</a><a href="/advai">ADVai</a></nav>
   <span class="identificador">ASSINATURA DIGITAL</span>
 </header>
 <main id="pagina-documentos" class="lista-documentos" data-largura="total">
-  <section class="faixa-documentos"><div><span class="etiqueta">01 / ASSINEAI</span><h1>DOCUMENTOS <em>DA FIRMA.</em></h1></div><div class="faixa-acoes"><p>Assinaturas, signatários e arquivos em um só lugar.</p></div></section>
-  <nav class="submenu-documentos" aria-label="Áreas do AssineAi"><a href="/assinatura">Assinar PDF</a><a href="/preparar-assinaturas">Preparar assinaturas</a><a href="/assinatura/documentos" aria-current="page">Documentos</a></nav>
-  <section class="acesso-lista" aria-label="Acesso à lista"><label>CHAVE DA API <input id="lista-chave" type="password" autocomplete="off"></label><label>TOKEN JWT <input id="lista-token" type="password" autocomplete="off"></label><button id="lista-conectar" type="button">✓ CONECTAR</button><span id="lista-acesso-estado" role="status">Informe as credenciais com escopo pdf.sign.</span></section>
-  <div id="chips-filtros" class="chips-filtros"></div>
+  <section class="faixa-documentos"><div><h1>TRATOR DE <em>ASSINATURA.</em></h1></div></section>
+  <div id="tabela-chips" class="chips-filtros"></div>
   <section class="lista-toolbar" aria-label="Ferramentas da lista">
-    <div class="toolbar-grupo"><a class="acao primaria" href="/preparar-assinaturas">+ INSERT</a><button id="exportar-excel" type="button">EXCEL</button><button id="exportar-pdf" type="button">PDF</button><button id="importar-excel" type="button">↑ IMPORT EXCEL</button><button id="importar-csv" type="button">↑ IMPORT CSV</button><button id="colunas-botao" type="button" aria-expanded="false">▤ SELECT COLUMNS ▾</button></div>
-    <div class="toolbar-grupo"><form id="ia-form"><label class="sr-only" for="ia-consulta">Buscar com IA</label><input id="ia-consulta" placeholder="⌁ BUSCAR COM IA…" maxlength="500"><button type="submit" aria-label="Preparar plano de busca">↵</button></form></div>
-    <div id="menu-colunas" class="menu toolbar-menu" hidden></div><div id="plano-ia" class="menu plano-ia" hidden></div>
+    <div class="toolbar-grupo"><a class="acao primaria" href="/preparar-assinaturas">+ Assinatura</a><button id="exportar-dados" type="button">↑ EXPORTAR</button><button id="importar-dados" type="button">↓ IMPORTAR</button><button id="tabela-colunas-botao" type="button" aria-expanded="false">▤ SELECT COLUMNS ▾</button></div>
+    <div class="toolbar-grupo"><form id="busca-form"><label class="sr-only" for="busca-consulta">Buscar inteligente</label><input id="busca-consulta" placeholder="⌁ BUSCAR…" maxlength="500"><button type="submit" aria-label="Preparar plano de busca">↵</button></form></div>
+    <div id="tabela-menu-colunas" class="menu toolbar-menu" hidden></div><div id="tabela-plano-busca" class="menu plano-busca" hidden></div>
   </section>
-  <section class="tabela-painel" aria-label="Lista de documentos"><div class="tabela-scroll"><table id="tabela-documentos"><colgroup id="tabela-colunas"></colgroup><thead><tr id="tabela-cabecalho"></tr></thead><tbody id="tabela-corpo"></tbody></table></div><div id="tabela-estado" class="tabela-estado" role="status"></div>
-    <footer class="lista-rodape"><button id="pagina-texto" type="button" aria-expanded="false">PAGE 1 OF 1 ▾</button><div id="menu-pagina" class="menu menu-pagina" hidden></div><button id="alternar-largura" type="button" class="acao">▤ TELA INTEIRA</button><nav id="paginacao" aria-label="Paginação"></nav></footer>
+  <section class="tabela-painel" aria-label="Lista de documentos"><div id="tabela-scroll" class="tabela-scroll"><table id="tabela-tabela"><colgroup id="tabela-colunas"></colgroup><thead><tr id="tabela-cabecalho"></tr></thead><tbody id="tabela-corpo"></tbody></table></div><div id="tabela-estado" class="tabela-estado" role="status"></div>
+    <footer class="lista-rodape"><button id="tabela-pagina-texto" type="button" aria-expanded="false">PAGE 1 OF 1 ▾</button><div id="tabela-menu-pagina" class="menu menu-pagina" hidden></div><button id="alternar-largura" type="button" class="acao">▤ TELA INTEIRA</button><nav id="tabela-paginacao" aria-label="Paginação"></nav></footer>
   </section>
   <div id="lista-toast" class="lista-toast" role="alert" hidden></div>
+  
+  <dialog id="modal-exportacao" class="modal-exportacao">
+    <div class="modal-conteudo">
+      <h2>Exportar Dados</h2>
+      <p id="export-msg"></p>
+      <div class="form-grupo">
+        <label><input type="radio" name="export-format" value="pdf" checked> PDF (Lista crua)</label>
+        <label><input type="radio" name="export-format" value="excel"> Excel</label>
+        <label><input type="radio" name="export-format" value="csv"> CSV</label>
+      </div>
+      <div class="form-grupo">
+        <label><input type="checkbox" id="export-concordo"> Concordo em exportar <span id="export-qtd"></span> registros</label>
+      </div>
+      <div class="modal-acoes">
+        <button id="btn-cancelar-export" type="button">Cancelar</button>
+        <button id="btn-confirmar-export" type="button" class="primaria" disabled>Confirmar</button>
+      </div>
+    </div>
+  </dialog>
 </main>
+
+<div class="rodape-fixo-trator">
+  <section class="acesso-lista acesso-lista-rodape" aria-label="Acesso à lista">
+    <label>CHAVE DA API <input id="lista-chave" type="password" autocomplete="off" placeholder="Chave da API"></label>
+    <label>TOKEN JWT <input id="lista-token" type="password" autocomplete="off" placeholder="Cole seu JWT"></label>
+    <button id="lista-conectar" type="button" class="acao primaria">✓ CONECTAR</button>
+    <button id="usar-credenciais-teste" type="button" class="acao">Credenciais de teste</button>
+  </section>
+</div>
 </body>
 </html>
