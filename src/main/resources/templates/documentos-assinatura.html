@@ -19,7 +19,7 @@
   <section class="faixa-documentos"><div><h1>TRATOR DE <em>ASSINATURA.</em></h1></div></section>
   <div id="tabela-chips" class="chips-filtros"></div>
   <section class="lista-toolbar" aria-label="Ferramentas da lista">
-    <div class="toolbar-grupo"><a class="acao primaria" href="/preparar-assinaturas">+ Assinatura</a><button id="exportar-dados" type="button">↑ EXPORTAR</button><button id="importar-dados" type="button">↓ IMPORTAR</button><button id="tabela-colunas-botao" type="button" aria-expanded="false">▤ SELECT COLUMNS ▾</button></div>
+    <div class="toolbar-grupo"><a class="acao primaria" href="/preparar-assinaturas">+ Assinatura</a><button id="exportar-dados" type="button">↑ EXPORTAR</button><button id="importar-dados" type="button">↓ IMPORTAR</button><button id="tabela-colunas-botao" type="button" aria-expanded="false">▤ COLUNAS ▾</button></div>
     <div class="toolbar-grupo"><form id="busca-form"><label class="sr-only" for="busca-consulta">Buscar inteligente</label><input id="busca-consulta" placeholder="⌁ BUSCAR…" maxlength="500"><button type="submit" aria-label="Preparar plano de busca">↵</button></form></div>
     <div id="tabela-menu-colunas" class="menu toolbar-menu" hidden></div><div id="tabela-plano-busca" class="menu plano-busca" hidden></div>
   </section>
@@ -32,17 +32,32 @@
     <div class="modal-conteudo">
       <h2>Exportar Dados</h2>
       <p id="export-msg"></p>
-      <div class="form-grupo">
-        <label><input type="radio" name="export-format" value="pdf" checked> PDF (Lista crua)</label>
-        <label><input type="radio" name="export-format" value="excel"> Excel</label>
-        <label><input type="radio" name="export-format" value="csv"> CSV</label>
+      <div class="form-grupo" id="botoes-formato-export" style="display: flex; gap: 8px; justify-content: center; margin: 16px 0;">
+        <button type="button" class="acao secundario" data-formato="pdf">PDF (Lista crua)</button>
+        <button type="button" class="acao secundario" data-formato="excel">Excel</button>
+        <button type="button" class="acao secundario" data-formato="csv">CSV</button>
       </div>
       <div class="form-grupo">
         <label><input type="checkbox" id="export-concordo"> Concordo em exportar <span id="export-qtd"></span> registros</label>
       </div>
       <div class="modal-acoes">
         <button id="btn-cancelar-export" type="button">Cancelar</button>
-        <button id="btn-confirmar-export" type="button" class="primaria" disabled>Confirmar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="modal-importacao" class="modal-exportacao">
+    <div class="modal-conteudo">
+      <h2>Importar Dados</h2>
+      <p>Faça o download do <a href="/modelo-importacao.csv" download>modelo de planilha</a> contendo uma linha de exemplo.</p>
+      <div class="form-grupo" style="margin: 16px 0; border: 2px dashed var(--borda); padding: 32px; text-align: center; border-radius: 8px;">
+        <label for="input-arquivo-importacao" style="cursor: pointer; display: block;">
+          <strong>Arraste e solte o arquivo aqui</strong> ou clique para selecionar
+        </label>
+        <input type="file" id="input-arquivo-importacao" accept=".csv,.xlsx" style="display: none;">
+      </div>
+      <div class="modal-acoes">
+        <button id="btn-cancelar-import" type="button">Cancelar</button>
       </div>
     </div>
   </dialog>
