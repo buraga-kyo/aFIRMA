@@ -620,7 +620,15 @@ window.aFirmaTabela = function(config) {
   }
 
   const btnColunas = $(`${config.containerId}-colunas-botao`);
-  if (btnColunas) btnColunas.addEventListener('click', () => { estado.rascunho = [...estado.visiveis]; menuColunas(); abrir(`${config.containerId}-menu-colunas`, `${config.containerId}-colunas-botao`); });
+  if (btnColunas) btnColunas.addEventListener('click', () => { 
+    estado.rascunho = [...estado.visiveis]; 
+    menuColunas(); 
+    fecharMenus();
+    const menu = $(`${config.containerId}-menu-colunas`);
+    menu.hidden = false;
+    btnColunas.setAttribute('aria-expanded', 'true');
+    posicionarMenuColunas();
+  });
 
   // Busca Plana (Se ativo)
   if (config.buscaFormId) {

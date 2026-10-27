@@ -68,7 +68,7 @@
       { id: 'responsavel', nome: 'RESPONSÁVEL', tipo: 'texto', largura: 200 },
       { id: 'status', nome: 'STATUS', tipo: 'enum', largura: 200 },
       { id: 'quantidadeAssinaturas', nome: 'ASSINATURAS', tipo: 'numero', largura: 200 },
-      { id: 'signatarios', nome: 'SIGNATÁRIOS', tipo: 'texto', largura: 200 }
+      { id: 'signatarios', nome: 'SIGNATÁRIOS', tipo: 'texto', largura: 200, formatar: (v) => Array.isArray(v) ? v.map(s => s.nome || s).join(', ') : v }
     ],
     renderAcoes: (item, acoesTd, estado, render, api) => {
       const btnEdit = document.createElement('button');
@@ -171,7 +171,7 @@
   const msgExport = $('export-msg');
   const qtdExport = $('export-qtd');
   const chkExport = $('export-concordo');
-  const btnConfirmExport = $('btn-confirmar-export');
+  const botoesExport = document.querySelectorAll('#botoes-formato-export button');
 
   btnExport.addEventListener('click', () => {
     const estado = tabela.getEstado();
@@ -186,29 +186,61 @@
     
     qtdExport.textContent = qtd;
     chkExport.checked = false;
-    btnConfirmExport.disabled = true;
+    botoesExport.forEach(b => b.disabled = true);
     modalExport.showModal();
   });
 
   chkExport.addEventListener('change', (e) => {
-    btnConfirmExport.disabled = !e.target.checked;
+    botoesExport.forEach(b => b.disabled = !e.target.checked);
   });
 
   $('btn-cancelar-export').addEventListener('click', () => {
     modalExport.close();
   });
 
-  btnConfirmExport.addEventListener('click', () => {
-    const formato = document.querySelector('input[name="export-format"]:checked').value;
+  botoesExport.forEach(b => b.addEventListener('click', (e) => {
+    const formato = e.target.dataset.formato;
     if (formato === 'pdf') {
       window.print();
     } else {
       toast(`Exportação para ${formato.toUpperCase()} não implementada`);
     }
     modalExport.close();
+  }));
+
+  const modalImport = $('modal-importacao');
+  $('importar-dados').addEventListener('click', () => modalImport.showModal());
+  $('btn-cancelar-import').addEventListener('click', () => modalImport.close());
+  
+  const inputImport = $('input-arquivo-importacao');
+  const zonaDrag = inputImport.parentElement;
+  
+  zonaDrag.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    zonaDrag.style.borderColor = 'var(--primaria, #007bff)';
+  });
+  
+  zonaDrag.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    zonaDrag.style.borderColor = 'var(--borda)';
+  });
+  
+  zonaDrag.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zonaDrag.style.borderColor = 'var(--borda)';
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      inputImport.files = e.dataTransfer.files;
+      toast(`Arquivo ${e.dataTransfer.files[0].name} selecionado. Importação não implementada.`);
+      modalImport.close();
+    }
   });
 
-  $('importar-dados').addEventListener('click', () => toast('Use a API ou botão insert'));
+  inputImport.addEventListener('change', () => {
+    if (inputImport.files && inputImport.files.length > 0) {
+      toast(`Arquivo ${inputImport.files[0].name} selecionado. Importação não implementada.`);
+      modalImport.close();
+    }
+  });
 
   // preenchimento de credenciais salvas ou dados do perfil de teste local
   const chaveGuardada = localStorage.getItem('assineai-chave');
