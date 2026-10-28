@@ -10,25 +10,32 @@
   <script th:src="@{/js/preparar-assinaturas.js}" src="/js/preparar-assinaturas.js" defer></script>
 </head>
 <body>
-  <header class="topo"><a class="marca" href="/assinatura">aFIRMA<span class="marca-ponto">.</span></a><span class="topo-selo">PREPARAR ASSINATURAS</span></header>
-  <main>
-    <section class="apresentacao"><div class="apresentacao-texto"><span class="sobretitulo"><span class="indicador"></span> CONVITES INDIVIDUAIS</span><h1>PREPARE O<br><span>DOCUMENTO.</span></h1><p>Adicione signatários. Posicione assinatura, rubrica e selfie nas páginas do PDF.</p></div></section>
-    <section class="area-trabalho" aria-label="Preparação das assinaturas">
-      <div class="cabecalho-area"><span>01 / DADOS DO DOCUMENTO</span><span>CONVITES COM PRAZO DE 7 DIAS</span></div>
+  <header class="topo"><a class="marca" href="/">aFIRMA<span class="marca-ponto">.</span></a><span class="topo-selo">CRIAR ASSINATURA</span></header>
+  <main style="padding-bottom: 120px; padding-top: 64px;">
+    
+    <section id="step-1-signatarios" class="area-trabalho" aria-label="Passo 1: Signatários">
+      <div class="cabecalho-area"><span>Adicione quem vai assinar o documento ou documentos ou documentx :)</span></div>
+      <div class="etapa">
+        <div id="lista-signatarios" class="lista-signatarios"></div>
+        <button id="adicionar-signatario" class="botao-carteira" type="button">+ ADICIONAR SIGNATÁRIO</button>
+      </div>
+      <div class="rodape-formulario">
+        <button id="ir-step-2" class="botao-primario botao" type="button">PRÓXIMO PASSO ↗</button>
+      </div>
+    </section>
+
+    <section id="step-2-documentos" class="area-trabalho" aria-label="Passo 2: Documentos" hidden>
+      <div class="cabecalho-area"><span>Documentos/Documentx</span><span>crl essa parte vai ser chata</span></div>
       <div class="etapa campos">
-        <div class="campo campo-largo"><label for="empresa">NOME DA EMPRESA</label><input id="empresa" maxlength="120" required placeholder="Empresa que solicita as assinaturas"></div>
+        <div class="campo campo-largo"><label for="empresa">NOME DA EMPRESA</label><input id="empresa" maxlength="120" required placeholder="Empresa solicitante"></div>
         <div class="campo campo-largo"><label for="arquivo-pdf">DOCUMENTO PDF</label><input id="arquivo-pdf" type="file" accept="application/pdf,.pdf" required></div>
         <div class="campo"><label for="chave-api">CHAVE DA API</label><input id="chave-api" type="password" autocomplete="off" required></div>
         <div class="campo"><label for="token">TOKEN JWT</label><input id="token" type="password" autocomplete="off" required></div>
         <div class="campo-largo"><button id="abrir-pdf" class="botao-carteira" type="button">ABRIR PDF PARA POSICIONAR CAMPOS</button></div>
       </div>
-      <div class="cabecalho-area"><span>02 / SIGNATÁRIOS</span><span>UM LINK PARA CADA PESSOA</span></div>
-      <div class="etapa">
-        <div id="lista-signatarios" class="lista-signatarios"></div>
-        <button id="adicionar-signatario" class="botao-carteira" type="button">+ ADICIONAR SIGNATÁRIO</button>
-      </div>
-      <div class="cabecalho-area"><span>03 / POSICIONAR CAMPOS</span><span>CLIQUE NA PÁGINA; ARRASTE PARA AJUSTAR</span></div>
-      <div class="etapa">
+      
+      <div class="cabecalho-area" id="header-posicionamento" hidden><span>02.1 / POSICIONAR CAMPOS</span><span>CLIQUE NA PÁGINA; ARRASTE PARA AJUSTAR</span></div>
+      <div class="etapa" id="etapa-posicionamento" hidden>
         <div class="campos">
           <div class="campo"><label for="signatario-atual">SIGNATÁRIO</label><select id="signatario-atual"></select></div>
           <div class="campo"><label for="tipo-campo">CAMPO</label><select id="tipo-campo"><option value="ASSINATURA">Assinatura</option><option value="RUBRICA">Rubrica</option><option value="SELFIE">Selfie</option></select></div>
@@ -37,12 +44,49 @@
         <div id="visualizador" class="visualizador" hidden><img id="imagem-pagina" alt="Prévia da página do PDF"><div id="camada-campos" class="camada-campos"></div></div>
         <p class="nota-seguranca">Posições acompanham tamanho de cada página. Remova campo pelo botão ×.</p>
       </div>
-      <div class="rodape-formulario"><p>Links de convite aparecem após preparar. Compartilhe cada link com respectivo signatário.</p><button id="criar-envelope" type="button">GERAR CONVITES ↗</button></div>
+      <div class="rodape-formulario" style="display: flex; gap: 16px;">
+        <button id="voltar-step-1" class="botao-secundario botao" type="button">← VOLTAR</button>
+        <button id="ir-step-3" class="botao-primario botao" type="button">PRÓXIMO PASSO ↗</button>
+      </div>
+    </section>
+
+    <section id="step-3-finalizar" class="area-trabalho" aria-label="Passo 3: Finalizar" hidden>
+      <div class="cabecalho-area"><span>parte final</span><span>aaa</span></div>
+      <div class="etapa campos">
+         <div class="campo campo-largo"><label for="nome-assinatura">NOME DA ASSINATURA *</label><input id="nome-assinatura" maxlength="255" required placeholder="Ex: Contrato de Prestação de Serviços"></div>
+      </div>
+      <div class="rodape-formulario" style="display: flex; gap: 16px;">
+        <button id="voltar-step-2" class="botao-secundario botao" type="button">← VOLTAR</button>
+        <button id="criar-envelope" class="botao-primario botao" type="button">GERAR CONVITES ↗</button>
+      </div>
       <div id="erro-preparacao" class="erro" role="alert" hidden></div>
-      <section id="resultado-convites" class="etapa" hidden><h2>CONVITES CRIADOS</h2><p>Copie os links agora. Eles aparecem apenas nesta criação.</p><p id="identificador-envelope"></p><div id="lista-convites" class="lista-convites"></div><button id="atualizar-estado" class="botao-carteira" type="button">ATUALIZAR ESTADO</button><p id="estado-envelope" role="status"></p></section>
-      <section id="finalizacao" class="etapa" hidden><h2>FINALIZAR COM CERTIFICADO DA EMPRESA</h2><p id="aviso-finalizacao">Acompanhe o PDF atualizado após cada assinatura.</p><div class="campos"><div class="campo campo-largo"><label for="certificado-final">CERTIFICADO PFX OU P12</label><input id="certificado-final" type="file" accept=".pfx,.p12" required></div><div class="campo"><label for="senha-final">SENHA</label><input id="senha-final" type="password" autocomplete="off" required></div><div class="campo-largo"><label class="escolha-pagina"><input id="pagina-final" type="checkbox">Adicionar página de comprovante da empresa</label></div><div class="campo campo-largo" id="grupo-imagem-final" hidden><label for="imagem-final">IMAGEM DA EMPRESA (OPCIONAL)</label><input id="imagem-final" type="file" accept="image/png,image/jpeg"></div></div><button id="finalizar-envelope" class="botao-carteira" type="button">ASSINAR PDF FINAL</button><a id="baixar-final" class="botao-baixar" hidden download="documento-assinado.pdf">BAIXAR PDF ↗</a></section>
+      <div id="loading-finalizacao" class="finalizado-com-sucesso" hidden>
+         <span class="loading-roca-neon">Finalizando assinatura...</span>
+      </div>
+      <section id="resultado-convites" class="etapa" hidden>
+        <h2>Finalizado com sucesso!</h2>
+        <p>Agora os documentos estão aguardando assinatura. Copie os links abaixo:</p>
+        <div id="lista-convites" class="lista-convites"></div>
+        <div style="margin-top: 20px;">
+           <a href="/assinatura" class="botao-carteira">VER ASSINATURAS</a>
+        </div>
+      </section>
     </section>
   </main>
-  <footer><span id="rodape-empresa">aFIRMA.</span><span>DOCUMENTOS ASSINADOS COM IDENTIDADE.</span></footer>
+  
+  <nav class="modulos-wizard" aria-label="Passos do Wizard">
+    <div id="btn-step-1" class="modulo-wizard ativo">
+      <span class="modulo-icone">1</span>
+      <span class="modulo-texto"><strong>SIGNATÁRIOS</strong><small>QUEM VAI ASSINAR?</small></span>
+    </div>
+    <div id="btn-step-2" class="modulo-wizard inativo">
+      <span class="modulo-icone">2</span>
+      <span class="modulo-texto"><strong>DOCUMENTOS</strong><small>ENVIO E CAMPOS</small></span>
+    </div>
+    <div id="btn-step-3" class="modulo-wizard inativo">
+      <span class="modulo-icone">3</span>
+      <span class="modulo-texto"><strong>FINALIZAR</strong><small>NOMEIE O ENVELOPE</small></span>
+    </div>
+  </nav>
 </body>
 </html>

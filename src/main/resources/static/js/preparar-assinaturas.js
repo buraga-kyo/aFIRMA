@@ -10,9 +10,8 @@ const imagemPagina = document.getElementById('imagem-pagina');
 const camadaCampos = document.getElementById('camada-campos');
 const erroPreparacao = document.getElementById('erro-preparacao');
 const resultadoConvites = document.getElementById('resultado-convites');
-const finalizacao = document.getElementById('finalizacao');
 const nomeTipos = { ASSINATURA: 'Assinatura', RUBRICA: 'Rubrica', SELFIE: 'Selfie' };
-const signatarios = [];
+const signatarios = [{ id: crypto.randomUUID(), nome: '', email: '', cpf: '', rg: '', whatsapp: '', qualificacao: '', campos: [] }];
 let paginaAtual = 1;
 let totalPaginas = 0;
 let enderecoImagem = null;
@@ -37,7 +36,6 @@ if (new URLSearchParams(location.search).get('origem') === 'advai') {
 
 empresa.addEventListener('input', () => {
   document.querySelector('.marca').firstChild.textContent = empresa.value.trim() || 'aFIRMA.';
-  document.getElementById('rodape-empresa').textContent = empresa.value.trim() || 'aFIRMA.';
 });
 
 function mostrarErro(mensagem) {
@@ -57,67 +55,149 @@ async function verificarResposta(resposta) {
   throw new Error(dados?.mensagem || `Operação recusada (${resposta.status}).`);
 }
 
+// Wizard Logic
+const s1 = document.getElementById('step-1-signatarios');
+const s2 = document.getElementById('step-2-documentos');
+const s3 = document.getElementById('step-3-finalizar');
+const b1 = document.getElementById('btn-step-1');
+const b2 = document.getElementById('btn-step-2');
+const b3 = document.getElementById('btn-step-3');
+
+function changeStep(from, to, btnFrom, btnTo) {
+  from.hidden = true;
+  to.hidden = false;
+  btnFrom.classList.remove('ativo');
+  btnFrom.classList.add('inativo');
+  btnTo.classList.remove('inativo');
+  btnTo.classList.add('ativo');
+
+  to.scrollIntoView({ block: 'start', behavior: 'smooth' });
+}
+
+document.getElementById('ir-step-2').addEventListener('click', () => {
+  erroPreparacao.hidden = true;
+  if (!signatarios.length) return mostrarErro('Adicione pelo menos um signatário.');
+  if (signatarios.some(s => !s.nome.trim() || !s.email.trim())) return mostrarErro('Preencha nome e e-mail de todos os signatários.');
+  changeStep(s1, s2, b1, b2);
+});
+
+document.getElementById('voltar-step-1').addEventListener('click', () => {
+  changeStep(s2, s1, b2, b1);
+});
+
+document.getElementById('ir-step-3').addEventListener('click', () => {
+  erroPreparacao.hidden = true;
+  if (!empresa.value.trim() || !arquivoPdf.files[0] || !totalPaginas) {
+    return mostrarErro('Informe empresa, abra o PDF e posicione os campos.');
+  }
+  if (signatarios.some(s => s.campos.length === 0)) {
+    return mostrarErro('Cada signatário precisa ter pelo menos um campo posicionado.');
+  }
+  changeStep(s2, s3, b2, b3);
+});
+
+document.getElementById('voltar-step-2').addEventListener('click', () => {
+  changeStep(s3, s2, b3, b2);
+});
+
 function atualizarSignatarios() {
   listaSignatarios.replaceChildren();
   seletorSignatario.replaceChildren();
   for (const signatario of signatarios) {
     const cartao = document.createElement('div');
-    cartao.className = 'cartao-signatario';
-    const campos = document.createElement('div');
-    campos.className = 'campos';
+    cartao.className = 'cartao-signatario cartao-novo-assinante';
+    
+    // Nome
     const nome = document.createElement('div');
     nome.className = 'campo';
-    const rotuloNome = document.createElement('label');
-    rotuloNome.textContent = 'NOME';
+    nome.innerHTML = '<label>NOME</label>';
     const entradaNome = document.createElement('input');
     entradaNome.maxLength = 120;
     entradaNome.value = signatario.nome;
     entradaNome.placeholder = 'Nome do signatário';
     entradaNome.addEventListener('input', () => { signatario.nome = entradaNome.value; atualizarSeletor(); desenharCampos(); });
-    nome.append(rotuloNome, entradaNome);
+    nome.append(entradaNome);
+    
+    // Email
     const email = document.createElement('div');
     email.className = 'campo';
-    const rotuloEmail = document.createElement('label');
-    rotuloEmail.textContent = 'E-MAIL PARA IDENTIFICAÇÃO';
+    email.innerHTML = '<label>E-MAIL PARA IDENTIFICAÇÃO</label>';
     const entradaEmail = document.createElement('input');
     entradaEmail.type = 'email';
     entradaEmail.maxLength = 254;
     entradaEmail.value = signatario.email;
     entradaEmail.placeholder = 'pessoa@empresa.com';
     entradaEmail.addEventListener('input', () => { signatario.email = entradaEmail.value; });
-    email.append(rotuloEmail, entradaEmail);
-    campos.append(nome, email);
+    email.append(entradaEmail);
+
+    // CPF
+    const divCpf = document.createElement('div');
+    divCpf.className = 'campo';
+    divCpf.innerHTML = '<label>CPF (Para autenticação)</label>';
+    const entradaCpf = document.createElement('input');
+    entradaCpf.placeholder = '000.000.000-00';
+    entradaCpf.value = signatario.cpf || '';
+    entradaCpf.addEventListener('input', () => { signatario.cpf = entradaCpf.value; });
+    divCpf.append(entradaCpf);
+
+    // RG
+    const divRg = document.createElement('div');
+    divRg.className = 'campo';
+    divRg.innerHTML = '<label>RG</label>';
+    const entradaRg = document.createElement('input');
+    entradaRg.placeholder = '00.000.000-X';
+    entradaRg.value = signatario.rg || '';
+    entradaRg.addEventListener('input', () => { signatario.rg = entradaRg.value; });
+    divRg.append(entradaRg);
+
+    // Whatsapp
+    const divZap = document.createElement('div');
+    divZap.className = 'campo';
+    divZap.innerHTML = '<label>WHATSAPP (Para notificação)</label>';
+    const entradaZap = document.createElement('input');
+    entradaZap.placeholder = '+5511999999999';
+    entradaZap.value = signatario.whatsapp || '';
+    entradaZap.addEventListener('input', () => { signatario.whatsapp = entradaZap.value; });
+    divZap.append(entradaZap);
+
+    // Qualificação
+    const divQualificacao = document.createElement('div');
+    divQualificacao.className = 'campo';
+    divQualificacao.innerHTML = '<label>VAI ASSINAR COMO?</label>';
+    const entradaQualificacao = document.createElement('input');
+    entradaQualificacao.placeholder = 'Testemunha, Avalista...';
+    entradaQualificacao.value = signatario.qualificacao || '';
+    entradaQualificacao.addEventListener('input', () => { signatario.qualificacao = entradaQualificacao.value; });
+    divQualificacao.append(entradaQualificacao);
+    
+    // Área de rodapé do cartão (Quantidade e Remover) - Ocupando a linha inteira no grid
+    const rodapeCartao = document.createElement('div');
+    rodapeCartao.className = 'cartao-rodape-acoes';
+    
     const quantidade = document.createElement('p');
     quantidade.textContent = `${signatario.campos.length} campo(s) posicionado(s)`;
+    
     const remover = document.createElement('button');
     remover.type = 'button';
+    remover.className = 'acao secundario';
     remover.textContent = 'REMOVER SIGNATÁRIO';
     remover.addEventListener('click', () => {
       signatarios.splice(signatarios.indexOf(signatario), 1);
       atualizarSignatarios();
       desenharCampos();
     });
-    cartao.append(campos, quantidade, remover);
+    
+    rodapeCartao.append(quantidade, remover);
+
+    cartao.append(nome, email, divCpf, divRg, divZap, divQualificacao, rodapeCartao);
     listaSignatarios.append(cartao);
   }
   atualizarSeletor();
 }
 
-function atualizarSeletor() {
-  const selecionado = seletorSignatario.value;
-  seletorSignatario.replaceChildren();
-  for (const signatario of signatarios) {
-    const opcao = document.createElement('option');
-    opcao.value = signatario.id;
-    opcao.textContent = signatario.nome.trim() || 'Signatário sem nome';
-    seletorSignatario.append(opcao);
-  }
-  if (signatarios.some(signatario => signatario.id === selecionado)) seletorSignatario.value = selecionado;
-}
-
 document.getElementById('adicionar-signatario').addEventListener('click', () => {
   if (signatarios.length >= 20) return mostrarErro('Limite de 20 signatários.');
-  const signatario = { id: crypto.randomUUID(), nome: '', email: '', campos: [] };
+  const signatario = { id: crypto.randomUUID(), nome: '', email: '', cpf: '', rg: '', whatsapp: '', qualificacao: '', campos: [] };
   signatarios.push(signatario);
   atualizarSignatarios();
   seletorSignatario.value = signatario.id;
@@ -243,34 +323,52 @@ function desenharCampos() {
 document.getElementById('criar-envelope').addEventListener('click', async () => {
   erroPreparacao.hidden = true;
   const botao = document.getElementById('criar-envelope');
+  const nomeAssinatura = document.getElementById('nome-assinatura');
+  const loading = document.getElementById('loading-finalizacao');
+  const painelConvites = document.getElementById('resultado-convites');
+  
   try {
-    if (!empresa.value.trim() || !arquivoPdf.files[0] || !totalPaginas) {
-      throw new Error('Informe empresa e abra o PDF.');
+    if (!nomeAssinatura.value.trim()) {
+      throw new Error('Informe o nome da assinatura.');
     }
-    if (!signatarios.length || signatarios.some(item => !item.nome.trim() ||
-      !item.email.trim() || !item.campos.length)) {
-      throw new Error('Cada signatário precisa de nome, e-mail e pelo menos um campo.');
-    }
-    botao.disabled = true;
+    botao.hidden = true;
+    document.getElementById('voltar-step-2').hidden = true;
+    loading.hidden = false;
+
     const dados = new FormData();
     dados.append('pdf', arquivoPdf.files[0]);
-    dados.append('dados', new Blob([JSON.stringify({ nomeEmpresa: empresa.value.trim(),
-      signatarios: signatarios.map(item => ({ nome: item.nome.trim(), email: item.email.trim(),
-        campos: item.campos.map(({ id, ...campo }) => campo) })) })], { type: 'application/json' }));
+    dados.append('dados', new Blob([JSON.stringify({ 
+      nomeEmpresa: empresa.value.trim(),
+      nomeAssinatura: nomeAssinatura.value.trim(),
+      signatarios: signatarios.map(item => ({ 
+        nome: item.nome.trim(), 
+        email: item.email.trim(),
+        cpf: item.cpf ? item.cpf.trim() : null,
+        rg: item.rg ? item.rg.trim() : null,
+        whatsapp: item.whatsapp ? item.whatsapp.trim() : null,
+        qualificacao: item.qualificacao ? item.qualificacao.trim() : null,
+        campos: item.campos.map(({ id, ...campo }) => campo) 
+      })) 
+    })], { type: 'application/json' }));
+    
     const resposta = await verificarResposta(await fetch('/api/envelopes', {
       method: 'POST', headers: credenciais(), body: dados, cache: 'no-store'
     }));
     const criado = await resposta.json();
     identificadorEnvelope = criado.identificador;
-    history.replaceState(null, '', `?envelope=${identificadorEnvelope}`);
+    
+    loading.hidden = true;
     mostrarConvites(criado.convites);
-    await atualizarEstado();
-  } catch (erro) { mostrarErro(erro.message); botao.disabled = false; }
+  } catch (erro) { 
+    mostrarErro(erro.message); 
+    botao.hidden = false; 
+    document.getElementById('voltar-step-2').hidden = false;
+    loading.hidden = true;
+  }
 });
 
 function mostrarConvites(convites) {
   resultadoConvites.hidden = false;
-  document.getElementById('identificador-envelope').textContent = `Documento: ${identificadorEnvelope}`;
   const lista = document.getElementById('lista-convites');
   lista.replaceChildren();
   for (const convite of convites) {
@@ -295,86 +393,12 @@ function mostrarConvites(convites) {
   resultadoConvites.scrollIntoView({ block: 'nearest' });
 }
 
-async function atualizarEstado() {
-  if (!identificadorEnvelope) return;
-  const resposta = await verificarResposta(await fetch(`/api/envelopes/${identificadorEnvelope}`, {
-    headers: credenciais(), cache: 'no-store'
-  }));
-  const estado = await resposta.json();
-  empresa.value = estado.nomeEmpresa;
-  empresa.dispatchEvent(new Event('input'));
-  resultadoConvites.hidden = false;
-  document.getElementById('identificador-envelope').textContent = `Documento: ${identificadorEnvelope}`;
-  const concluidos = estado.signatarios.filter(item => item.assinadoEm).length;
-  document.getElementById('estado-envelope').textContent =
-    `${concluidos}/${estado.signatarios.length} signatários concluíram. Prazo: ${new Date(estado.expiraEm).toLocaleString('pt-BR')}.`;
-  finalizacao.hidden = concluidos === 0;
-  document.getElementById('finalizar-envelope').hidden = concluidos !== estado.signatarios.length || !!estado.finalizadoEm;
-  document.getElementById('aviso-finalizacao').textContent = concluidos === estado.signatarios.length
-    ? 'Todos assinaram. Finalize com o certificado para proteger o documento.'
-    : 'O PDF já contém as assinaturas recebidas. Aguarde os demais signatários para finalizar.';
-  const baixar = document.getElementById('baixar-final');
-  baixar.hidden = concluidos === 0 && !estado.finalizadoEm;
-  baixar.textContent = estado.finalizadoEm ? 'BAIXAR PDF FINAL ↗' : 'BAIXAR PDF ATUAL ↗';
-  if (estado.finalizadoEm) {
-    document.getElementById('finalizar-envelope').hidden = true;
-  }
-}
-
-document.getElementById('baixar-final').addEventListener('click', async evento => {
-  evento.preventDefault();
-  try {
-    const respostaPdf = await verificarResposta(await fetch(`/api/envelopes/${identificadorEnvelope}/pdf`, {
-      headers: credenciais(), cache: 'no-store'
-    }));
-    if (enderecoFinal) URL.revokeObjectURL(enderecoFinal);
-    enderecoFinal = URL.createObjectURL(await respostaPdf.blob());
-    const temporario = document.createElement('a');
-    temporario.href = enderecoFinal;
-    temporario.download = 'documento-assinado.pdf';
-    temporario.click();
-  } catch (erro) { mostrarErro(erro.message); }
-});
-
-document.getElementById('atualizar-estado').addEventListener('click', () => {
-  atualizarEstado().catch(erro => mostrarErro(erro.message));
-});
-document.getElementById('pagina-final').addEventListener('change', evento => {
-  document.getElementById('grupo-imagem-final').hidden = !evento.target.checked;
-});
-document.getElementById('finalizar-envelope').addEventListener('click', async () => {
-  erroPreparacao.hidden = true;
-  const botao = document.getElementById('finalizar-envelope');
-  try {
-    const certificado = document.getElementById('certificado-final').files[0];
-    const senha = document.getElementById('senha-final').value;
-    if (!certificado || !senha) throw new Error('Informe certificado e senha.');
-    const dados = new FormData();
-    dados.append('certificado', certificado);
-    dados.append('senha', senha);
-    dados.append('paginaPersonalizada', String(document.getElementById('pagina-final').checked));
-    const imagem = document.getElementById('imagem-final').files[0];
-    if (imagem && document.getElementById('pagina-final').checked) dados.append('imagemEmpresa', imagem);
-    botao.disabled = true;
-    const resposta = await verificarResposta(await fetch(`/api/envelopes/${identificadorEnvelope}/finalizar`, {
-      method: 'POST', headers: credenciais(), body: dados, cache: 'no-store'
-    }));
-    if (enderecoFinal) URL.revokeObjectURL(enderecoFinal);
-    enderecoFinal = URL.createObjectURL(await resposta.blob());
-    const baixar = document.getElementById('baixar-final');
-    baixar.href = enderecoFinal;
-    baixar.hidden = false;
-    botao.hidden = true;
-    document.getElementById('senha-final').value = '';
-  } catch (erro) { mostrarErro(erro.message); botao.disabled = false; }
-});
-
-if (identificadorEnvelope) {
-  resultadoConvites.hidden = false;
-  document.getElementById('identificador-envelope').textContent = `Documento: ${identificadorEnvelope}`;
-  document.getElementById('estado-envelope').textContent = 'Informe credenciais e atualize o estado.';
-}
 window.addEventListener('pagehide', () => {
   if (enderecoImagem) URL.revokeObjectURL(enderecoImagem);
   if (enderecoFinal) URL.revokeObjectURL(enderecoFinal);
+});
+
+// Renderiza o signatário inicial
+document.addEventListener('DOMContentLoaded', () => {
+  atualizarSignatarios();
 });

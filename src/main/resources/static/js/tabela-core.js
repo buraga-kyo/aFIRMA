@@ -684,7 +684,10 @@ window.aFirmaTabela = function(config) {
         estado.salvos = JSON.parse(localStorage.getItem(`${storageId}-filtros`) || '[]');
       } catch { estado.salvos = []; }
       const stEl = $(`${config.containerId}-estado`);
-      if (stEl) stEl.textContent = 'Carregando dados…';
+      if (stEl) {
+        stEl.innerHTML = '<span class="loading-roca-neon">CARREGANDO DADOS...</span>';
+        stEl.style.textAlign = 'center';
+      }
       try {
         estado.todos = await api('');
         if (config.toast) config.toast(`${estado.todos.length} registro(s) carregado(s).`);

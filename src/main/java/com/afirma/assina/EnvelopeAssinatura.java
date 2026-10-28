@@ -45,6 +45,16 @@ public class EnvelopeAssinatura {
 	@Column(name = "excluido_em")
 	private Instant excluidoEm;
 
+	// Legacy fields mapped from Assinatura.js
+	@Column(name = "nome", length = 255)
+	private String nome;
+	@Column(name = "responsavel", length = 255)
+	private String responsavel;
+	@Column(name = "status", length = 255)
+	private String status;
+	@Column(name = "quantidade_documento_assinado", length = 255)
+	private String quantidadeDocumentoAssinado;
+
 	protected EnvelopeAssinatura() { }
 
 	public EnvelopeAssinatura(UUID id, String nomeEmpresa, String nomeDocumento, String criador,
@@ -80,4 +90,14 @@ public class EnvelopeAssinatura {
 	public Instant getExcluidoEm() { return excluidoEm; }
 	public void excluir(Instant momento) { this.excluidoEm = momento; }
 	public void finalizar(byte[] pdf, Instant momento) { this.pdfFinal = pdf; this.finalizadoEm = momento; }
+
+	// Getters & Setters for legacy fields
+	public String getNome() { return nome; }
+	public void setNome(String nome) { this.nome = nome; }
+	public String getResponsavel() { return responsavel; }
+	public void setResponsavel(String responsavel) { this.responsavel = responsavel; }
+	public String getStatus() { return status; }
+	public void setStatus(String status) { this.status = status; }
+	public String getQuantidadeDocumentoAssinado() { return quantidadeDocumentoAssinado; }
+	public void setQuantidadeDocumentoAssinado(String quantidadeDocumentoAssinado) { this.quantidadeDocumentoAssinado = quantidadeDocumentoAssinado; }
 }

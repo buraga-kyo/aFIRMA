@@ -120,6 +120,9 @@
 .badge-roca-neon{display:inline-block;padding:3px 12px;margin:2px;border:2px solid #4ade80;background:rgba(74,222,128,0.15);color:#4ade80;border-radius:10px 25px;font-size:11px;font-weight:800;text-decoration:none;transition:all 0.2s ease;white-space:nowrap}
 .badge-roca-neon:hover{background:#4ade80;color:#052e16}
 
+.loading-roca-neon { display: inline-block; padding: 8px 24px; margin: 16px; border: 2px solid #4ade80; background: rgba(74, 222, 128, 0.15); color: #4ade80; border-radius: 10px 25px; font-size: 13px; font-weight: 800; letter-spacing: 0.1em; animation: pulse-roca 1.2s infinite alternate; }
+@keyframes pulse-roca { 0% { box-shadow: 0 0 5px #4ade80, inset 0 0 2px #4ade80; } 100% { box-shadow: 0 0 20px #4ade80, inset 0 0 10px #4ade80; } }
+
 .modal-exportacao { border: 2px solid var(--border); background: var(--card); color: var(--foreground); padding: 24px; width: 400px; max-width: 90vw; z-index: 2000; box-shadow: var(--hard-shadow); }
 .acesso-lista button, .acesso-lista .acao { min-height: 38px; padding: 7px 10px; border: 2px solid var(--border); background: var(--background); color: var(--foreground); font-size: 11px; font-weight: 800; letter-spacing: .07em; text-decoration: none; cursor: pointer; box-shadow: var(--hard-shadow); transition: transform 120ms,box-shadow 120ms; }
 .acesso-lista button:hover, .acesso-lista .acao:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--background); }
