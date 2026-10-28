@@ -66,6 +66,9 @@ public class ServicoEnvelopes {
 		Instant agora = Instant.now();
 		EnvelopeAssinatura novoEnvelope = new EnvelopeAssinatura(identificador, pedido.nomeEmpresa().strip(),
 				nomeArquivo, criador, pdf, agora, agora.plusSeconds(7 * 86400));
+		if (pedido.nomeAssinatura() != null && !pedido.nomeAssinatura().isBlank()) {
+			novoEnvelope.setNome(pedido.nomeAssinatura().strip());
+		}
 		if (armazenamento.ativo())
 			novoEnvelope.guardarOriginalNoMinio(armazenamento.guardar(identificador, "original", pdf));
 		envelopes.save(novoEnvelope);
@@ -82,8 +85,16 @@ public class ServicoEnvelopes {
 			byte[] aleatorio = new byte[32];
 			ALEATORIO.nextBytes(aleatorio);
 			String token = Base64.getUrlEncoder().withoutPadding().encodeToString(aleatorio);
-			signatarios.save(new SignatarioEnvelope(idSignatario, identificador, novo.nome().strip(),
-					novo.email().strip(), resumo(token)));
+			
+			SignatarioEnvelope novoSignatario = new SignatarioEnvelope(idSignatario, identificador, novo.nome().strip(),
+					novo.email().strip(), resumo(token));
+			
+			if (novo.cpf() != null && !novo.cpf().isBlank()) novoSignatario.setCpf(novo.cpf().strip());
+			if (novo.whatsapp() != null && !novo.whatsapp().isBlank()) novoSignatario.setWhatsapp(novo.whatsapp().strip());
+			if (novo.rg() != null && !novo.rg().isBlank()) novoSignatario.setRg(novo.rg().strip());
+			if (novo.qualificacao() != null && !novo.qualificacao().isBlank()) novoSignatario.setQualificacao(novo.qualificacao().strip());
+			
+			signatarios.save(novoSignatario);
 			for (CampoNovo campo : novo.campos()) {
 				if (campo == null || campo.tipo() == null) throw erro("Tipo de campo inválido");
 				CampoAssinatura entidade = new CampoAssinatura(UUID.randomUUID(), idSignatario,
@@ -361,8 +372,8 @@ public class ServicoEnvelopes {
 		return new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem);
 	}
 
-	public record PedidoCriacao(String nomeEmpresa, List<SignatarioNovo> signatarios) { }
-	public record SignatarioNovo(String nome, String email, List<CampoNovo> campos) { }
+	public record PedidoCriacao(String nomeEmpresa, String nomeAssinatura, List<SignatarioNovo> signatarios) { }
+	public record SignatarioNovo(String nome, String email, String cpf, String whatsapp, String rg, String qualificacao, List<CampoNovo> campos) { }
 	public record CampoNovo(CampoAssinatura.Tipo tipo, int pagina, double posicaoX,
 			double posicaoY, double largura, double altura) { }
 	public record ConviteCriado(String nome, String email, String token) { }

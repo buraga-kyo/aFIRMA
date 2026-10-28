@@ -29,3 +29,33 @@ button { cursor: pointer; }
 .convite-conteudo .etapa { border: 2px solid var(--border); background: var(--card); margin-bottom: 20px; }
 .convite-conteudo .rodape-formulario { padding: 24px 0; }
 @media (max-width: 760px) { .paginacao { gap: 8px; } .paginacao button { padding: 8px; } #baixar-final { margin: 16px 0 0; } }
+
+/* Wizard Stepper Roça Neon */
+.modulos-wizard { position: fixed; z-index: 20; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(100% - 32px, 940px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 8px; background: #0a1a11f2; border: 1px solid var(--border); box-shadow: 0 12px 45px #0008; backdrop-filter: blur(16px); }
+.modulo-wizard { min-height: 74px; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 2px solid transparent; background: transparent; color: var(--muted-foreground); transition: all 0.3s ease; border-radius: 4px; }
+.modulo-wizard.ativo { border-color: #4ade80; background: #4ade80; color: #052e16; box-shadow: 0 8px 0 rgba(74, 222, 128, 0.5); transform: translateY(-4px); }
+.modulo-wizard.inativo { opacity: 0.6; }
+.modulo-wizard .modulo-icone { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border: 2px solid currentColor; border-radius: 50%; font: 25px/1 'Archivo Black', sans-serif; }
+.modulo-wizard .modulo-texto { display: flex; flex-direction: column; line-height: 1.15; }
+.modulo-wizard .modulo-texto strong { font: clamp(16px, 1.8vw, 22px)/1 'Archivo Black', sans-serif; letter-spacing: -0.05em; }
+.modulo-wizard .modulo-texto small { margin-top: 6px; font-size: 9px; font-weight: 800; letter-spacing: 0.08em; white-space: nowrap; }
+.modulo-wizard.ativo .modulo-texto small { color: #0f4a27; }
+
+/* Redesign Cartão Signatário (novo_assinante.png) */
+.cartao-novo-assinante { background: #ffffff; border: 2px solid #000000; box-shadow: 8px 8px 0 #4ade80; color: #000; border-radius: 4px; padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; transition: transform 0.2s; margin-bottom: 24px; }
+.cartao-novo-assinante:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0 #4ade80; }
+.cartao-novo-assinante .campo { display: flex; flex-direction: column; }
+.cartao-novo-assinante .campo label { color: #000; font-weight: 800; margin-bottom: 6px; font-size: 12px; }
+.cartao-novo-assinante .campo input { background: #fff; color: #000; border: 2px solid #000; padding: 10px; font-size: 14px; border-radius: 2px; }
+.cartao-novo-assinante .campo input:focus { border-color: #4ade80; outline: none; box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.3); }
+.cartao-novo-assinante .cartao-rodape-acoes { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 16px; border-top: 2px dashed #eee; }
+.cartao-novo-assinante .cartao-rodape-acoes p { margin: 0; font-weight: 600; color: #666; font-size: 14px; }
+.cartao-novo-assinante .cartao-rodape-acoes button { background: #000; color: #fff; border: 2px solid #000; padding: 10px 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+.cartao-novo-assinante .cartao-rodape-acoes button:hover { background: #ff4444; border-color: #ff4444; color: white; }
+
+@media(max-width: 768px) {
+  .modulos-wizard { grid-template-columns: 1fr; gap: 4px; padding: 4px; width: calc(100% - 16px); }
+  .modulo-wizard { min-height: 60px; padding: 8px; justify-content: center; text-align: center; }
+  .modulo-wizard .modulo-texto small { display: none; }
+  .cartao-novo-assinante { grid-template-columns: 1fr; }
+}
