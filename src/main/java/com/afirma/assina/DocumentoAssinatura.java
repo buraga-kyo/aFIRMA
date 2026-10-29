@@ -48,6 +48,12 @@ public class DocumentoAssinatura {
 	@Column(name = "link_autenticacao", columnDefinition = "text")
 	private String linkAutenticacao;
 
+	private int paginaInicio;
+	private int paginaFim;
+	public int getPaginaInicio() { return paginaInicio; }
+	public int getPaginaFim() { return paginaFim; }
+	public void setPaginas(int inicio, int fim) { paginaInicio = inicio; paginaFim = fim; }
+
 	protected DocumentoAssinatura() { }
 
 	public DocumentoAssinatura(UUID id, UUID envelopeId, String titulo) {

@@ -47,7 +47,9 @@ public class FiltroLimitesAssinatura extends OncePerRequestFilter {
 		return !"/api/pdfs/assinar".equals(requisicao.getServletPath())
 				&& !requisicao.getServletPath().startsWith("/api/blockchain/")
 				&& !requisicao.getServletPath().startsWith("/api/envelopes")
-				&& !requisicao.getServletPath().startsWith("/api/convites/");
+				&& !requisicao.getServletPath().startsWith("/api/convites/")
+                && !requisicao.getServletPath().startsWith("/api/assineai/")
+                && !java.util.Set.of("/CriarAssinaturaViaAPI","/AssineAi_AssinarDocumentoViaAPI","/ValidarToken","/EnviarToken","/enviarToken","/JLv3HEzbcO2uKlg0rsELA66dou","/q9zePu74UYPUaDqUyay4fIjwNV").contains(requisicao.getServletPath());
 	}
 
 	@Override

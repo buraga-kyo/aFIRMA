@@ -46,7 +46,7 @@ public class ControleDocumentosAssinatura {
 					var pessoas = signatarios.findByEnvelopeIdOrderByNome(envelope.getId());
 					long assinados = pessoas.stream().filter(p -> p.getAssinadoEm() != null).count();
 					String status = envelope.getFinalizadoEm() != null ? "Assinado"
-							: assinados > 0 ? "Em Processo" : "Pendente";
+							: assinados > 0 || "Em Processo".equals(envelope.getStatus()) ? "Em Processo" : "Pendente";
 					return new DocumentoLista(envelope.getId(), envelope.getNomeDocumento(),
 							envelope.getCriadoEm(), envelope.getCriador(), status, pessoas.size(), assinados,
 							pessoas.stream().map(p -> new SignatarioLista(p.getNome(), p.getEmail(),

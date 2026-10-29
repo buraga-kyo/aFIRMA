@@ -63,6 +63,7 @@ public class EnvelopeAssinatura {
 		this.nomeEmpresa = nomeEmpresa;
 		this.nomeDocumento = nomeDocumento;
 		this.criador = criador;
+        this.nome = nomeDocumento; this.responsavel = criador; this.status = "Pendente"; this.quantidadeDocumentoAssinado = "0";
 		this.pdfOriginal = pdfOriginal;
 		this.criadoEm = criadoEm;
 		this.expiraEm = expiraEm;
@@ -71,7 +72,7 @@ public class EnvelopeAssinatura {
 	public UUID getId() { return id; }
 	public String getNomeEmpresa() { return nomeEmpresa; }
 	public String getNomeDocumento() { return nomeDocumento; }
-	public void renomearDocumento(String titulo) { this.nomeDocumento = titulo; }
+	public void renomearDocumento(String titulo) { this.nomeDocumento = titulo; this.nome = titulo; }
 	public String getCriador() { return criador; }
 	public byte[] getPdfOriginal() { return pdfOriginal; }
 	public String getPdfOriginalChaveMinio() { return pdfOriginalChaveMinio; }
@@ -89,7 +90,7 @@ public class EnvelopeAssinatura {
 	public Instant getFinalizadoEm() { return finalizadoEm; }
 	public Instant getExcluidoEm() { return excluidoEm; }
 	public void excluir(Instant momento) { this.excluidoEm = momento; }
-	public void finalizar(byte[] pdf, Instant momento) { this.pdfFinal = pdf; this.finalizadoEm = momento; }
+	public void finalizar(byte[] pdf, Instant momento) { this.pdfFinal = pdf; this.finalizadoEm = momento; this.status = "Assinado"; }
 
 	// Getters & Setters for legacy fields
 	public String getNome() { return nome; }

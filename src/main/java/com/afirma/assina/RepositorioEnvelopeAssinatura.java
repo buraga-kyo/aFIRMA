@@ -16,6 +16,7 @@ public interface RepositorioEnvelopeAssinatura extends JpaRepository<EnvelopeAss
 		String getNomeDocumento();
 		java.time.Instant getCriadoEm();
 		String getCriador();
+        String getStatus();
 		java.time.Instant getFinalizadoEm();
 	}
 

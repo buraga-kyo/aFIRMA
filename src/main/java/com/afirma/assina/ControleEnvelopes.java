@@ -22,9 +22,13 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api")
 public class ControleEnvelopes {
 	private final ServicoEnvelopes servico;
+    private final ServicoLoteAssinatura lotes;
+    private final ServicoAutenticacaoAssinatura autenticacao;
+    private final ServicoEntregaAssinatura entrega;
 
-	public ControleEnvelopes(ServicoEnvelopes servico) {
-		this.servico = servico;
+	public ControleEnvelopes(ServicoEnvelopes servico, ServicoLoteAssinatura lotes,
+            ServicoAutenticacaoAssinatura autenticacao, ServicoEntregaAssinatura entrega) {
+		this.servico = servico; this.lotes = lotes; this.autenticacao = autenticacao; this.entrega = entrega;
 	}
 
 	@PostMapping(value = "/envelopes/previsualizar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -44,6 +48,35 @@ public class ControleEnvelopes {
 			@RequestPart("dados") ServicoEnvelopes.PedidoCriacao dados, Principal usuario) throws Exception {
 		return servico.criar(pdf, dados, usuario.getName());
 	}
+
+    @GetMapping("/envelopes/recursos")
+    public java.util.Map<String, Object> recursos(Principal usuario) {
+        return java.util.Map.of("entregaDisponivel", entrega.disponivel(), "usuario", usuario.getName());
+    }
+    @PostMapping(value = "/envelopes/lote", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ServicoEnvelopes.Criado criarLote(@RequestParam("pdfs") java.util.List<MultipartFile> pdfs,
+            @RequestPart("dados") ServicoLoteAssinatura.Pedido dados, Principal usuario) throws Exception {
+        return lotes.criar(pdfs, dados, usuario.getName());
+    }
+    @PostMapping("/envelopes/{id}/notificar")
+    public java.util.List<ServicoAutenticacaoAssinatura.Notificacao> notificar(@PathVariable UUID id,
+            @org.springframework.web.bind.annotation.RequestBody java.util.List<String> tokens,
+            Principal usuario, HttpServletRequest request) {
+        String origem = org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromRequestUri(request)
+            .replacePath(null).replaceQuery(null).build().toUriString();
+        return autenticacao.notificar(id, usuario.getName(), tokens, origem);
+    }
+    @PostMapping("/convites/{token}/codigos/{canal}")
+    public ResponseEntity<Void> enviarCodigo(@PathVariable String token, @PathVariable String canal, HttpServletRequest request) {
+        autenticacao.enviarCodigo(token, canal, request.getRemoteAddr(), request.getHeader("User-Agent")); return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/convites/{token}/codigos/{canal}/verificar")
+    public ResponseEntity<Void> verificarCodigo(@PathVariable String token, @PathVariable String canal,
+            @org.springframework.web.bind.annotation.RequestBody Codigo codigo, HttpServletRequest request) {
+        return autenticacao.verificarCodigo(token, canal, codigo.codigo(), request.getRemoteAddr(), request.getHeader("User-Agent")) ? ResponseEntity.noContent().build()
+            : ResponseEntity.badRequest().build();
+    }
+    public record Codigo(String codigo) {}
 
 	@GetMapping("/envelopes/{id}")
 	public ServicoEnvelopes.EstadoEnvelope consultar(@PathVariable UUID id, Principal usuario) {
@@ -67,8 +100,10 @@ public class ControleEnvelopes {
 	}
 
 	@GetMapping("/convites/{token}")
-	public ServicoEnvelopes.DadosConvite convite(@PathVariable String token) {
-		return servico.consultarConvite(token);
+	public ServicoEnvelopes.DadosConvite convite(@PathVariable String token, HttpServletRequest request) {
+        var dados = servico.consultarConvite(token);
+        servico.registrarAcessoConvite(token, request.getRemoteAddr(), request.getHeader("User-Agent"));
+		return dados;
 	}
 
 	@GetMapping(value = "/convites/{token}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
@@ -94,7 +129,7 @@ public class ControleEnvelopes {
 			@RequestParam(value = "selfie", required = false) MultipartFile selfie,
 			@RequestParam(value = "aceite", defaultValue = "false") boolean aceite,
 			HttpServletRequest requisicao) throws Exception {
-		servico.assinarConvite(token, assinatura, rubrica, selfie, aceite, requisicao.getRemoteAddr());
+		servico.assinarConvite(token, assinatura, rubrica, selfie, aceite, requisicao.getRemoteAddr(), requisicao.getHeader("User-Agent"));
 		return ResponseEntity.noContent().header(HttpHeaders.CACHE_CONTROL, "no-store").build();
 	}
 

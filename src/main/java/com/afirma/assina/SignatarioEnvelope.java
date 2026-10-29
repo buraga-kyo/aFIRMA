@@ -109,6 +109,9 @@ public class SignatarioEnvelope {
 		this.nome = nome;
 		this.email = email;
 		this.resumoConvite = resumoConvite;
+        this.assinou = false; this.situacaoAssinatura = "Não abriu o link";
+        this.quantidadeDeAcessosNoLinkDeAssinatura = "0";
+        this.mensagemSobreVisualizacaoDoLinkDeAssinatura = "Não abriu o link de assinatura";
 	}
 
 	public UUID getId() { return id; }
@@ -127,7 +130,20 @@ public class SignatarioEnvelope {
 		this.selfie = selfie;
 		this.enderecoIp = enderecoIp;
 		this.assinadoEm = momento;
+        this.assinou = true; this.situacaoAssinatura = "Assinado"; this.dataAssinatura = momento.toString();
 	}
+    public void registrarAcesso(String dispositivo) {
+        java.math.BigInteger acessos;
+        try { acessos = new java.math.BigInteger(quantidadeDeAcessosNoLinkDeAssinatura == null ? "0" : quantidadeDeAcessosNoLinkDeAssinatura); }
+        catch (NumberFormatException invalido) { acessos = java.math.BigInteger.ZERO; }
+        acessos = acessos.max(java.math.BigInteger.ZERO).add(java.math.BigInteger.ONE);
+        quantidadeDeAcessosNoLinkDeAssinatura = acessos.toString();
+        mensagemSobreVisualizacaoDoLinkDeAssinatura = "Acessou " + acessos + (acessos.equals(java.math.BigInteger.ONE) ? " vez" : " vezes") + " o link de assinatura";
+        if (assinadoEm == null) {
+            situacaoAssinatura = "Visualizou o documento";
+            this.dispositivo = dispositivo == null ? null : dispositivo.substring(0, Math.min(1024, dispositivo.length()));
+        }
+    }
 	public void limparImagens() {
 		this.assinatura = null;
 		this.rubrica = null;

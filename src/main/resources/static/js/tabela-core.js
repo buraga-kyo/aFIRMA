@@ -1,708 +1,571 @@
-/**
- * Tabela Genérica aFIRMA (tabela-core.js)
- * Componente reutilizável para listagem, filtros, redimensionamento, paginação e busca.
- */
-window.aFirmaTabela = function(config) {
-  const $ = id => document.getElementById(id);
-  const colunas = config.colunas;
-  const padrao = colunas.map(c => c.id);
-  
-  const largura_padrao = 200;
-  const largurasPadrao = { selecao: 34, acoes: 96 };
-  colunas.forEach(c => largurasPadrao[c.id] = largura_padrao);
-  
-  const estado = {
-    todos: [], visiveis: [...padrao], rascunho: [...padrao], filtros: {}, ordem: null, pagina: 1,
-    tamanho: 10, larguras: { ...largurasPadrao }, aviso: null, plano: null, busca: [], salvos: [], selecionados: new Set()
+/** Tabela reutilizável aFIRMA. Contrato público: docs/tabela.md. */
+(() => {
+  let sequencia = 0;
+  const montadas = new WeakMap();
+  const padroes = Object.freeze({
+    selecao: false, acoes: false, paginacao: true, selecionarColunas: true,
+    filtrosHeader: true, ordenacao: true, redimensionamento: true,
+    reordenacao: false, filtrosSalvos: false, buscaIA: false,
+    edicao: false, detalhes: false, persistencia: false
+  });
+  const criar = (tag, classe, texto) => {
+    const no = document.createElement(tag);
+    if (classe) no.className = classe;
+    if (texto !== undefined) no.textContent = String(texto ?? '');
+    return no;
   };
-  
-  let menuColunaAberto = null;
-  const storageId = config.storageId || 'tabela-generica';
-  
-  try {
-    const salvas = JSON.parse(localStorage.getItem(`${storageId}-larguras`) || '{}');
-    Object.keys(largurasPadrao).forEach(id => {
-      if (Number.isFinite(salvas[id])) estado.larguras[id] = Math.max(id === 'selecao' ? 34 : id === 'acoes' ? 86 : 80, Math.min(600, salvas[id]));
-    });
-  } catch {}
+  const copiar = valor => structuredClone(valor);
 
-  const data = valor => valor ? new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(new Date(valor)) : '-';
-  const texto = (elemento, valor) => { elemento.textContent = String(valor ?? ''); return elemento; };
-  const el = (tag, classe, valor) => { const node = document.createElement(tag); if(classe) node.className = classe; if(valor !== undefined) texto(node, valor); return node; };
-  const botao = (rotulo, funcao, classe='') => { const b = el('button', classe, rotulo); b.type = 'button'; b.addEventListener('click', funcao); return b; };
-  const valorFormatado = (item, id) => {
-    const col = colunas.find(c => c.id === id);
-    if (!col) return item[id];
-    if (col.formatar) return col.formatar(item[id], item);
-    if (col.tipo === 'data') return data(item[id]);
-    return item[id];
-  };
-
-  async function api(path, options={}) {
-    const headers = { ...config.credenciais(), ...options.headers };
-    if (options.body && typeof options.body === 'string') {
-      headers['Content-Type'] = 'application/json';
-    }
-    const resposta = await fetch(`${config.endpoint}${path}`, { ...options, headers });
-    if (!resposta.ok) {
-      let detalhe = {};
-      try { detalhe = await resposta.json(); } catch {}
-      throw new Error(resposta.status === 401 || resposta.status === 403 ? 'Credenciais inválidas ou sem permissão.' : detalhe.mensagem || `Erro ${resposta.status} na operação.`);
-    }
-    return (resposta.status === 204 || options.method === 'DELETE') ? null : resposta.json();
-  }
-
-  function fecharMenus() {
-    document.querySelectorAll('.menu').forEach(m => m.hidden = true);
-    document.querySelectorAll('[aria-expanded]').forEach(b => b.setAttribute('aria-expanded', 'false'));
-  }
-
-  function posicionarMenuColunas() {
-    const menu = $(`${config.containerId}-menu-colunas`);
-    if (menu.hidden) return;
-    const ancora = $(`${config.containerId}-colunas-botao`).getBoundingClientRect(), largura = menu.offsetWidth;
-    menu.style.left = `${Math.max(12, Math.min(ancora.left, innerWidth - largura - 12))}px`;
-    menu.style.top = `${ancora.bottom + 6}px`;
-    menu.style.maxHeight = `${Math.max(120, innerHeight - ancora.bottom - 18)}px`;
-  }
-
-  function fecharMenuColuna() {
-    if (!menuColunaAberto) return;
-    menuColunaAberto.ancora.setAttribute('aria-expanded', 'false');
-    menuColunaAberto.menu.remove();
-    menuColunaAberto = null;
-  }
-
-  function posicionarMenuColuna() {
-    if (!menuColunaAberto) return;
-    const { menu, ancora } = menuColunaAberto, caixa = ancora.getBoundingClientRect();
-    if (caixa.bottom < 0 || caixa.top > innerHeight) { fecharMenuColuna(); return; }
-    const largura = Math.min(280, innerWidth - 24), abaixo = innerHeight - caixa.bottom - 18, acima = caixa.top - 18;
-    menu.style.width = `${largura}px`;
-    menu.style.left = `${Math.max(12, Math.min(caixa.left, innerWidth - largura - 12))}px`;
-    if (abaixo < Math.min(menu.scrollHeight, 320) && acima > abaixo) {
-      const altura = Math.min(menu.scrollHeight, acima);
-      menu.style.top = `${Math.max(12, caixa.top - altura - 6)}px`;
-      menu.style.maxHeight = `${Math.max(80, acima)}px`;
-    } else {
-      menu.style.top = `${caixa.bottom + 6}px`;
-      menu.style.maxHeight = `${Math.max(80, abaixo)}px`;
-    }
-  }
-
-  function corresponde(item, filtros) {
-    return Object.entries(filtros).every(([id, f]) => {
-      if (!f) return true;
-      const atual = String(valorFormatado(item, id) ?? '');
-      if (Array.isArray(f)) return !f.length || f.includes(atual);
-      if (f.from !== undefined || f.to !== undefined) {
-        const n = id === 'data' ? new Date(item[id]).getTime() : Number(item[id]);
-        const de = id === 'data' ? new Date(f.from).getTime() : Number(f.from);
-        const ate = id === 'data' ? new Date(f.to).getTime() : Number(f.to);
-        return (!f.from || n >= de) && (!f.to || n <= ate);
+  class FirmaTabela {
+    constructor(config = {}) {
+      this.config = config;
+      this.raiz = typeof config.elemento === 'string' ? document.querySelector(config.elemento) : config.elemento;
+      // Compatibilidade com o HTML antigo; novas instâncias usam elemento.
+      if (!this.raiz && config.containerId) this.raiz = document.getElementById(`${config.containerId}-tabela`)?.closest('.af-tabela, main');
+      if (!this.raiz) throw new Error('FirmaTabela: informe um elemento de destino existente.');
+      if (montadas.has(this.raiz)) throw new Error('FirmaTabela: o destino já possui uma instância. Use destruir() antes de remontar.');
+      this.id = config.containerId || `af-tabela-${++sequencia}`;
+      this.colunas = (config.colunas || []).map(c => ({ ...c, nome: c.nome ?? c.header ?? c.id }));
+      const ids = this.colunas.map(c => c.id);
+      if (!ids.length || new Set(ids).size !== ids.length || ids.some(id => !id || ['selecao', 'acoes'].includes(id))) {
+        throw new Error('FirmaTabela: defina colunas com IDs únicos; selecao e acoes são reservados.');
       }
-      return atual.toLocaleLowerCase('pt-BR').includes(String(f).toLocaleLowerCase('pt-BR'));
-    });
-  }
+      if (document.getElementById(`${this.id}-tabela`) && config.elemento) throw new Error(`FirmaTabela: prefixo ${this.id} já está em uso.`);
+      this.recursos = Object.fromEntries(Object.keys(padroes).map(chave => [chave, config.recursos === false ? false : (config.recursos?.[chave] ?? padroes[chave])]));
+      if (config.recursos !== false && config.recursos?.acoes === undefined) this.recursos.acoes = Boolean(config.renderAcoes);
+      if (this.recursos.edicao && typeof config.salvar !== 'function') throw new Error('FirmaTabela: edição requer o callback salvar(item, alteracoes, contexto).');
+      if (config.modo === 'servidor' && this.recursos.buscaIA) throw new Error('FirmaTabela: buscaIA atualmente suporta apenas o modo local.');
+      this.textos = {
+        colunas: '▤ COLUNAS ▾', acoes: 'AÇÕES', vazio: 'Nenhum registro encontrado.',
+        semResultados: 'Nenhum resultado para os filtros atuais.', carregando: 'Carregando dados...',
+        busca: 'Descreva sua busca...', pagina: ({ pagina, totalPaginas, tamanho }) => `Página ${pagina} de ${totalPaginas} · ${tamanho} linhas ▾`,
+        ...config.textos
+      };
+      this.eventos = new AbortController();
+      this.destruida = false;
+      this.versao = 0;
+      this.storageId = config.storageId || this.id;
+      this.estado = {
+        todos: [], visiveis: this.colunas.filter(c => c.visivel !== false || c.ocultavel === false).map(c => c.id),
+        filtros: {}, ordem: null, pagina: 1, tamanho: this.tamanhoValido(config.tamanhoPagina ?? 10),
+        larguras: Object.fromEntries(this.colunas.map(c => [c.id, this.limitarLargura(c.id, c.largura ?? 200)])),
+        selecionados: new Set(), salvos: [], busca: [], plano: null, total: 0, carregando: false
+      };
+      this.estado.larguras.selecao = 34;
+      this.estado.larguras.acoes = config.larguraAcoes ?? 96;
+      this.restaurar();
+      this.raiz.classList.add('af-tabela');
+      this.raiz.dataset.tabelaInstancia = this.id;
+      if (config.elemento) this.montar();
+      this.no = sufixo => this.raiz.querySelector(`[id="${this.id}-${sufixo}"]`);
+      for (const sufixo of ['tabela', 'colunas', 'cabecalho', 'corpo']) {
+        if (!this.no(sufixo)) throw new Error(`FirmaTabela: elemento ${this.id}-${sufixo} ausente.`);
+      }
+      montadas.set(this.raiz, this);
+      this.vincular();
+      if (Array.isArray(config.dados)) this.definirDados(config.dados);
+      else if (config.autoInit !== false) this.render();
+    }
 
-  function dados() {
-    let itens = estado.todos.filter(item => corresponde(item, estado.filtros));
-    if (estado.ordem) {
-      const { id, dir } = estado.ordem;
-      itens.sort((a, b) => {
-        let x = id === 'data' ? new Date(a[id]).getTime() : valorFormatado(a, id);
-        let y = id === 'data' ? new Date(b[id]).getTime() : valorFormatado(b, id);
-        return (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR', { numeric: true })) * (dir === 'asc' ? 1 : -1);
+    tamanhoValido(valor) {
+      if (!Number.isInteger(valor) || valor < 1) throw new Error('FirmaTabela: tamanho da página deve ser inteiro positivo.');
+      return valor;
+    }
+    coluna(id) { return this.colunas.find(c => c.id === id); }
+    permitido(recurso, id) { return this.recursos[recurso] && (!id || (this.coluna(id) && this.coluna(id)[recurso] !== false)); }
+    chave(item) { return this.config.chaveLinha ? this.config.chaveLinha(item) : item.id; }
+    limitarLargura(id, valor) {
+      const c = this.coluna(id);
+      return Math.max(c?.larguraMinima ?? 80, Math.min(c?.larguraMaxima ?? 600, Number(valor) || 200));
+    }
+    ouvir(alvo, evento, funcao, opcoes = {}) {
+      alvo?.addEventListener(evento, funcao, { ...opcoes, signal: this.eventos.signal });
+    }
+    botao(rotulo, acao, classe = '') {
+      const b = criar('button', classe, rotulo); b.type = 'button'; b.addEventListener('click', acao); return b;
+    }
+    parte(tag, sufixo, classe) { const no = criar(tag, classe); no.id = `${this.id}-${sufixo}`; return no; }
+    slot(destino, nome) {
+      const conteudo = this.config.slots?.[nome];
+      if (typeof conteudo === 'function') conteudo(destino, this);
+      else if (conteudo instanceof Node) destino.append(conteudo);
+    }
+    montar() {
+      const chips = this.parte('div', 'chips', 'chips-filtros');
+      const toolbar = criar('section', 'lista-toolbar'); toolbar.setAttribute('aria-label', 'Ferramentas da tabela');
+      const faixa = criar('div', 'toolbar-faixa'), comandos = criar('div', 'toolbar-grupo');
+      this.slot(comandos, 'comandos');
+      if (this.recursos.selecionarColunas) {
+        const b = this.parte('button', 'colunas-botao'); b.type = 'button'; b.textContent = this.textos.colunas;
+        b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', `${this.id}-menu-colunas`); comandos.append(b);
+      }
+      faixa.append(comandos);
+      if (this.recursos.buscaIA) {
+        const grupo = criar('div', 'toolbar-grupo'), form = this.parte('form', 'busca-form'); form.className = 'af-busca';
+        const input = criar('input'); input.placeholder = this.textos.busca; input.maxLength = 500; input.setAttribute('aria-label', this.textos.busca);
+        const enviar = criar('button', '', '↵'); enviar.type = 'submit'; enviar.setAttribute('aria-label', 'Preparar plano de busca');
+        form.append(input, enviar); grupo.append(form); faixa.append(grupo);
+      }
+      toolbar.append(faixa);
+      if (this.recursos.selecionarColunas) {
+        const menu = this.parte('div', 'menu-colunas', 'menu toolbar-menu'); menu.hidden = true; toolbar.append(menu);
+      }
+      if (this.recursos.buscaIA) { const menu = this.parte('div', 'plano-busca', 'menu plano-busca'); menu.hidden = true; toolbar.append(menu); }
+      const painel = criar('section', 'tabela-painel'), scroll = this.parte('div', 'scroll', 'tabela-scroll');
+      const tabela = this.parte('table', 'tabela'); tabela.setAttribute('aria-label', this.config.rotulo || 'Tabela de dados');
+      const head = criar('thead'); head.append(this.parte('tr', 'cabecalho'));
+      tabela.append(this.parte('colgroup', 'colunas'), head, this.parte('tbody', 'corpo')); scroll.append(tabela);
+      const status = this.parte('div', 'estado', 'tabela-estado'); status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
+      painel.append(scroll, status);
+      if (this.recursos.paginacao || this.config.slots?.rodape) {
+        const rodape = criar('footer', 'lista-rodape');
+        if (this.recursos.paginacao) {
+          const b = this.parte('button', 'pagina-texto'); b.type = 'button'; b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', `${this.id}-menu-pagina`);
+          const menu = this.parte('div', 'menu-pagina', 'menu menu-pagina'); menu.hidden = true;
+          const pag = this.parte('nav', 'paginacao'); pag.setAttribute('aria-label', 'Paginação'); rodape.append(b, menu, pag);
+        }
+        this.slot(rodape, 'rodape'); painel.append(rodape);
+      }
+      this.raiz.replaceChildren(chips);
+      if (comandos.childNodes.length || this.recursos.buscaIA) this.raiz.append(toolbar);
+      this.raiz.append(painel);
+    }
+
+    restaurar() {
+      if (!this.recursos.persistencia) return;
+      try {
+        const layout = JSON.parse(localStorage.getItem(`${this.storageId}-layout`) || 'null');
+        const larguras = layout?.larguras || JSON.parse(localStorage.getItem(`${this.storageId}-larguras`) || '{}');
+        this.colunas.forEach(c => { if (Number.isFinite(larguras[c.id])) this.estado.larguras[c.id] = this.limitarLargura(c.id, larguras[c.id]); });
+        if (Array.isArray(layout?.visiveis)) {
+          this.estado.visiveis = [...new Set(layout.visiveis.filter(id => this.coluna(id)))];
+          this.colunas.filter(c => c.ocultavel === false).forEach(c => { if (!this.estado.visiveis.includes(c.id)) this.estado.visiveis.push(c.id); });
+        }
+        if (this.recursos.filtrosSalvos) this.estado.salvos = JSON.parse(localStorage.getItem(`${this.storageId}-filtros`) || '[]').filter(s => this.coluna(s.coluna)).map(s => ({ ...s, filtro: s.filtro ?? s.filtros?.[s.coluna] }));
+      } catch { /* Armazenamento indisponível ou conteúdo antigo inválido não impede a tabela. */ }
+    }
+    persistir() {
+      if (!this.recursos.persistencia) return;
+      try {
+        localStorage.setItem(`${this.storageId}-layout`, JSON.stringify({ larguras: this.estado.larguras, visiveis: this.estado.visiveis }));
+        localStorage.setItem(`${this.storageId}-larguras`, JSON.stringify(this.estado.larguras));
+        if (this.recursos.filtrosSalvos) localStorage.setItem(`${this.storageId}-filtros`, JSON.stringify(this.estado.salvos));
+      } catch { /* Navegação continua sem persistência. */ }
+    }
+    valor(item, c) { return c.valor ? c.valor(item) : item[c.id]; }
+    formatado(item, id) {
+      const c = this.coluna(id), valor = this.valor(item, c);
+      if (c.formatar) return c.formatar(valor, item);
+      if (c.tipo === 'data' && valor) {
+        const data = new Date(valor);
+        return Number.isNaN(data.getTime()) ? String(valor) : new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(data);
+      }
+      return valor;
+    }
+    corresponde(item, filtros) {
+      return Object.entries(filtros).every(([id, filtro]) => {
+        const c = this.coluna(id);
+        if (!c || filtro == null) return true;
+        const valor = String(this.formatado(item, id) ?? '');
+        if (Array.isArray(filtro)) return !filtro.length || filtro.includes(valor);
+        if (typeof filtro === 'object') {
+          const converter = v => c.tipo === 'data' ? new Date(v).getTime() : Number(v);
+          const atual = converter(this.valor(item, c));
+          const inicio = filtro.from !== '' && filtro.from != null, fim = filtro.to !== '' && filtro.to != null;
+          // Datas finais incluem o dia inteiro, sem depender do nome do campo.
+          const ate = converter(filtro.to) + (c.tipo === 'data' && /^\d{4}-\d{2}-\d{2}$/.test(filtro.to) ? 86399999 : 0);
+          return (!inicio || atual >= converter(filtro.from)) && (!fim || atual <= ate);
+        }
+        return valor.toLocaleLowerCase('pt-BR').includes(String(filtro).toLocaleLowerCase('pt-BR'));
       });
     }
-    return itens;
-  }
-
-  function aplicarLarguras() {
-    const ids = ['selecao', 'acoes', ...estado.visiveis], grupo = $(`${config.containerId}-colunas`);
-    grupo.replaceChildren();
-    ids.forEach(id => {
-      const coluna = el('col');
-      coluna.dataset.colunaId = id;
-      coluna.style.width = `${estado.larguras[id]}px`;
-      grupo.append(coluna);
-    });
-    $(`${config.containerId}-tabela`).style.width = `${ids.reduce((s, id) => s + estado.larguras[id], 0)}px`;
-  }
-
-  function alcaColuna(id, nome) {
-    const alca = el('span', 'alca-coluna');
-    alca.tabIndex = 0;
-    alca.setAttribute('role', 'separator');
-    alca.setAttribute('aria-orientation', 'vertical');
-    alca.setAttribute('aria-label', `Redimensionar ${nome}`);
-    alca.setAttribute('aria-valuemin', '80');
-    alca.setAttribute('aria-valuemax', '600');
-    const mudar = largura => {
-      estado.larguras[id] = Math.max(id === 'acoes' ? 86 : 80, Math.min(600, largura));
-      const coluna = [...$(`${config.containerId}-colunas`).children].find(c => c.dataset.colunaId === id);
-      if (coluna) coluna.style.width = `${estado.larguras[id]}px`;
-      $(`${config.containerId}-tabela`).style.width = `${['selecao', 'acoes', ...estado.visiveis].reduce((s, chave) => s + estado.larguras[chave], 0)}px`;
-      alca.setAttribute('aria-valuenow', String(estado.larguras[id]));
-    };
-    alca.setAttribute('aria-valuenow', String(estado.larguras[id]));
-    alca.addEventListener('pointerdown', evento => {
-      evento.preventDefault(); evento.stopPropagation(); fecharMenuColuna();
-      alca.setPointerCapture(evento.pointerId);
-      const inicio = evento.clientX, largura = estado.larguras[id];
-      const mover = e => mudar(largura + e.clientX - inicio);
-      const parar = () => {
-        alca.removeEventListener('pointermove', mover);
-        alca.removeEventListener('pointerup', parar);
-        alca.removeEventListener('pointercancel', parar);
-        localStorage.setItem(`${storageId}-larguras`, JSON.stringify(estado.larguras));
-      };
-      alca.addEventListener('pointermove', mover);
-      alca.addEventListener('pointerup', parar);
-      alca.addEventListener('pointercancel', parar);
-    });
-    alca.addEventListener('keydown', evento => {
-      if (evento.key !== 'ArrowLeft' && evento.key !== 'ArrowRight') return;
-      evento.preventDefault();
-      mudar(estado.larguras[id] + (evento.key === 'ArrowRight' ? 10 : -10));
-      localStorage.setItem(`${storageId}-larguras`, JSON.stringify(estado.larguras));
-    });
-    return alca;
-  }
-
-  function menuColuna(col, ancora) {
-    if (menuColunaAberto?.ancora === ancora) { fecharMenuColuna(); return; }
-    fecharMenuColuna();
-    const menu = el('div', 'menu coluna-menu');
-    menu.setAttribute('role', 'dialog');
-    menu.setAttribute('aria-label', `Opções da coluna ${col.nome}`);
-    const ordenar = (dir, label) => menu.append(botao(label, () => { estado.ordem = { id: col.id, dir }; render(); }));
-    ordenar('asc', col.tipo === 'numero' ? 'Menor → maior' : col.tipo === 'data' ? 'Antigo → recente' : 'A → Z');
-    ordenar('desc', col.tipo === 'numero' ? 'Maior → menor' : col.tipo === 'data' ? 'Recente → antigo' : 'Z → A');
-    menu.append(el('hr'));
-    menu.append(botao('◧ Fix to the left', () => fixar(col.id, true)), botao('◨ Fix to the right', () => fixar(col.id, false)), el('hr'));
-    menu.append(el('p', '', 'FILTROS SALVOS'));
-    const salvos = estado.salvos.filter(s => s.coluna === col.id);
-    if (!salvos.length) menu.append(el('p', '', '(Nenhum filtro salvo)'));
-    salvos.forEach(s => {
-      const label = el('label'), check = el('input');
-      check.type = 'checkbox';
-      check.checked = Boolean(s.ativo);
-      check.addEventListener('change', () => {
-        s.ativo = check.checked;
-        estado.filtros[col.id] = check.checked ? structuredClone(s.filtros[col.id]) : undefined;
-        persistirSalvos(); render();
-      });
-      label.append(check, el('span', '', `● ${s.nome}`));
-      label.style.color = s.cor;
-      menu.append(label);
-    });
-    menu.append(botao('▣ Salvar filtro atual', () => salvarFiltro(col.id)), el('hr'));
-    
-    if (['numero', 'data'].includes(col.tipo)) {
-      const de = el('input'), ate = el('input');
-      de.type = col.tipo === 'data' ? 'date' : 'number'; ate.type = de.type;
-      de.placeholder = 'From'; ate.placeholder = 'To';
-      const f = estado.filtros[col.id] || {}; de.value = f.from || ''; ate.value = f.to || '';
-      menu.append(de, ate, botao('⌕ SEARCH', () => { estado.filtros[col.id] = { from: de.value, to: ate.value }; estado.pagina = 1; menu.remove(); render(); }));
-    } else {
-      const busca = el('input'); busca.placeholder = '⌕ Buscar valores'; menu.append(busca);
-      const lista = el('div', 'valor-lista'); menu.append(lista);
-      const preencher = () => {
-        lista.replaceChildren();
-        const contagens = new Map();
-        estado.todos.forEach(item => {
-          const v = String(valorFormatado(item, col.id) ?? '');
-          contagens.set(v, (contagens.get(v) || 0) + 1);
+    dados() {
+      if (this.config.modo === 'servidor') return [...this.estado.todos];
+      const itens = this.estado.todos.filter(item => this.corresponde(item, this.estado.filtros));
+      if (this.estado.ordem) {
+        const { id, dir } = this.estado.ordem, c = this.coluna(id);
+        itens.sort((a, b) => {
+          const converter = item => c.tipo === 'data' ? new Date(this.valor(item, c)).getTime() : c.tipo === 'numero' ? Number(this.valor(item, c)) : this.formatado(item, id);
+          const x = converter(a), y = converter(b);
+          return (typeof x === 'number' ? x - y : String(x ?? '').localeCompare(String(y ?? ''), 'pt-BR', { numeric: true })) * (dir === 'asc' ? 1 : -1);
         });
-        [...contagens].filter(([v]) => v.toLowerCase().includes(busca.value.toLowerCase())).sort((a, b) => a[0].localeCompare(b[0])).forEach(([v, n]) => {
-          const label = el('label'), check = el('input'); check.type = 'checkbox';
-          check.checked = (estado.filtros[col.id] || []).includes(v);
-          check.addEventListener('change', () => {
-            const s = new Set(estado.filtros[col.id] || []);
-            check.checked ? s.add(v) : s.delete(v);
-            estado.filtros[col.id] = [...s]; estado.pagina = 1; render();
-          });
-          label.append(check, el('span', '', `${v} (${n})`)); lista.append(label);
+      }
+      return itens;
+    }
+    idsVisiveis() { return [...(this.recursos.selecao ? ['selecao'] : []), ...(this.recursos.acoes ? ['acoes'] : []), ...this.estado.visiveis]; }
+    aplicarLarguras() {
+      const grupo = this.no('colunas'), ids = this.idsVisiveis(); grupo.replaceChildren();
+      ids.forEach(id => { const col = criar('col'); col.dataset.colunaId = id; col.style.width = `${this.estado.larguras[id]}px`; grupo.append(col); });
+      this.no('tabela').style.width = `${ids.reduce((s, id) => s + this.estado.larguras[id], 0)}px`;
+    }
+    alca(id, nome) {
+      const alca = criar('span', 'alca-coluna'); alca.tabIndex = 0;
+      alca.setAttribute('role', 'separator'); alca.setAttribute('aria-orientation', 'vertical'); alca.setAttribute('aria-label', `Redimensionar ${nome}`);
+      const c = this.coluna(id); alca.setAttribute('aria-valuemin', c?.larguraMinima ?? 80); alca.setAttribute('aria-valuemax', c?.larguraMaxima ?? 600);
+      const mudar = largura => {
+        this.estado.larguras[id] = this.limitarLargura(id, largura); this.aplicarLarguras();
+        alca.setAttribute('aria-valuenow', this.estado.larguras[id]);
+      };
+      alca.setAttribute('aria-valuenow', this.estado.larguras[id]);
+      alca.addEventListener('pointerdown', evento => {
+        evento.preventDefault(); evento.stopPropagation(); this.fecharMenus(); alca.setPointerCapture(evento.pointerId);
+        const inicio = evento.clientX, largura = this.estado.larguras[id];
+        const mover = e => mudar(largura + e.clientX - inicio);
+        const parar = () => { alca.removeEventListener('pointermove', mover); alca.removeEventListener('pointerup', parar); alca.removeEventListener('pointercancel', parar); this.persistir(); };
+        alca.addEventListener('pointermove', mover); alca.addEventListener('pointerup', parar); alca.addEventListener('pointercancel', parar);
+      });
+      alca.addEventListener('keydown', e => {
+        if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+        e.preventDefault(); mudar(this.estado.larguras[id] + (e.key === 'ArrowRight' ? 10 : -10)); this.persistir();
+      });
+      return alca;
+    }
+
+    fecharMenus() {
+      this.raiz.querySelectorAll('.menu').forEach(m => m.hidden = true);
+      this.raiz.querySelectorAll('[aria-expanded]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+      if (this.menuHeader) { this.menuHeader.ancora.setAttribute('aria-expanded', 'false'); this.menuHeader.menu.remove(); this.menuHeader = null; }
+    }
+    posicionar(menu, ancora) {
+      if (!menu || menu.hidden) return;
+      Object.assign(menu.style, { position: 'fixed', right: 'auto', bottom: 'auto', overflowY: 'auto', maxWidth: `${innerWidth - 24}px`, zIndex: '1000' });
+      const caixa = ancora.getBoundingClientRect();
+      menu.style.left = `${Math.max(12, Math.min(caixa.left, innerWidth - menu.offsetWidth - 12))}px`;
+      menu.style.top = `${caixa.bottom + 6}px`;
+      menu.style.maxHeight = `${Math.max(60, innerHeight - caixa.bottom - 18)}px`;
+    }
+    reposicionar() {
+      for (const [menu, botao] of [['menu-colunas', 'colunas-botao'], ['menu-pagina', 'pagina-texto']]) this.posicionar(this.no(menu), this.no(botao));
+      if (this.menuHeader) this.posicionar(this.menuHeader.menu, this.menuHeader.ancora);
+    }
+    abrirColunas() {
+      const menu = this.no('menu-colunas'), b = this.no('colunas-botao'), aberto = !menu.hidden;
+      this.fecharMenus(); if (aberto) return;
+      const rascunho = new Set(this.estado.visiveis), busca = criar('input'), lista = criar('div'); busca.placeholder = 'Buscar colunas'; busca.setAttribute('aria-label', 'Buscar colunas');
+      const preencher = () => {
+        lista.replaceChildren(); this.colunas.filter(c => c.nome.toLocaleLowerCase().includes(busca.value.toLocaleLowerCase())).forEach(c => {
+          const label = criar('label'), check = criar('input'); check.type = 'checkbox'; check.checked = rascunho.has(c.id); check.disabled = c.ocultavel === false;
+          check.addEventListener('change', () => check.checked ? rascunho.add(c.id) : rascunho.delete(c.id)); label.append(check, criar('span', '', c.nome)); lista.append(label);
         });
       };
       busca.addEventListener('input', preencher); preencher();
+      menu.replaceChildren(busca, lista, this.botao('Restaurar', () => { rascunho.clear(); this.colunas.filter(c => c.visivel !== false || c.ocultavel === false).forEach(c => rascunho.add(c.id)); preencher(); }), this.botao('Aplicar', () => this.definirColunas([...rascunho]), 'primaria'));
+      menu.hidden = false; b.setAttribute('aria-expanded', 'true'); this.posicionar(menu, b);
     }
-    menu.append(el('hr'), botao('⊘ Limpar todos os filtros', () => { estado.filtros = {}; estado.busca = []; estado.pagina = 1; estado.salvos.forEach(s => s.ativo = false); persistirSalvos(); render(); }));
-    document.body.append(menu); menuColunaAberto = { menu, ancora }; ancora.setAttribute('aria-expanded', 'true'); posicionarMenuColuna();
-  }
-
-  function fixar(id, esquerda) {
-    estado.visiveis = estado.visiveis.filter(x => x !== id);
-    esquerda ? estado.visiveis.unshift(id) : estado.visiveis.push(id);
-    render();
-  }
-
-  function persistirSalvos() { localStorage.setItem(`${storageId}-filtros`, JSON.stringify(estado.salvos)); }
-  
-  function salvarFiltro(coluna) {
-    if (!estado.filtros[coluna]) { config.toast?.('Crie um filtro nesta coluna antes de salvar.'); return; }
-    const nome = prompt('Nome do filtro:'); if (!nome?.trim()) return;
-    const cores = ['#C9FF3D', '#E8792B', '#A9C2AC'];
-    estado.salvos.push({ nome: nome.trim().slice(0, 40), coluna, cor: cores[estado.salvos.length % cores.length], filtros: { [coluna]: structuredClone(estado.filtros[coluna]) }, ativo: true });
-    persistirSalvos(); render();
-  }
-
-  function menuColunas() {
-    const menu = $(`${config.containerId}-menu-colunas`); menu.replaceChildren();
-    const busca = el('input'); busca.placeholder = '⌕ Buscar colunas'; menu.append(busca);
-    const grupo = el('div'); menu.append(grupo);
-    function preencher() {
-      grupo.replaceChildren();
-      colunas.filter(c => c.nome.toLowerCase().includes(busca.value.toLowerCase())).forEach(c => {
-        const label = el('label'), check = el('input'); check.type = 'checkbox';
-        check.checked = estado.rascunho.includes(c.id);
-        check.addEventListener('change', () => { estado.rascunho = check.checked ? [...estado.rascunho, c.id] : estado.rascunho.filter(x => x !== c.id); });
-        label.append(check, el('span', '', c.nome)); grupo.append(label);
-      });
-    }
-    busca.addEventListener('input', preencher); preencher();
-    menu.append(el('hr'), botao('↺', () => { estado.rascunho = [...padrao]; preencher(); }), botao('✓ UPDATE', () => { estado.visiveis = padrao.filter(id => estado.rascunho.includes(id)); fecharMenus(); render(); }, 'primaria'));
-  }
-
-  function linhaDefault(item) {
-    const tr = el('tr');
-    
-    const selecao = el('td', 'coluna-selecao');
-    if (config.acoesFixas) selecao.classList.add('coluna-selecao-fixa');
-    const checkbox = el('input'); checkbox.type = 'checkbox';
-    checkbox.checked = estado.selecionados.has(item.id);
-    checkbox.addEventListener('change', () => {
-      if (checkbox.checked) estado.selecionados.add(item.id); else estado.selecionados.delete(item.id);
-      render();
-    });
-    selecao.append(checkbox); tr.append(selecao);
-    
-    const acoes = el('td');
-    if (config.acoesFixas) acoes.classList.add('coluna-acoes-fixa');
-    if (config.renderAcoes) {
-      config.renderAcoes(item, acoes, estado, render, api);
-    }
-    tr.append(acoes);
-    
-    estado.visiveis.forEach(id => {
-      const td = el('td'); 
-      td.title = String(valorFormatado(item, id) ?? '');
-      td.style.cursor = 'pointer'; // Indicador de edição in-line
-      
-      if (config.renderCelula) {
-        config.renderCelula(item, id, td, estado, render, api);
-      } else {
-        let texto_solto = String(valorFormatado(item, id) ?? '-');
-        if (texto_solto.includes(',')) {
-          let pedacos = texto_solto.split(',');
-          pedacos.forEach(pedaco => {
-            let bagulhinho = document.createElement('a');
-            bagulhinho.href = '#';
-            bagulhinho.className = 'badge-roca-neon';
-            bagulhinho.textContent = pedaco.trim();
-            td.append(bagulhinho);
-          });
+    abrirHeader(c, ancora) {
+      const aberto = this.menuHeader?.ancora === ancora; this.fecharMenus(); if (aberto) return;
+      const menu = criar('div', 'menu coluna-menu'); menu.dataset.tabelaInstancia = this.id;
+      menu.setAttribute('role', 'dialog'); menu.setAttribute('aria-label', `Opções da coluna ${c.nome}`);
+      if (this.permitido('ordenacao', c.id)) {
+        menu.append(this.botao('Ordenar crescente', () => this.ordenar(c.id, 'asc')), this.botao('Ordenar decrescente', () => this.ordenar(c.id, 'desc')));
+      }
+      if (this.permitido('reordenacao', c.id)) {
+        for (const [rotulo, inicio] of [['Mover para o início', true], ['Mover para o fim', false]]) menu.append(this.botao(rotulo, () => {
+          const ids = this.estado.visiveis.filter(id => id !== c.id); inicio ? ids.unshift(c.id) : ids.push(c.id); this.estado.visiveis = ids; this.persistir(); this.render();
+        }));
+      }
+      if (this.permitido('filtrosHeader', c.id)) {
+        menu.append(criar('hr'));
+        if (this.recursos.filtrosSalvos) {
+          menu.append(criar('p', '', 'FILTROS SALVOS'));
+          this.estado.salvos.filter(s => s.coluna === c.id).forEach(s => menu.append(this.botao(s.nome, () => this.filtrar(c.id, copiar(s.filtro)))));
+          menu.append(this.botao('Salvar filtro atual', () => {
+            if (!this.estado.filtros[c.id]) return;
+            const nome = prompt('Nome do filtro:'); if (!nome?.trim()) return;
+            this.estado.salvos.push({ nome: nome.trim().slice(0, 80), coluna: c.id, filtro: copiar(this.estado.filtros[c.id]) }); this.persistir(); this.fecharMenus();
+          }));
+        }
+        if (this.config.modo === 'servidor' || ['numero', 'data'].includes(c.tipo)) {
+          const de = criar('input'), ate = criar('input');
+          if (['numero', 'data'].includes(c.tipo)) {
+            de.type = ate.type = c.tipo === 'data' ? 'date' : 'number'; de.setAttribute('aria-label', 'De'); ate.setAttribute('aria-label', 'Até');
+            de.value = this.estado.filtros[c.id]?.from ?? ''; ate.value = this.estado.filtros[c.id]?.to ?? '';
+            menu.append(de, ate, this.botao('Filtrar', () => this.filtrar(c.id, { from: de.value, to: ate.value })));
+          } else {
+            de.setAttribute('aria-label', `Filtrar ${c.nome}`); de.placeholder = 'Contém...'; de.value = typeof this.estado.filtros[c.id] === 'string' ? this.estado.filtros[c.id] : '';
+            menu.append(de, this.botao('Filtrar', () => this.filtrar(c.id, de.value)));
+          }
         } else {
-          td.textContent = texto_solto;
-        }
-      }
-      
-      td.addEventListener('dblclick', e => {
-        if (e.target.closest('button,a,input') || window.getSelection()?.toString()) return;
-        abrirEdicaoInline(item, id, td);
-      });
-      tr.append(td);
-    });
-    
-    tr.addEventListener('click', e => {
-      if (e.target.closest('.btn-ver-linha')) abrirPainelExpansao(item, tr, false);
-      else if (e.target.closest('.btn-editar-linha')) abrirPainelExpansao(item, tr, true);
-      else if (!e.target.closest('button,a,input') && !window.getSelection()?.toString() && config.onRowClick) config.onRowClick(item, estado, render);
-    });
-    return tr;
-  }
-  
-  function abrirEdicaoInline(item, colId, td) {
-    const valorOriginal = item[colId];
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = valorOriginal || '';
-    input.className = 'input-inline';
-    
-    td.replaceChildren(input);
-    input.focus();
-    
-    const confirmar = async () => {
-      const novoValor = input.value.trim();
-      if (novoValor === String(valorOriginal || '')) {
-        render(); // desfaz se não mudou
-        return;
-      }
-      abrirModalConfirmacao(item, { [colId]: novoValor }, () => render(), () => setTimeout(() => input.focus(), 10));
-    };
-    
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); confirmar(); }
-      if (e.key === 'Escape') render();
-    });
-    input.addEventListener('focusout', () => { setTimeout(() => { if (!document.getElementById('modal-confirmacao-salvar')?.open) confirmar(); }, 150); });
-  }
-
-  function abrirPainelExpansao(item, tr, editMode = false) {
-    let painel = document.getElementById('painel-expansao-flutuante');
-    if (!painel) {
-      painel = document.createElement('div');
-      painel.id = 'painel-expansao-flutuante';
-      painel.className = 'painel-expansao-overlay';
-      document.body.append(painel);
-    }
-    
-    // Limpar eventos antigos se houver
-    if (painel._removerClickFora) {
-      document.removeEventListener('click', painel._removerClickFora);
-    }
-    
-    const trRect = tr.getBoundingClientRect();
-    painel.style.top = `${trRect.bottom + window.scrollY}px`;
-    painel.style.left = `${Math.max(20, trRect.left)}px`;
-    painel.style.width = `${Math.min(window.innerWidth - 40, trRect.width)}px`;
-    painel.style.display = 'block';
-    
-    painel.innerHTML = `
-      <div class="painel-header">
-        <h3>${editMode ? 'Editar' : 'Visualizar'} Detalhes</h3>
-        <button class="icone fechar-painel">✕</button>
-      </div>
-      <div class="painel-corpo"></div>
-      <div class="painel-footer" ${editMode ? '' : 'hidden'}>
-        <button class="btn-cancelar-painel">Cancelar</button>
-        <button class="primaria btn-salvar-painel">Salvar Alterações</button>
-      </div>
-    `;
-    
-    const corpo = painel.querySelector('.painel-corpo');
-    const valoresEditados = {};
-    
-    colunas.forEach(col => {
-      const formGroup = document.createElement('div');
-      formGroup.className = 'form-grupo';
-      const lbl = document.createElement('label');
-      lbl.textContent = col.nome;
-      formGroup.append(lbl);
-      
-      const valorAtual = item[col.id];
-      
-      if (editMode && col.id !== 'id') {
-        let valorEditavel = valorAtual;
-        if (Array.isArray(valorAtual)) {
-            valorEditavel = valorAtual.map(x => (x && typeof x === 'object') ? (x.nome || x.email || JSON.stringify(x)) : x).join(', ');
-        } else if (valorAtual && typeof valorAtual === 'object') {
-            valorEditavel = valorAtual.nome || valorAtual.titulo || JSON.stringify(valorAtual);
-        }
-        
-        if (col.tipo === 'enum' || col.id === 'status') {
-            const sel = document.createElement('select');
-            sel.className = 'input-inline';
-            const opcoes = [...new Set(estado.todos.map(x => x[col.id]).filter(Boolean))];
-            opcoes.forEach(op => {
-                const opt = document.createElement('option');
-                opt.value = op;
-                opt.textContent = op;
-                if (op === valorAtual) opt.selected = true;
-                sel.append(opt);
+          const busca = criar('input'), lista = criar('div', 'valor-lista'); busca.placeholder = 'Buscar valores'; busca.setAttribute('aria-label', `Buscar valores de ${c.nome}`);
+          const selecionados = new Set(Array.isArray(this.estado.filtros[c.id]) ? this.estado.filtros[c.id] : []);
+          const preencher = () => {
+            lista.replaceChildren(); const contagens = new Map();
+            this.estado.todos.forEach(item => { const v = String(this.formatado(item, c.id) ?? ''); contagens.set(v, (contagens.get(v) || 0) + 1); });
+            [...contagens].filter(([v]) => v.toLocaleLowerCase().includes(busca.value.toLocaleLowerCase())).sort(([a], [b]) => a.localeCompare(b)).forEach(([v, n]) => {
+              const label = criar('label'), check = criar('input'); check.type = 'checkbox'; check.checked = selecionados.has(v);
+              check.addEventListener('change', () => check.checked ? selecionados.add(v) : selecionados.delete(v)); label.append(check, criar('span', '', `${v} (${n})`)); lista.append(label);
             });
-            sel.onchange = e => valoresEditados[col.id] = e.target.value;
-            formGroup.append(sel);
-        } else {
-            const inp = document.createElement('input');
-            inp.type = col.tipo === 'data' ? 'datetime-local' : 'text';
-            inp.value = valorEditavel || '';
-            inp.oninput = e => valoresEditados[col.id] = e.target.value;
-            formGroup.append(inp);
+          };
+          busca.addEventListener('input', preencher); preencher(); menu.append(busca, lista, this.botao('Aplicar filtro', () => this.filtrar(c.id, [...selecionados])));
         }
-      } else {
-        const span = document.createElement('div');
-        span.className = 'valor-leitura';
-        
-        if (col.id === 'signatarios' && Array.isArray(item.signatarios)) {
-          span.innerHTML = item.signatarios.map(s => `<span class="badge-roca-neon">${s.nome || s}</span>`).join(' ');
-        } else {
-          span.textContent = valorFormatado(item, col.id) || '-';
+        menu.append(this.botao('Limpar filtro desta coluna', () => this.filtrar(c.id, null)), this.botao('Limpar todos os filtros', () => this.limparFiltros()));
+      }
+      document.body.append(menu); this.menuHeader = { menu, ancora }; ancora.setAttribute('aria-expanded', 'true'); this.posicionar(menu, ancora);
+    }
+
+    linha(item) {
+      const tr = criar('tr');
+      if (this.recursos.selecao) {
+        const td = criar('td', `coluna-selecao${this.config.acoesFixas ? ' coluna-selecao-fixa' : ''}`), check = criar('input'); check.type = 'checkbox';
+        check.setAttribute('aria-label', `Selecionar ${this.chave(item)}`); check.checked = this.estado.selecionados.has(this.chave(item));
+        check.addEventListener('change', () => { check.checked ? this.estado.selecionados.add(this.chave(item)) : this.estado.selecionados.delete(this.chave(item)); this.config.onSelecao?.(this.obterSelecionados(), this); this.render(); }); td.append(check); tr.append(td);
+      }
+      if (this.recursos.acoes) {
+        const td = criar('td', this.config.acoesFixas ? 'coluna-acoes-fixa' : '');
+        this.config.renderAcoes?.(item, td, this.estado, () => this.render(), this.api.bind(this), this); tr.append(td);
+      }
+      this.estado.visiveis.forEach(id => {
+        const c = this.coluna(id), td = criar('td'); td.title = String(this.formatado(item, id) ?? '');
+        if (c.render) c.render(item, td, this);
+        else if (this.config.renderCelula) this.config.renderCelula(item, id, td, this.estado, () => this.render(), this.api.bind(this), this);
+        else td.textContent = String(this.formatado(item, id) ?? '');
+        if (this.permitido('edicao', id) && c.editavel !== false) {
+          td.classList.add('af-editavel'); td.addEventListener('dblclick', e => {
+            if (!e.target.closest('button,a,input,select,textarea') && !window.getSelection()?.toString()) this.editar(item, c, td);
+          });
         }
-        formGroup.append(span);
-      }
-      corpo.append(formGroup);
-    });
-    
-    painel.querySelector('.fechar-painel').onclick = () => painel.style.display = 'none';
-    if (editMode) {
-      painel.querySelector('.btn-cancelar-painel').onclick = () => painel.style.display = 'none';
-      painel.querySelector('.btn-salvar-painel').onclick = () => {
-        painel.style.display = 'none';
-        abrirModalConfirmacao(item, valoresEditados, () => render(), () => abrirPainelExpansao(item, tr, true));
-      };
-    }
-    
-    const clickFora = e => {
-      if (painel.style.display !== 'none' && !painel.contains(e.target) && !e.target.closest('.btn-ver-linha, .btn-editar-linha') && !document.getElementById('modal-confirmacao-salvar')?.contains(e.target)) {
-        painel.style.display = 'none';
-        document.removeEventListener('click', clickFora);
-        painel._removerClickFora = null;
-      }
-    };
-    painel._removerClickFora = clickFora;
-    setTimeout(() => document.addEventListener('click', clickFora), 50);
-  }
-
-  function abrirModalConfirmacao(itemOriginal, valoresNovos, onConfirm, onCancel) {
-    let dialog = document.getElementById('modal-confirmacao-salvar');
-    if (!dialog) {
-      dialog = document.createElement('dialog');
-      dialog.id = 'modal-confirmacao-salvar';
-      dialog.className = 'modal-exportacao'; // reaproveita estilo de modal
-      document.body.append(dialog);
-    }
-    
-    dialog.innerHTML = `
-      <div class="modal-conteudo">
-        <h2>Confirmar Edição</h2>
-        <p>Você tem certeza que deseja salvar estas alterações?</p>
-        <div class="modal-acoes">
-          <button id="btn-cancelar-edicao" type="button">Cancelar</button>
-          <button id="btn-voltar-edicao" type="button">Voltar Edição</button>
-          <button id="btn-salvar-edicao" type="button" class="primaria">Salvar</button>
-        </div>
-      </div>
-    `;
-    
-    dialog.showModal();
-    
-    dialog.querySelector('#btn-cancelar-edicao').onclick = () => { dialog.close(); onConfirm(); }; // onConfirm reconstrói a linha cancelando o input
-    dialog.querySelector('#btn-voltar-edicao').onclick = () => { dialog.close(); if(onCancel) onCancel(); };
-    dialog.querySelector('#btn-salvar-edicao').onclick = async () => {
-      try {
-        const mudancas = { ...itemOriginal, ...valoresNovos };
-        // Chamada real seria: await api(`/${itemOriginal.id}`, { method: 'PUT', body: JSON.stringify(mudancas) });
-        // Simulação de salvamento local:
-        Object.assign(itemOriginal, valoresNovos);
-        if (config.toast) config.toast('Alterações salvas com sucesso!');
-        dialog.close();
-        onConfirm();
-      } catch(e) {
-        if (config.toast) config.toast('Erro ao salvar: ' + e.message, true);
-        dialog.close();
-        if(onCancel) onCancel();
-      }
-    };
-  }
-
-  function render() {
-    fecharMenuColuna();
-    const chips = $(`${config.containerId}-chips`);
-    if (chips) {
-      chips.replaceChildren();
-      Object.entries(estado.filtros).forEach(([id, f]) => {
-        if (!f || (Array.isArray(f) && !f.length)) return;
-        const chip = el('span', 'chip', `${colunas.find(c => c.id === id)?.nome}: ${Array.isArray(f) ? f.join(', ') : typeof f === 'object' ? `${f.from || '…'}–${f.to || '…'}` : f}`);
-        chip.append(botao('✕', () => { delete estado.filtros[id]; estado.pagina = 1; render(); }, 'icone'));
-        chips.append(chip);
+        tr.append(td);
       });
-      if (estado.busca.length) {
-        const chip = el('span', 'chip', `⌁ ${estado.busca.map(x => x.texto).join('; ')}`);
-        chip.append(botao('✕', () => { estado.busca.forEach(x => x.desfazer()); estado.busca = []; render(); }, 'icone'));
-        chips.append(chip);
-      }
+      tr.addEventListener('click', e => {
+        if (e.target.closest('.btn-ver-linha') && this.recursos.detalhes) this.detalhes(item);
+        else if (e.target.closest('.btn-editar-linha') && this.recursos.edicao) this.detalhes(item, true);
+        else if (!e.target.closest('button,a,input,select,textarea') && !window.getSelection()?.toString()) this.config.onRowClick?.(item, this.estado, () => this.render(), this);
+      });
+      return tr;
     }
-    
-    aplicarLarguras();
-    const head = $(`${config.containerId}-cabecalho`); head.replaceChildren();
-    
-    const todosItens = dados();
-    const selecaoTitulo = el('th');
-    if (config.acoesFixas) selecaoTitulo.classList.add('coluna-selecao-fixa');
-    const selecaoDiv = el('div', 'titulo-selecao');
-    const checkboxGeral = el('input');
-    checkboxGeral.type = 'checkbox';
-    checkboxGeral.checked = todosItens.length > 0 && estado.selecionados.size === todosItens.length && todosItens.every(i => estado.selecionados.has(i.id));
-    checkboxGeral.addEventListener('change', () => {
-      if (checkboxGeral.checked) todosItens.forEach(i => estado.selecionados.add(i.id));
-      else estado.selecionados.clear();
-      render();
-    });
-    selecaoDiv.append(checkboxGeral); selecaoTitulo.append(selecaoDiv); head.append(selecaoTitulo);
-    
-    const acoesTitulo = el('th');
-    if (config.acoesFixas) acoesTitulo.classList.add('coluna-acoes-fixa');
-    acoesTitulo.append(el('span', 'titulo-coluna titulo-coluna-fixa', 'AÇÕES'), alcaColuna('acoes', 'ações')); head.append(acoesTitulo);
-    estado.visiveis.forEach(id => {
-      const c = colunas.find(x => x.id === id), th = el('th');
-      const titulo = botao(`${c.nome}${estado.ordem?.id === id ? (estado.ordem.dir === 'asc' ? ' ▲' : ' ▼') : ''}`, () => menuColuna(c, titulo), 'titulo-coluna');
-      titulo.setAttribute('aria-label', `Opções da coluna ${c.nome}`);
-      titulo.setAttribute('aria-expanded', 'false');
-      if (estado.filtros[id]) titulo.classList.add('filtrada');
-      th.append(titulo, alcaColuna(id, c.nome)); head.append(th);
-    });
-    
-    const total = Math.max(1, Math.ceil(todosItens.length / estado.tamanho));
-    estado.pagina = Math.min(estado.pagina, total);
-    
-    const corpo = $(`${config.containerId}-corpo`); corpo.replaceChildren();
-    todosItens.slice((estado.pagina - 1) * estado.tamanho, estado.pagina * estado.tamanho).forEach(item => corpo.append(linhaDefault(item)));
-    
-    const textStatus = !config.credenciais() ? 'Conecte para carregar os dados.' : !estado.todos.length ? 'Nenhum registro encontrado.' : !todosItens.length ? 'Nenhum resultado para os filtros atuais. Use ⊘ para limpar.' : '';
-    const stEl = $(`${config.containerId}-estado`); if (stEl) stEl.textContent = textStatus;
-    
-    const pt = $(`${config.containerId}-pagina-texto`);
-    if (pt) {
-      pt.textContent = `PAGE ${estado.pagina} OF ${total} · ${estado.tamanho} LINHAS ▾`;
-      const pMenu = $(`${config.containerId}-menu-pagina`); if(pMenu) pMenu.hidden = true;
-      pt.setAttribute('aria-expanded', 'false');
+    async salvar(item, alteracoes) {
+      try {
+        const resultado = await this.config.salvar(item, alteracoes, this);
+        if (this.destruida) return false;
+        Object.assign(item, resultado || alteracoes); this.render(); this.config.toast?.('Alterações salvas.'); return true;
+      } catch (erro) { this.config.toast?.(erro.message, true); const status = this.no('estado'); if (status) status.textContent = erro.message; return false; }
     }
-    
-    const pag = $(`${config.containerId}-paginacao`);
-    if (pag) {
-      pag.replaceChildren();
-      const anterior = botao('←', () => { estado.pagina--; render(); }); anterior.disabled = estado.pagina === 1; pag.append(anterior);
-      let inicio = Math.max(1, Math.min(estado.pagina - 2, total - 4));
-      for (let p = inicio; p <= Math.min(total, inicio + 4); p++) pag.append(botao(String(p), () => { estado.pagina = p; render(); }, p === estado.pagina ? 'atual' : ''));
-      const proximo = botao('→', () => { estado.pagina++; render(); }); proximo.disabled = estado.pagina === total; pag.append(proximo);
+    editar(item, c, td) {
+      const input = criar('input'); input.type = c.tipo === 'numero' ? 'number' : 'text'; input.value = this.valor(item, c) ?? '';
+      input.setAttribute('aria-label', `Editar ${c.nome}`); td.replaceChildren(input); input.focus();
+      let salvando = false;
+      input.addEventListener('keydown', async e => {
+        if (e.key === 'Escape') { e.stopPropagation(); this.render(); }
+        if (e.key === 'Enter' && !salvando) {
+          e.preventDefault(); salvando = true; input.disabled = true;
+          const valor = c.tipo === 'numero' ? Number(input.value) : input.value;
+          if (!await this.salvar(item, { [c.id]: valor })) { salvando = false; input.disabled = false; input.focus(); }
+        }
+      });
+      // Sair da célula cancela: nenhuma gravação implícita ao clicar fora.
+      input.addEventListener('blur', () => { if (!salvando && !this.destruida) this.render(); });
     }
-  }
+    detalhes(item, editar = false) {
+      if ((!editar && !this.recursos.detalhes) || (editar && !this.recursos.edicao)) return;
+      this.dialogo?.remove(); const dialog = criar('dialog', 'modal-exportacao af-detalhes'); dialog.dataset.tabelaInstancia = this.id; this.dialogo = dialog;
+      dialog.setAttribute('aria-label', editar ? 'Editar registro' : 'Detalhes do registro');
+      dialog.append(criar('h2', '', editar ? 'Editar registro' : 'Detalhes do registro'));
+      const campos = new Map();
+      this.colunas.forEach(c => {
+        const label = criar('label', 'af-campo', c.nome);
+        if (editar && this.permitido('edicao', c.id) && c.editavel !== false) {
+          const input = criar('input'); input.type = c.tipo === 'numero' ? 'number' : 'text'; input.value = this.valor(item, c) ?? ''; campos.set(c.id, input); label.append(input);
+        } else label.append(criar('div', '', this.formatado(item, c.id)));
+        dialog.append(label);
+      });
+      const fechar = this.botao('Fechar', () => dialog.close()); dialog.append(fechar);
+      if (editar) dialog.append(this.botao('Salvar alterações', async e => {
+        e.currentTarget.disabled = true;
+        const alteracoes = Object.fromEntries([...campos].map(([id, input]) => [id, this.coluna(id).tipo === 'numero' ? Number(input.value) : input.value]));
+        if (await this.salvar(item, alteracoes)) dialog.close(); else e.target.disabled = false;
+      }, 'primaria'));
+      dialog.addEventListener('close', () => { dialog.remove(); if (this.dialogo === dialog) this.dialogo = null; }); document.body.append(dialog); dialog.showModal();
+    }
 
-  // Comportamentos de UI
-  document.addEventListener('pointerdown', e => {
-    if (menuColunaAberto && !menuColunaAberto.menu.contains(e.target) && !menuColunaAberto.ancora.contains(e.target)) fecharMenuColuna();
-    const pm = $(`${config.containerId}-menu-pagina`), pt = $(`${config.containerId}-pagina-texto`);
-    if (pm && !pm.hidden && !pm.contains(e.target) && !pt.contains(e.target)) { pm.hidden = true; pt.setAttribute('aria-expanded', 'false'); }
-  });
-  window.addEventListener('resize', () => { posicionarMenuColuna(); posicionarMenuColunas(); });
-  
-  let larguraAnterior = 0;
-  const observadorResize = new ResizeObserver(entradas => {
-    for (const entrada of entradas) {
-      const novaLargura = entrada.contentRect.width;
-      if (larguraAnterior && novaLargura !== larguraAnterior && novaLargura > 0) {
-        const fator = novaLargura / larguraAnterior;
-        ['acoes', ...estado.visiveis].forEach(id => {
-          estado.larguras[id] = Math.max(id === 'acoes' ? 86 : 80, Math.min(600, estado.larguras[id] * fator));
+    render() {
+      if (this.destruida) return;
+      this.fecharMenus(); this.aplicarLarguras();
+      const itens = this.dados();
+      if (this.config.modo !== 'servidor') this.estado.total = itens.length;
+      const totalPaginas = this.recursos.paginacao ? Math.max(1, Math.ceil(this.estado.total / this.estado.tamanho)) : 1;
+      this.estado.pagina = Math.max(1, Math.min(this.estado.pagina, totalPaginas));
+      const head = this.no('cabecalho'); head.replaceChildren();
+      if (this.recursos.selecao) {
+        const th = criar('th', this.config.acoesFixas ? 'coluna-selecao-fixa' : ''), check = criar('input'); check.type = 'checkbox'; check.setAttribute('aria-label', 'Selecionar os registros carregados e filtrados');
+        const selecionados = itens.filter(item => this.estado.selecionados.has(this.chave(item))).length;
+        check.checked = itens.length > 0 && selecionados === itens.length; check.indeterminate = selecionados > 0 && selecionados < itens.length;
+        check.addEventListener('change', () => { itens.forEach(item => check.checked ? this.estado.selecionados.add(this.chave(item)) : this.estado.selecionados.delete(this.chave(item))); this.config.onSelecao?.(this.obterSelecionados(), this); this.render(); }); th.append(check); head.append(th);
+      }
+      if (this.recursos.acoes) {
+        const th = criar('th', this.config.acoesFixas ? 'coluna-acoes-fixa' : ''); th.append(criar('span', 'titulo-coluna titulo-coluna-fixa', this.textos.acoes));
+        if (this.recursos.redimensionamento) th.append(this.alca('acoes', this.textos.acoes)); head.append(th);
+      }
+      this.estado.visiveis.forEach(id => {
+        const c = this.coluna(id), th = criar('th'); th.scope = 'col';
+        const interativo = ['ordenacao', 'filtrosHeader', 'reordenacao'].some(r => this.permitido(r, id));
+        const rotulo = `${c.nome}${this.estado.ordem?.id === id ? (this.estado.ordem.dir === 'asc' ? ' ▲' : ' ▼') : ''}`;
+        const titulo = interativo ? this.botao(rotulo, () => this.abrirHeader(c, titulo), 'titulo-coluna') : criar('span', 'titulo-coluna titulo-coluna-fixa', rotulo);
+        if (interativo) { titulo.setAttribute('aria-label', `Opções da coluna ${c.nome}`); titulo.setAttribute('aria-expanded', 'false'); }
+        if (this.estado.filtros[id] != null) titulo.classList.add('filtrada');
+        th.append(titulo); if (this.permitido('redimensionamento', id)) th.append(this.alca(id, c.nome)); head.append(th);
+      });
+      const pagina = this.config.modo === 'servidor' || !this.recursos.paginacao ? itens : itens.slice((this.estado.pagina - 1) * this.estado.tamanho, this.estado.pagina * this.estado.tamanho);
+      this.no('corpo').replaceChildren(...pagina.map(item => this.linha(item)));
+      const status = this.no('estado'); if (status) status.textContent = this.estado.carregando ? this.textos.carregando : !this.estado.todos.length ? this.textos.vazio : !itens.length ? this.textos.semResultados : '';
+      const pt = this.no('pagina-texto'); if (pt) pt.textContent = this.textos.pagina({ pagina: this.estado.pagina, totalPaginas, tamanho: this.estado.tamanho, total: this.estado.total });
+      const pag = this.no('paginacao');
+      if (pag && this.recursos.paginacao) {
+        const anterior = this.botao('←', () => this.irParaPagina(this.estado.pagina - 1)); anterior.disabled = this.estado.pagina <= 1;
+        const proximo = this.botao('→', () => this.irParaPagina(this.estado.pagina + 1)); proximo.disabled = this.estado.pagina >= totalPaginas;
+        const botoes = []; const inicio = Math.max(1, Math.min(this.estado.pagina - 2, totalPaginas - 4));
+        for (let p = inicio; p <= Math.min(totalPaginas, inicio + 4); p++) {
+          const b = this.botao(p, () => this.irParaPagina(p), p === this.estado.pagina ? 'atual' : ''); if (p === this.estado.pagina) b.setAttribute('aria-current', 'page'); botoes.push(b);
+        }
+        pag.replaceChildren(anterior, ...botoes, proximo);
+      }
+      const chips = this.no('chips');
+      if (chips) {
+        chips.replaceChildren(); Object.entries(this.estado.filtros).forEach(([id, filtro]) => {
+          const valor = Array.isArray(filtro) ? filtro.join(', ') : typeof filtro === 'object' ? `${filtro.from ?? '…'} a ${filtro.to ?? '…'}` : filtro;
+          const chip = criar('span', 'chip', `${this.coluna(id)?.nome}: ${valor}`); chip.append(this.botao('✕', () => this.filtrar(id, null), 'icone')); chips.append(chip);
         });
-        localStorage.setItem(`${storageId}-larguras`, JSON.stringify(estado.larguras));
-        aplicarLarguras();
       }
-      larguraAnterior = novaLargura;
+      this.config.onRender?.(this);
     }
-  });
-  const tabelaScroll = $(`${config.containerId}-scroll`);
-  if (tabelaScroll) observadorResize.observe(tabelaScroll);
-  window.addEventListener('scroll', () => { posicionarMenuColuna(); posicionarMenuColunas(); }, true);
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      if (estado.editando) { estado.editando = null; render(); }
-      fecharMenuColuna();
-      const pm = $(`${config.containerId}-menu-pagina`), pt = $(`${config.containerId}-pagina-texto`);
-      if(pm) pm.hidden = true; if(pt) pt.setAttribute('aria-expanded', 'false');
-      fecharMenus();
+
+    vincular() {
+      this.ouvir(this.no('colunas-botao'), 'click', () => this.abrirColunas());
+      this.ouvir(this.no('pagina-texto'), 'click', () => {
+        const menu = this.no('menu-pagina'), b = this.no('pagina-texto'), aberto = !menu.hidden; this.fecharMenus(); if (aberto) return;
+        const tamanhos = criar('div', 'tamanhos-pagina');
+        (this.config.tamanhosPagina || [5, 10, 50, 100]).forEach(n => tamanhos.append(this.botao(n, () => this.definirTamanhoPagina(n))));
+        const numero = criar('input'); numero.type = 'number'; numero.min = 1; numero.max = Math.max(1, Math.ceil(this.estado.total / this.estado.tamanho)); numero.value = this.estado.pagina; numero.setAttribute('aria-label', 'Número da página');
+        menu.replaceChildren(criar('p', '', 'LINHAS POR PÁGINA'), tamanhos, criar('p', '', 'IR PARA A PÁGINA'), numero, this.botao('Ir', () => this.irParaPagina(Number(numero.value))));
+        menu.hidden = false; b.setAttribute('aria-expanded', 'true'); this.posicionar(menu, b);
+      });
+      this.ouvir(document, 'pointerdown', e => {
+        const pares = [['menu-colunas', 'colunas-botao'], ['menu-pagina', 'pagina-texto']].map(([m, b]) => ({ menu: this.no(m), ancora: this.no(b) }));
+        if (this.menuHeader) pares.push(this.menuHeader);
+        pares.forEach(({ menu, ancora }) => { if (menu && !menu.hidden && !menu.contains(e.target) && !ancora?.contains(e.target)) { menu.hidden = true; ancora?.setAttribute('aria-expanded', 'false'); if (menu === this.menuHeader?.menu) { menu.remove(); this.menuHeader = null; } } });
+      });
+      this.ouvir(document, 'keydown', e => {
+        if (e.key === 'Escape' && (this.raiz.contains(e.target) || this.menuHeader?.menu.contains(e.target))) this.fecharMenus();
+      });
+      this.ouvir(window, 'resize', () => this.reposicionar()); this.ouvir(window, 'scroll', () => this.reposicionar(), { capture: true });
+      if (this.recursos.buscaIA) {
+        const form = this.no('busca-form') || document.getElementById(this.config.buscaFormId || this.config.iaFormId);
+        this.ouvir(form, 'submit', e => { e.preventDefault(); const consulta = form.querySelector('input').value.trim(); if (consulta) this.buscarIA(consulta); });
+      }
     }
-  });
-
-  const pt = $(`${config.containerId}-pagina-texto`);
-  if (pt) {
-    pt.addEventListener('click', () => {
-      const menu = $(`${config.containerId}-menu-pagina`), aberto = !menu.hidden; menu.replaceChildren();
-      if (aberto) { menu.hidden = true; pt.setAttribute('aria-expanded', 'false'); return; }
-      menu.append(el('p', '', 'LINHAS POR PÁGINA'));
-      const tamanhos = el('div', 'tamanhos-pagina'); [5, 10, 50, 100].forEach(n => tamanhos.append(botao(String(n), () => { estado.tamanho = n; estado.pagina = 1; render(); }, n === estado.tamanho ? 'atual' : ''))); menu.append(tamanhos);
-      menu.append(el('hr'), el('p', '', 'IR PARA A PÁGINA'));
-      const salto = el('div', 'salto-pagina'), numero = el('input'); numero.type = 'number'; numero.min = '1'; numero.max = String(Math.max(1, Math.ceil(dados().length / estado.tamanho))); numero.value = String(estado.pagina); numero.setAttribute('aria-label', 'Número da página'); salto.append(numero, botao('IR', () => { estado.pagina = Math.min(Number(numero.max), Math.max(1, Number(numero.value) || 1)); render(); })); menu.append(salto);
-      menu.hidden = false; pt.setAttribute('aria-expanded', 'true'); numero.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); salto.querySelector('button').click(); } });
-    });
-  }
-
-  const btnColunas = $(`${config.containerId}-colunas-botao`);
-  if (btnColunas) btnColunas.addEventListener('click', () => { 
-    estado.rascunho = [...estado.visiveis]; 
-    menuColunas(); 
-    fecharMenus();
-    const menu = $(`${config.containerId}-menu-colunas`);
-    menu.hidden = false;
-    btnColunas.setAttribute('aria-expanded', 'true');
-    posicionarMenuColunas();
-  });
-
-  // Busca Plana (Se ativo)
-  if (config.buscaFormId) {
-    function estimar(etapas){
-      return estado.todos.filter(item=>etapas.every(e=>{
-        if(e.op!=='column-filter')return true;
-        const v=String(valorFormatado(item,e.column)??'').toLowerCase();
-        return e.type==='equals'?v===e.value.toLowerCase():e.type==='contains'?v.includes(e.value.toLowerCase()):(!e.from||v>=e.from)&&(!e.to||v<=e.to);
-      })).length;
+    atualizar() { this.fecharMenus(); return this.config.modo === 'servidor' ? this.carregar() : this.render(); }
+    filtrar(id, filtro) {
+      if (!this.permitido('filtrosHeader', id)) throw new Error(`Filtro desativado para ${id}.`);
+      if (filtro == null || filtro === '' || (Array.isArray(filtro) && !filtro.length)) delete this.estado.filtros[id]; else this.estado.filtros[id] = copiar(filtro);
+      this.estado.pagina = 1; return this.atualizar();
     }
-    function aplicarPlano(consulta) {
-      if(!estado.plano)return; estado.busca.forEach(x=>x.desfazer()); estado.busca=[];
-      const anteriores=new Map(),aplicados=new Map(),ordemAnterior=estado.ordem?{...estado.ordem}:null;
-      estado.plano.steps.forEach(e=>{
-        if(e.op==='sort')estado.ordem={id:e.column,dir:e.dir};
+    limparFiltros() { this.estado.filtros = {}; this.estado.busca = []; this.estado.pagina = 1; return this.atualizar(); }
+    ordenar(id, dir = 'asc') {
+      if (!this.permitido('ordenacao', id) || !['asc', 'desc'].includes(dir)) throw new Error(`Ordenação inválida ou desativada para ${id}.`);
+      this.estado.ordem = { id, dir }; this.estado.pagina = 1; return this.atualizar();
+    }
+    definirColunas(ids) {
+      if (!this.recursos.selecionarColunas) throw new Error('Seletor de colunas desativado.');
+      if (ids.some(id => !this.coluna(id))) throw new Error('Coluna desconhecida.');
+      const fixas = this.colunas.filter(c => c.ocultavel === false).map(c => c.id);
+      this.estado.visiveis = [...new Set([...ids, ...fixas])]; this.persistir(); this.render();
+    }
+    irParaPagina(pagina) {
+      if (!this.recursos.paginacao) return;
+      this.estado.pagina = Math.max(1, Math.min(Math.max(1, Math.ceil(this.estado.total / this.estado.tamanho)), Math.floor(Number(pagina)) || 1)); return this.atualizar();
+    }
+    definirTamanhoPagina(tamanho) { this.estado.tamanho = this.tamanhoValido(tamanho); this.estado.pagina = 1; return this.atualizar(); }
+    definirDados(itens) {
+      if (this.config.modo === 'servidor') throw new Error('No modo servidor, forneça os dados por carregarDados ou endpoint.');
+      if (!Array.isArray(itens)) throw new Error('FirmaTabela: dados deve ser um array.');
+      this.validarChaves(itens); this.estado.todos = [...itens];
+      const chaves = new Set(itens.map(item => this.chave(item))); this.estado.selecionados = new Set([...this.estado.selecionados].filter(id => chaves.has(id)));
+      this.render();
+    }
+    validarChaves(itens) {
+      if (!this.recursos.selecao) return;
+      const chaves = itens.map(item => this.chave(item));
+      if (chaves.some(id => id == null) || new Set(chaves).size !== chaves.length) throw new Error('FirmaTabela: seleção requer uma chave única por registro.');
+    }
+    obterSelecionados() { return [...this.estado.selecionados]; }
+    limparSelecao() { this.estado.selecionados.clear(); this.config.onSelecao?.([], this); this.render(); }
+    getEstado() { return this.estado; } // Compatibilidade; prefira os métodos públicos para alterações.
+    api(path = '', options = {}) { return this.requisitar(`${this.config.endpoint || ''}${path}`, options); }
+    async requisitar(url, options = {}) {
+      const headers = new Headers(this.config.credenciais?.() || this.config.headers || {});
+      new Headers(options.headers || {}).forEach((v, k) => headers.set(k, v));
+      if (typeof options.body === 'string' && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
+      const resposta = await fetch(url, { ...options, headers });
+      if (!resposta.ok) {
+        let detalhe = {}; try { detalhe = await resposta.json(); } catch { /* Resposta sem JSON. */ }
+        throw new Error(detalhe.mensagem || `Falha na requisição (${resposta.status}).`);
+      }
+      return resposta.status === 204 ? null : resposta.json();
+    }
+    async carregar() {
+      if (this.destruida) return false;
+      const versao = ++this.versao; this.requisicao?.abort(); this.requisicao = new AbortController();
+      this.estado.carregando = true; this.render();
+      try {
+        const consulta = { pagina: this.estado.pagina, tamanho: this.estado.tamanho, ordem: copiar(this.estado.ordem), filtros: copiar(this.estado.filtros), signal: this.requisicao.signal };
+        let resposta;
+        if (this.config.carregarDados) resposta = await this.config.carregarDados(consulta, this);
         else {
-          if(!anteriores.has(e.column))anteriores.set(e.column,structuredClone(estado.filtros[e.column]??null));
-          const novo=e.type==='range'?{from:e.from,to:e.to}:e.type==='equals'?[e.value]:e.value;
-          estado.filtros[e.column]=novo;aplicados.set(e.column,structuredClone(novo));
+          let path = '';
+          if (this.config.modo === 'servidor') {
+            const params = this.config.parametros ? this.config.parametros(consulta) : { pagina: consulta.pagina, tamanho: consulta.tamanho, ordem: JSON.stringify(consulta.ordem), filtros: JSON.stringify(consulta.filtros) };
+            path = `${String(this.config.endpoint).includes('?') ? '&' : '?'}${new URLSearchParams(params)}`;
+          }
+          resposta = await this.api(path, { signal: consulta.signal });
         }
-      });
-      const ordemAplicada=estado.ordem?{...estado.ordem}:null;
-      estado.busca=[{texto:consulta,desfazer:()=>{
-        anteriores.forEach((f,id)=>{if(JSON.stringify(estado.filtros[id])===JSON.stringify(aplicados.get(id))){if(f===null)delete estado.filtros[id];else estado.filtros[id]=f;}});
-        if(JSON.stringify(estado.ordem)===JSON.stringify(ordemAplicada))estado.ordem=ordemAnterior;
-      }}];
-      estado.pagina=1; $(`${config.containerId}-plano-busca`).hidden=true; estado.plano=null; render();
+        if (versao !== this.versao || this.destruida) return false;
+        if (this.config.mapearResposta) resposta = this.config.mapearResposta(resposta);
+        const itens = this.config.modo === 'servidor' ? resposta?.itens : resposta;
+        if (!Array.isArray(itens)) throw new Error('Resposta inválida: esperado um array, ou { itens, total } no modo servidor.');
+        if (this.config.modo === 'servidor' && (!Number.isInteger(resposta.total) || resposta.total < 0)) throw new Error('Resposta inválida: total deve ser inteiro não negativo.');
+        this.validarChaves(itens); this.estado.todos = [...itens]; this.estado.carregando = false;
+        if (this.config.modo === 'servidor') {
+          this.estado.total = resposta.total;
+          const ultima = Math.max(1, Math.ceil(resposta.total / this.estado.tamanho));
+          if (this.estado.pagina > ultima) { this.estado.pagina = ultima; return this.carregar(); }
+        } else {
+          const ids = new Set(itens.map(item => this.chave(item))); this.estado.selecionados = new Set([...this.estado.selecionados].filter(id => ids.has(id)));
+        }
+        this.render(); this.config.onCarregar?.(this); return true;
+      } catch (erro) {
+        if (versao !== this.versao || this.destruida || erro.name === 'AbortError') return false;
+        this.estado.carregando = false; this.render(); this.no('estado').textContent = erro.message; this.config.toast?.(erro.message, true); this.config.onErro?.(erro, this); return false;
+      }
     }
-    function mostrarPlano(consulta) {
-      const painel = $(`${config.containerId}-plano-busca`); painel.style.borderColor='var(--border)';
-      painel.replaceChildren(el('h2','', 'PLANO DE BUSCA'),el('p','',estado.plano.summary||consulta));
-      const lista=el('ol');
-      estado.plano.steps.forEach((etapa,i)=>{
-        const item=el('li');
-        const descricao=etapa.op==='sort'?`Ordenar ${etapa.column} ${etapa.dir}`:`Filtrar ${etapa.column}: ${etapa.type==='range'?`${etapa.from||'…'} até ${etapa.to||'…'}`:etapa.value}`;
-        item.append(el('span','plano-numero',`${i+1}. `),el('span','',descricao),botao('✕',()=>{estado.plano.steps.splice(i,1);mostrarPlano(consulta);},'icone'));
-        lista.append(item);
-      });
-      painel.append(lista,el('p','',`≈ ${estimar(estado.plano.steps)} resultados`),botao('✓ APLICAR',()=>aplicarPlano(consulta),'primaria'),botao('✕ CANCELAR',()=>{painel.hidden=true;estado.plano=null}));
+    async buscarIA(consulta) {
+      if (!this.recursos.buscaIA || this.destruida) return;
+      const painel = this.no('plano-busca'); painel.hidden = false; painel.replaceChildren(criar('p', '', 'Interpretando...'));
+      const versao = this.versaoBusca = (this.versaoBusca || 0) + 1;
+      this.requisicaoBusca?.abort(); this.requisicaoBusca = new AbortController();
+      try {
+        const plano = this.config.interpretarBusca ? await this.config.interpretarBusca(consulta, this) : await this.requisitar(this.config.buscaEndpoint || this.config.iaEndpoint || `${this.config.endpoint || ''}/plano-busca`, { method: 'POST', body: JSON.stringify({ consulta }), signal: this.requisicaoBusca.signal });
+        if (this.destruida || versao !== this.versaoBusca) return;
+        if (!Array.isArray(plano.steps) || plano.steps.some(e => !this.coluna(e.column) || !['sort', 'column-filter'].includes(e.op) || (e.op === 'sort' ? !this.permitido('ordenacao', e.column) || !['asc', 'desc'].includes(e.dir) : !this.permitido('filtrosHeader', e.column) || !['equals', 'contains', 'range'].includes(e.type)))) throw new Error('O plano contém operações ou colunas indisponíveis.');
+        this.estado.plano = plano;
+        const mostrar = () => {
+          const lista = criar('ol'); plano.steps.forEach((e, i) => {
+            const item = criar('li', '', e.op === 'sort' ? `Ordenar ${this.coluna(e.column).nome}: ${e.dir}` : `Filtrar ${this.coluna(e.column).nome}: ${e.value ?? `${e.from ?? '…'} a ${e.to ?? '…'}`}`);
+            item.append(this.botao('✕', () => { plano.steps.splice(i, 1); mostrar(); }, 'icone')); lista.append(item);
+          });
+          painel.replaceChildren(criar('h2', '', 'PLANO DE BUSCA'), criar('p', '', plano.summary || consulta), lista, this.botao('Aplicar', () => {
+            plano.steps.forEach(e => { if (e.op === 'sort') this.estado.ordem = { id: e.column, dir: e.dir }; else this.estado.filtros[e.column] = e.type === 'range' ? { from: e.from, to: e.to } : e.type === 'equals' ? [e.value] : e.value; });
+            this.estado.pagina = 1; this.estado.plano = null; this.render();
+          }, 'primaria'), this.botao('Cancelar', () => { painel.hidden = true; this.estado.plano = null; }));
+        }; mostrar();
+      } catch (erro) { if (!this.destruida && versao === this.versaoBusca) painel.replaceChildren(criar('p', '', erro.message)); }
     }
-    $(config.buscaFormId).addEventListener('submit', async e => {
-      e.preventDefault(); const input = $(config.buscaFormId).querySelector('input'); const consulta = input.value.trim(); if (!consulta) return;
-      const painel = $(`${config.containerId}-plano-busca`); painel.hidden = false; painel.replaceChildren(el('p','', 'Interpretando…'));
-      try { const plano = await api(config.buscaEndpoint || '/plano-busca', { method: 'POST', body: JSON.stringify({ consulta }) }); estado.plano = plano; mostrarPlano(consulta); }
-      catch (erro) { painel.replaceChildren(el('p','',erro.message), el('p','', 'Tente detalhar mais a busca.')); painel.style.borderColor='var(--accent)'; setTimeout(() => { painel.hidden = true; painel.style.borderColor = ''; }, 2000); }
-    });
+    destruir() {
+      if (this.destruida) return;
+      this.destruida = true; this.versao++; this.versaoBusca++; this.requisicao?.abort(); this.requisicaoBusca?.abort(); this.eventos.abort(); this.fecharMenus(); this.dialogo?.remove();
+      montadas.delete(this.raiz); delete this.raiz.dataset.tabelaInstancia;
+      if (this.config.elemento) this.raiz.replaceChildren();
+    }
   }
-
-  // Métodos expostos
-  const inst = {
-    carregar: async () => {
-      try {
-        estado.salvos = JSON.parse(localStorage.getItem(`${storageId}-filtros`) || '[]');
-      } catch { estado.salvos = []; }
-      const stEl = $(`${config.containerId}-estado`);
-      if (stEl) {
-        stEl.innerHTML = '<span class="loading-roca-neon">CARREGANDO DADOS...</span>';
-        stEl.style.textAlign = 'center';
-      }
-      try {
-        estado.todos = await api('');
-        if (config.toast) config.toast(`${estado.todos.length} registro(s) carregado(s).`);
-        render();
-      } catch (e) {
-        if (stEl) stEl.textContent = e.message;
-        if (config.toast) config.toast(e.message, true);
-      }
-    },
-    dados: dados,
-    obterSelecionados: () => [...estado.selecionados],
-    getEstado: () => estado,
-    render: render
-  };
-  
-  if (config.autoInit !== false) render();
-  return inst;
-};
+  FirmaTabela.recursosPadrao = padroes;
+  window.FirmaTabela = FirmaTabela;
+  window.aFirmaTabela = config => new FirmaTabela(config);
+})();
