@@ -23,7 +23,7 @@ function atualizarPrevia() {
   previa.replaceChildren();
   paragrafo(previa, empresa, 'h2');
   paragrafo(previa, 'PROPOSTA DE SERVIÇOS JURÍDICOS');
-  paragrafo(previa, `Cliente: ${valor('cliente') || '—'} · ${valor('email') || '—'}`);
+  paragrafo(previa, `Cliente: ${valor('cliente') || 'Não informado'} · ${valor('email') || 'Não informado'}`);
   paragrafo(previa, valor('titulo') || 'Proposta', 'h3');
   paragrafo(previa, valor('introducao'));
   paragrafo(previa, 'SERVIÇOS', 'h3');

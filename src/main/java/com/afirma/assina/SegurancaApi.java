@@ -47,7 +47,7 @@ public class SegurancaApi {
 				.sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(regras -> regras
 					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/assineai/trator", "/preparar-assinaturas",
-							"/convite/**", "/chat", "/chat/canais", "/chat/gestao",
+							"/convite/**", "/web-panels/**", "/empresa", "/chat", "/chat/canais", "/chat/gestao",
 							"/advai", "/css/**", "/js/**").permitAll()
 					.requestMatchers("/api/convites/**").permitAll()
 					.requestMatchers("/api/advai/**").hasAuthority("SCOPE_pdf.sign")

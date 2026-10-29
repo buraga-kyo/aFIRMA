@@ -40,6 +40,12 @@ public class ControlePaginaAssinatura {
 	@GetMapping("/convite/{token}")
 	public String convite() { return "convite"; }
 
+    @GetMapping({"/web-panels/assinar-documentos/{token}","/web-panels/criar-assinatura/{token}"})
+    public String conviteProducao(){return "convite-legado";}
+    @GetMapping("/web-panels/autenticidade-documento/{token}")
+    public String autenticidadeProducao(){return "autenticidade-assineai";}
+    @GetMapping("/empresa")
+    public String empresa(){return "empresa-assineai";}
 	@GetMapping("/advai")
 	public String advai() {
 		return "advai";

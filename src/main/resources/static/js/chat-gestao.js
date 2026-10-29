@@ -431,13 +431,13 @@ function desenharTabela() {
       if (nome === 'ativo' || nome === 'ativa' || nome === 'estado' || nome === 'conexao') {
         const etiqueta = document.createElement('span');
         etiqueta.className = 'estado';
-        const texto = formatar(valor) || '—';
+        const texto = formatar(valor) || 'Não informado';
         etiqueta.textContent = texto;
         if (valor === true || /^(ATIVA|ATIVO|APROVADO|CONECTADO|ENTREGUE|EM_ANDAMENTO)$/i.test(texto)) etiqueta.classList.add('positivo');
         if (valor === false || /^(FALHOU|CANCELADA|REJEITADO|DESCONECTADO)$/i.test(texto)) etiqueta.classList.add('alerta');
         celula.append(etiqueta);
       } else {
-        celula.textContent = formatar(valor) || '—';
+        celula.textContent = formatar(valor) || 'Não informado';
       }
       linha.append(celula);
     }
@@ -499,7 +499,7 @@ function mostrarDetalhes(titulo, registros, acaoRegistro) {
     const linha = document.createElement('tr');
     for (const nome of nomes) {
       const celula = document.createElement('td');
-      celula.textContent = formatar(registro[nome]) || '—';
+      celula.textContent = formatar(registro[nome]) || 'Não informado';
       linha.append(celula);
     }
     if (acaoRegistro) {

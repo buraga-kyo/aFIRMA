@@ -59,3 +59,70 @@ button { cursor: pointer; }
   .modulo-wizard .modulo-texto small { display: none; }
   .cartao-novo-assinante { grid-template-columns: 1fr; }
 }
+
+/* Posicionamento de campos: identidade aFIRMA. */
+.instrucao-campos { max-width: 760px; margin: 0 0 24px; color: var(--muted-foreground); line-height: 1.65; }
+.resumo-campos { margin: 24px 0 0; padding: 14px 16px; border-left: 4px solid var(--primary); background: var(--background); color: var(--foreground); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+#etapa-posicionamento { background: var(--card); }
+#etapa-posicionamento .campos { margin-bottom: 20px; }
+#estado-pdf { color: var(--primary); font-weight: 700; }
+.visualizador { box-shadow: 6px 6px 0 var(--secondary); }
+.visualizador[aria-busy="true"] { opacity: .55; }
+.camada-campos { cursor: crosshair; }
+.campo-posicionado { box-sizing: border-box; border-style: dashed; padding: 6px 28px 6px 8px; background: rgba(14,33,23,.84); }
+.campo-posicionado.campo-ativo { border-style: solid; box-shadow: 3px 3px 0 var(--accent); }
+.campo-posicionado button { width: 26px; height: 26px; font-size: 20px; cursor: pointer; }
+.campo-posicionado .alca-redimensionar { position: absolute; right: 0; bottom: 0; width: 22px; height: 22px; border-right: 4px solid var(--primary); border-bottom: 4px solid var(--primary); cursor: nwse-resize; }
+button:disabled { opacity: .45; cursor: wait; }
+button:focus-visible, select:focus-visible, .campo-posicionado:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; }
+.modulos-wizard { border: 2px solid var(--border); background: var(--background); box-shadow: 4px 4px 0 var(--secondary); backdrop-filter: none; }
+.modulo-wizard { border-radius: 0; }
+.modulo-wizard.ativo { border-color: var(--primary); background: var(--primary); color: var(--background); box-shadow: 4px 4px 0 var(--accent); }
+.modulo-wizard.ativo .modulo-texto small { color: var(--background); }
+.cartao-novo-assinante { background: var(--card); border-color: var(--border); box-shadow: 4px 4px 0 var(--secondary); color: var(--foreground); border-radius: 0; }
+.cartao-novo-assinante:hover { transform: none; box-shadow: 4px 4px 0 var(--secondary); }
+.cartao-novo-assinante .campo label { color: var(--muted-foreground); }
+.cartao-novo-assinante .campo input { background: var(--background); color: var(--foreground); border-color: var(--border); border-radius: 0; }
+.cartao-novo-assinante .campo input:focus { border-color: var(--primary); outline: 3px solid var(--primary); outline-offset: 2px; box-shadow: none; }
+.cartao-novo-assinante .cartao-rodape-acoes { border-color: var(--border); gap: 16px; flex-wrap: wrap; }
+.cartao-novo-assinante .cartao-rodape-acoes p { color: var(--muted-foreground); }
+.cartao-novo-assinante .cartao-rodape-acoes button { background: var(--background); border-color: var(--border); color: var(--foreground); }
+.cartao-novo-assinante .cartao-rodape-acoes button:hover { background: var(--secondary); border-color: var(--accent); }
+@media (max-width: 760px) {
+  .modulos-wizard { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .modulo-wizard { min-height: 54px; padding: 6px 3px; gap: 4px; flex-direction: column; }
+  .modulo-wizard .modulo-icone { width: 24px; height: 24px; font-size: 15px; }
+  .modulo-wizard .modulo-texto strong { font-size: 10px; letter-spacing: 0; }
+  .paginacao { flex-wrap: wrap; font-size: 11px; }
+  .campo-posicionado { font-size: 9px; padding-left: 3px; }
+  .cartao-novo-assinante { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modulo-wizard, .cartao-novo-assinante { transition: none; }
+  html { scroll-behavior: auto; }
+}
+
+.conexao-wizard { margin-bottom: 24px; }
+.conexao-wizard summary { padding: 18px 24px; color: var(--primary); font-weight: 800; cursor: pointer; }
+.conexao-wizard p, #revisao-assinatura p { color: var(--muted-foreground); line-height: 1.6; overflow-wrap: anywhere; }
+.escolhas-signatario { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.escolhas-signatario fieldset { min-width: 0; border: 2px solid var(--border); padding: 16px; }
+.escolhas-signatario legend { padding: 0 8px; font-size: 12px; font-weight: 800; color: var(--primary); }
+.escolhas-signatario label { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 14px; }
+.escolhas-signatario input { flex: none; width: 20px; height: 20px; accent-color: var(--primary); }
+.escolhas-signatario label:has(input:disabled) { opacity: .55; }
+.lista-documentos { display: grid; gap: 12px; margin: 20px 0; }
+.documento-wizard { display: flex; gap: 8px; }
+.documento-wizard button { padding: 14px; border: 2px solid var(--border); background: var(--background); color: var(--foreground); font: inherit; font-size: 12px; font-weight: 800; overflow-wrap: anywhere; }
+.documento-wizard button:first-child { flex: 1; text-align: left; min-width: 0; }
+.documento-wizard button[aria-pressed="true"] { border-color: var(--primary); color: var(--primary); }
+.codigo-convite { border: 2px solid var(--border); padding: 16px; margin: 20px 0; }
+.codigo-convite label { display: block; margin-bottom: 10px; }
+.codigo-convite input { display: block; max-width: 220px; margin: 12px 0; padding: 12px; border: 2px solid var(--border); color: var(--foreground); background: var(--background); font: inherit; }
+.codigo-convite button { padding: 10px; margin: 0 10px 10px 0; border: 2px solid var(--border); background: var(--background); color: var(--foreground); font-weight: 800; }
+@media (max-width: 760px) { .escolhas-signatario { grid-template-columns: 1fr; } .documento-wizard { flex-wrap: wrap; } }
+body[data-tema="caderno"] { --background: #F2F7EC; --card: #fff; --foreground: #0E2117; --muted-foreground: #2E5A3F; --primary: #365C22; --secondary: #DFE9D5; }
+body[data-tema="caderno"] .etapa { border-bottom-style: dashed; }
+#documento-convite { margin-bottom: 20px; }
+
+#marca-empresa { max-width: min(70vw, 700px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

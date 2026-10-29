@@ -16,6 +16,10 @@ public class CampoAssinatura {
 	private UUID id;
 	@Column(name = "signatario_id", nullable = false)
 	private UUID signatarioId;
+	@Column(name = "envelope_id", nullable = false)
+	private UUID envelopeId;
+	@Column(name = "documento_id")
+	private UUID documentoId;
 	@Column(nullable = false, length = 20)
 	private String tipo;
 	@Column(nullable = false)
@@ -43,6 +47,13 @@ public class CampoAssinatura {
 		this.altura = altura;
 	}
 
+    public void vincularDocumento(DocumentoAssinatura documento) {
+        if (pagina < documento.getPaginaInicio() || pagina > documento.getPaginaFim())
+            throw new IllegalArgumentException("Campo fora das páginas do documento");
+        envelopeId = documento.getEnvelopeId(); documentoId = documento.getId();
+    }
+    public UUID getEnvelopeId() { return envelopeId; }
+    public UUID getDocumentoId() { return documentoId; }
 	public UUID getId() { return id; }
 	public UUID getSignatarioId() { return signatarioId; }
 	public Tipo getTipo() { return Tipo.valueOf(tipo); }

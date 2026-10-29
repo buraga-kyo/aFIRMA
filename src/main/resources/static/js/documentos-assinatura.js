@@ -17,14 +17,83 @@
   function getCredenciais() {
     const chave = $('lista-chave').value.trim();
     const token = $('lista-token').value.trim();
-    return (chave && token) ? { 'X-API-Key': chave, Authorization: `Bearer ${token}` } : {};
+    return token ? { ...(chave ? { 'X-API-Key': chave } : {}), Authorization: `Bearer ${token}` } : {};
+  }
+
+  let versaoHistorico = 0;
+  const modalHistorico = $('modal-historico-assinatura');
+  modalHistorico.addEventListener('close', () => { versaoHistorico++; });
+  async function abrirHistorico(item) {
+    const versao = ++versaoHistorico;
+    const painel = $('conteudo-historico-assinatura');
+    painel.textContent = 'Carregando documentos e histórico...';
+    modalHistorico.showModal();
+    const adicionar = (pai, tag, texto) => {
+      const elemento = document.createElement(tag); elemento.textContent = texto; pai.append(elemento); return elemento;
+    };
+    const data = valor => new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'medium' }).format(new Date(valor));
+    try {
+      const resposta = await fetch(item.legado ? `/api/assineai/assinaturas/${item.id}` : `/api/envelopes/${item.id}`, { headers: getCredenciais(), cache: 'no-store' });
+      if (!resposta.ok) throw new Error(`Não foi possível consultar o histórico (${resposta.status}).`);
+      const dados = await resposta.json();
+      if (versao !== versaoHistorico || !modalHistorico.open) return;
+      painel.replaceChildren();
+      adicionar(painel, 'h3', dados.nome || dados.nomeDocumento);
+      adicionar(painel, 'p', `${dados.status} · Responsável: ${dados.responsavel || 'Não informado'} · Documentos com assinaturas concluídas: ${dados.quantidadeDocumentoAssinado || '0'}`);
+      adicionar(painel, 'h3', 'DOCUMENTOS');
+      for (const documento of dados.documentos || []) {
+        adicionar(painel, 'p', documento.paginaInicio ? `${documento.titulo} · páginas ${documento.paginaInicio} a ${documento.paginaFim}` : documento.titulo);
+        if (item.legado) {
+          const baixar = adicionar(painel, 'button', 'BAIXAR DOCUMENTO'); baixar.type = 'button';
+          baixar.addEventListener('click', async () => {
+            try { const resposta = await fetch(`/api/assineai/assinaturas/${item.id}/documentos/${documento.identificador}/pdf`, { headers: getCredenciais() });
+              if (!resposta.ok) throw new Error(`Documento indisponível (${resposta.status}).`);
+              const url = URL.createObjectURL(await resposta.blob()); const link = document.createElement('a'); link.href = url; link.download = documento.titulo + '.pdf'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+            } catch (erro) { toast(erro.message, true); }
+          });
+          if (documento.autenticidade) { const link = adicionar(painel, 'a', ' VER AUTENTICIDADE'); link.href = documento.autenticidade; link.target = '_blank'; link.rel = 'noreferrer'; }
+        }
+      }
+      if (!dados.documentos?.length) adicionar(painel, 'p', 'Registro anterior sem documentos individualizados.');
+      if (item.legado) {
+        const formulario = document.createElement('form'); formulario.className = 'campos';
+        const titulo = adicionar(formulario, 'h3', 'CERTIFICAR DOCUMENTOS INDIVIDUAIS');
+        const labelArquivo = adicionar(formulario, 'label', 'CERTIFICADO PFX / P12'); const arquivo = document.createElement('input'); arquivo.type = 'file'; arquivo.accept = '.pfx,.p12'; arquivo.required = true; labelArquivo.append(arquivo);
+        const labelSenha = adicionar(formulario, 'label', 'SENHA'); const senha = document.createElement('input'); senha.type = 'password'; senha.required = true; senha.autocomplete = 'off'; labelSenha.append(senha);
+        const enviar = adicionar(formulario, 'button', 'CERTIFICAR CADA PDF'); enviar.type = 'submit';
+        formulario.addEventListener('submit', async evento => {
+          evento.preventDefault(); enviar.disabled = true;
+          try { const corpo = new FormData(); corpo.append('certificado', arquivo.files[0]); corpo.append('senha', senha.value);
+            const resposta = await fetch(`/api/assineai/assinaturas/${item.id}/certificar`, { method: 'POST', headers: getCredenciais(), body: corpo });
+            if (!resposta.ok) { const erro = await resposta.json().catch(() => ({})); throw new Error(erro.mensagem || 'Não foi possível certificar os documentos.'); }
+            senha.value = ''; toast('Todos os PDFs foram certificados individualmente.'); modalHistorico.close(); tabela.carregar();
+          } catch (erro) { toast(erro.message, true); } finally { enviar.disabled = false; }
+        }); painel.append(formulario);
+      }
+      for (const pessoa of dados.signatarios || []) {
+        const secao = adicionar(painel, 'section', '');
+        adicionar(secao, 'h3', pessoa.nome);
+        adicionar(secao, 'p', `${pessoa.situacao || 'Pendente'} · Acessos ao link: ${pessoa.acessos || '0'}`);
+        if (pessoa.assinadoEm) adicionar(secao, 'p', `Assinatura confirmada em ${data(pessoa.assinadoEm)}`);
+        if (pessoa.autenticadoVia) adicionar(secao, 'p', `Métodos registrados: ${pessoa.autenticadoVia.split(',').map(m => ({ tela: 'Assinatura na tela', rubrica: 'Rubrica', selfie: 'Selfie', email: 'Código por e-mail', whatsapp: 'Código por WhatsApp' })[m] || m).join(', ')}`);
+        const lista = adicionar(secao, 'ol', '');
+        for (const evento of pessoa.historicos || []) {
+          const linha = adicionar(lista, 'li', `${data(evento.criadoEm)} · ${evento.acao.replaceAll('_', ' ')}`);
+          if (evento.enderecoIp) adicionar(linha, 'p', `IP: ${evento.enderecoIp}`);
+          if (evento.dispositivo) adicionar(linha, 'p', `Dispositivo: ${evento.dispositivo}`);
+        }
+        if (!pessoa.historicos?.length) adicionar(secao, 'p', 'Não há eventos registrados.');
+      }
+    } catch (erro) {
+      if (versao === versaoHistorico && modalHistorico.open) painel.textContent = erro.message;
+    }
   }
 
   async function conectar() {
     const chave = $('lista-chave').value.trim();
     const token = $('lista-token').value.trim();
-    if (!chave || !token) {
-      toast('Informe chave e token.', true);
+    if (!token || $('fonte-assinaturas').value === 'firma' && !chave) {
+      toast('Informe o token. Para registros anteriores da Firma, informe também a chave da API.', true);
       return;
     }
     toast('Conectando...');
@@ -53,12 +122,27 @@
 
   $('lista-conectar').addEventListener('click', conectar);
 
-  const tabela = window.aFirmaTabela({
+  const tabela = new window.FirmaTabela({
+    elemento: '#tabela-montagem',
+    rotulo: 'Documentos para assinatura',
+    recursos: {
+      selecao: true, acoes: true, paginacao: true, selecionarColunas: true,
+      filtrosHeader: true, ordenacao: true, redimensionamento: true, reordenacao: true,
+      filtrosSalvos: true, buscaIA: true, edicao: true, detalhes: true, persistencia: true
+    },
+    slots: {
+      comandos: $('tabela-comandos').content.cloneNode(true),
+      rodape: $('tabela-rodape').content.cloneNode(true)
+    },
+    textos: {
+      busca: 'FALAR COM O BURRO DE CARGA...',
+      pagina: ({ pagina, totalPaginas, tamanho }) => `ÁREA ${pagina} de ${totalPaginas} do TERRENO → ${tamanho} Sementes ▾`
+    },
+    salvar: (item, alteracoes, instancia) => instancia.api(`/${item.id}`, { method: 'PATCH', body: JSON.stringify({ titulo: alteracoes.titulo }) }),
     containerId: 'tabela',
-    endpoint: '/api/envelopes/documentos',
+    get endpoint() { return $('fonte-assinaturas').value === 'legado' ? '/api/assineai/assinaturas' : '/api/envelopes/documentos'; },
     storageId: 'assineai-documentos',
-    buscaFormId: 'busca-form',
-    buscaEndpoint: '/api/envelopes/documentos/plano-busca',
+    get buscaEndpoint() { return $('fonte-assinaturas').value === 'legado' ? '/api/assineai/plano-busca' : '/api/envelopes/documentos/plano-busca'; },
     credenciais: getCredenciais,
     toast: toast,
     colunas: [
@@ -69,11 +153,11 @@
       { id: 'status', nome: 'STATUS', tipo: 'enum', largura: 200 },
       { id: 'quantidadeAssinaturas', nome: 'ASSINATURAS', tipo: 'numero', largura: 200 },
       { id: 'signatarios', nome: 'SIGNATÁRIOS', tipo: 'texto', largura: 200, formatar: (v) => Array.isArray(v) ? v.map(s => s.nome || s).join(', ') : v }
-    ],
+    ].map(coluna => ({ ...coluna, editavel: coluna.id === 'titulo' })),
     renderAcoes: (item, acoesTd, estado, render, api) => {
       const btnEdit = document.createElement('button');
       btnEdit.textContent = '✎';
-      btnEdit.title = 'Editar in-line (Duplo clique na célula) ou Expandir';
+      btnEdit.title = 'Editar título do documento';
       btnEdit.className = 'icone btn-editar-linha';
       
       const btnView = document.createElement('button');
@@ -90,7 +174,12 @@
         }
       };
 
-      acoesTd.append(btnView, btnEdit, btnDel);
+      const btnHistorico = document.createElement('button');
+      btnHistorico.type = 'button'; btnHistorico.className = 'icone'; btnHistorico.textContent = '◷'; btnHistorico.title = 'HISTÓRICO';
+      btnHistorico.setAttribute('aria-label', `Histórico de ${item.titulo}`);
+      btnHistorico.onclick = evento => { evento.stopPropagation(); abrirHistorico(item); };
+      acoesTd.classList.add('acoes-assinatura');
+      acoesTd.append(btnView, btnEdit, btnHistorico, btnDel);
     },
     renderCelula: (item, idColuna, td, estado, render, api) => {
       if (idColuna === 'titulo') {
@@ -101,6 +190,7 @@
         a.onclick = async e => {
           e.preventDefault();
           try {
+            if (item.legado) { await abrirHistorico(item); return; }
             const resposta = await fetch(`/api/envelopes/${item.id}/pdf`, { headers: getCredenciais() });
             if (!resposta.ok) throw new Error(`Erro ${resposta.status} ao baixar PDF`);
             const url = URL.createObjectURL(await resposta.blob());
@@ -117,8 +207,8 @@
         const st = (item.status || '').toLowerCase();
         let statusClass = '';
         if (st.includes('pendente')) statusClass = 'status-pendente';
-        else if (st.includes('progresso') || st.includes('andamento')) statusClass = 'status-progresso';
-        else if (st.includes('assinado') || st.includes('concluido')) statusClass = 'status-assinado';
+        else if (st.includes('progresso') || st.includes('andamento') || st.includes('certificado')) statusClass = 'status-progresso';
+        else if (st.includes('assinado') || st.includes('concluido') || st.includes('finalizada')) statusClass = 'status-assinado';
         
         span.className = `chip ${statusClass}`;
         span.textContent = item.status;
@@ -149,6 +239,8 @@
       }
     }
   });
+
+  $('fonte-assinaturas').addEventListener('change', () => { tabela.limparSelecao(); tabela.carregar(); });
 
   const modosLargura = [['total', 'TELA INTEIRA'], ['largo', '80% DA TELA'], ['centro', 'CENTRO']];
   function aplicarModoLargura(modo) {

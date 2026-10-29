@@ -161,7 +161,7 @@ document.getElementById('enviar-assinatura').addEventListener('click', async () 
   const botao = document.getElementById('enviar-assinatura');
   try {
     if (!document.getElementById('aceite').checked) throw new Error('Confirme leitura e aceite do documento.');
-    const tipos = new Set(dadosConvite.campos.map(campo => campo.tipo));
+    const tipos = tiposSolicitados();
     if (tipos.has('ASSINATURA') && !desenhos.get('desenho-assinatura')) throw new Error('Desenhe sua assinatura.');
     if (tipos.has('RUBRICA') && !desenhos.get('desenho-rubrica')) throw new Error('Desenhe sua rubrica.');
     const selfie = selfieCapturada || document.getElementById('arquivo-selfie').files[0];
@@ -182,6 +182,58 @@ document.getElementById('enviar-assinatura').addEventListener('click', async () 
   } catch (falha) { erro(falha.message); botao.disabled = false; }
 });
 
+function tiposSolicitados() {
+  const tipos = new Set(dadosConvite.campos.map(campo => campo.tipo));
+  if (dadosConvite.formaDeAutenticacao?.includes('tela')) tipos.add('ASSINATURA');
+  if (dadosConvite.formaDeAutenticacao?.includes('selfie')) tipos.add('SELFIE');
+  return tipos;
+}
+
+function prepararAutenticacao() {
+  const painel = document.getElementById('codigos-autenticacao');
+  painel.replaceChildren();
+  for (const canal of dadosConvite.formaDeAutenticacao || []) {
+    if (!['email', 'whatsapp'].includes(canal)) continue;
+    const grupo = document.createElement('div'); grupo.className = 'codigo-convite';
+    const label = document.createElement('label'); label.textContent = `CÓDIGO POR ${canal === 'email' ? 'E-MAIL' : 'WHATSAPP'}`;
+    const entrada = document.createElement('input'); entrada.inputMode = 'numeric'; entrada.maxLength = 6;
+    entrada.autocomplete = 'one-time-code'; entrada.id = `codigo-${canal}`; label.htmlFor = entrada.id;
+    const enviar = document.createElement('button'); enviar.type = 'button'; enviar.textContent = 'ENVIAR CÓDIGO';
+    const validar = document.createElement('button'); validar.type = 'button'; validar.textContent = 'VALIDAR CÓDIGO';
+    const estado = document.createElement('p'); estado.setAttribute('role', 'status');
+    enviar.addEventListener('click', async () => {
+      enviar.disabled = true;
+      try {
+        await verificar(await fetch(`/api/convites/${conviteToken}/codigos/${canal}`, { method: 'POST' }));
+        estado.textContent = 'Código enviado. Validade de 10 minutos; aguarde um minuto antes de reenviar.';
+      } catch (falha) { erro(falha.message); }
+      finally { enviar.disabled = false; }
+    });
+    validar.addEventListener('click', async () => {
+      if (!/^\d{6}$/.test(entrada.value)) return erro('Digite o código de seis números.');
+      validar.disabled = true;
+      try {
+        await verificar(await fetch(`/api/convites/${conviteToken}/codigos/${canal}/verificar`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ codigo: entrada.value })
+        }));
+        estado.textContent = 'Código validado. Conclua a assinatura antes de expirar.';
+        entrada.disabled = true;
+      } catch { erro('Código inválido, expirado ou limite de tentativas atingido. Solicite um novo código.'); validar.disabled = false; }
+    });
+    grupo.append(label, enviar, entrada, validar, estado); painel.append(grupo);
+  }
+}
+
+function prepararDocumentos() {
+  const painel = document.getElementById('documentos-convite');
+  for (const documento of dadosConvite.documentos || []) {
+    const botao = document.createElement('button'); botao.type = 'button'; botao.className = 'botao-carteira';
+    botao.textContent = `${documento.nome} · ${documento.paginaInicio === documento.paginaFim ? `página ${documento.paginaInicio}` : `páginas ${documento.paginaInicio} a ${documento.paginaFim}`}`;
+    botao.addEventListener('click', () => { paginaAtual = documento.paginaInicio; mostrarPagina().catch(falha => erro(falha.message)); });
+    painel.append(botao);
+  }
+}
+
 async function carregar() {
   const resposta = await verificar(await fetch(`/api/convites/${conviteToken}`, { cache: 'no-store' }));
   dadosConvite = await resposta.json();
@@ -189,7 +241,9 @@ async function carregar() {
   document.getElementById('rodape-empresa').textContent = dadosConvite.nomeEmpresa;
   document.getElementById('saudacao').textContent = `${dadosConvite.nomeSignatario}, leia ${dadosConvite.nomeDocumento} antes de assinar.`;
   totalPaginas = dadosConvite.paginas;
-  const tipos = new Set(dadosConvite.campos.map(campo => campo.tipo));
+  prepararAutenticacao();
+  prepararDocumentos();
+  const tipos = tiposSolicitados();
   document.getElementById('grupo-assinatura').hidden = !tipos.has('ASSINATURA');
   document.getElementById('grupo-rubrica').hidden = !tipos.has('RUBRICA');
   document.getElementById('grupo-selfie').hidden = !tipos.has('SELFIE');

@@ -11,13 +11,25 @@
 </head>
 <body>
   <header class="topo"><a class="marca" href="/">aFIRMA<span class="marca-ponto">.</span></a><span class="topo-selo">CRIAR ASSINATURA</span></header>
-  <main style="padding-bottom: 120px; padding-top: 64px;">
-    
+<main style="padding-bottom: 120px; padding-top: 64px;">
+
+    <details class="area-trabalho conexao-wizard" open>
+      <summary>CONTA DA EMPRESA E CANAIS DE ENTREGA</summary><p class="etapa"><a class="botao-carteira" href="/empresa">ENTRAR OU EDITAR EMPRESA</a></p>
+      <div class="etapa campos">
+        <div class="campo"><label for="chave-api">CHAVE DA API (ACESSO TÉCNICO)</label><input id="chave-api" type="password" autocomplete="off" required></div>
+        <div class="campo"><label for="token">TOKEN JWT</label><input id="token" type="password" autocomplete="off" required></div>
+        <button id="verificar-canais" class="botao-carteira" type="button">VERIFICAR CANAIS</button>
+        <p id="disponibilidade-canais" role="status">Informe as credenciais e verifique os canais para habilitar códigos e notificações.</p>
+      </div>
+    </details>
+    <div id="erro-preparacao" class="erro" role="alert" hidden></div>
     <section id="step-1-signatarios" class="area-trabalho" aria-label="Passo 1: Signatários">
-      <div class="cabecalho-area"><span>Adicione quem vai assinar o documento ou documentos ou documentx :)</span></div>
+      <div class="cabecalho-area"><span>01 / QUEM VAI ASSINAR</span></div>
       <div class="etapa">
+        <datalist id="qualificacoes-signatario"><option value="Associado"></option><option value="Empresa"></option><option value="Motorista"></option><option value="Testemunha"></option><option value="Avalista"></option></datalist>
         <div id="lista-signatarios" class="lista-signatarios"></div>
         <button id="adicionar-signatario" class="botao-carteira" type="button">+ ADICIONAR SIGNATÁRIO</button>
+        <button id="adicionar-eu" class="botao-carteira" type="button">+ ME ADICIONAR COMO SIGNATÁRIO</button>
       </div>
       <div class="rodape-formulario">
         <button id="ir-step-2" class="botao-primario botao" type="button">PRÓXIMO PASSO ↗</button>
@@ -25,24 +37,31 @@
     </section>
 
     <section id="step-2-documentos" class="area-trabalho" aria-label="Passo 2: Documentos" hidden>
-      <div class="cabecalho-area"><span>Documentos/Documentx</span><span>crl essa parte vai ser chata</span></div>
+      <div class="cabecalho-area"><span>02 / DOCUMENTO E ASSINATURAS</span><span>CADA ASSINATURA NO SEU LUGAR</span></div>
       <div class="etapa campos">
-        <div class="campo campo-largo"><label for="empresa">NOME DA EMPRESA</label><input id="empresa" maxlength="120" required placeholder="Empresa solicitante"></div>
+        <div class="campo campo-largo"><label for="empresa">NOME DA EMPRESA</label><input id="empresa" maxlength="255" required placeholder="Empresa solicitante"></div>
+        <div class="campo-largo"><h2>DOCUMENTOS DA ASSINATURA</h2><p>Adicione até 10 PDFs. Cada documento mantém seu nome e seus campos; os participantes recebem um convite com acesso aos PDFs individuais.</p><div id="lista-documentos" class="lista-documentos"></div><button id="adicionar-documento" class="botao-carteira" type="button">+ DOCUMENTO</button></div>
+        <div class="campo campo-largo"><label for="nome-documento">NOME DO DOCUMENTO *</label><input id="nome-documento" maxlength="255" placeholder="Ex: Contrato social"></div>
+        <div class="campo"><label for="empresa-cnpj">CNPJ</label><input id="empresa-cnpj" maxlength="18" placeholder="00.000.000/0000-00"></div>
+        <div class="campo"><label for="empresa-email">E-MAIL DA EMPRESA</label><input id="empresa-email" type="email" maxlength="254"></div>
+        <div class="campo campo-largo"><label for="tema-assinatura">TEMA DA TELA DE ASSINATURA</label><select id="tema-assinatura"><option value="firma">Firma</option><option value="Caderno">Caderno</option><option value="Cor Solida">Cor sólida</option></select></div>
         <div class="campo campo-largo"><label for="arquivo-pdf">DOCUMENTO PDF</label><input id="arquivo-pdf" type="file" accept="application/pdf,.pdf" required></div>
-        <div class="campo"><label for="chave-api">CHAVE DA API</label><input id="chave-api" type="password" autocomplete="off" required></div>
-        <div class="campo"><label for="token">TOKEN JWT</label><input id="token" type="password" autocomplete="off" required></div>
         <div class="campo-largo"><button id="abrir-pdf" class="botao-carteira" type="button">ABRIR PDF PARA POSICIONAR CAMPOS</button></div>
       </div>
-      
+
       <div class="cabecalho-area" id="header-posicionamento" hidden><span>02.1 / POSICIONAR CAMPOS</span><span>CLIQUE NA PÁGINA; ARRASTE PARA AJUSTAR</span></div>
       <div class="etapa" id="etapa-posicionamento" hidden>
+        <p class="instrucao-campos">Selecione quem vai assinar e o tipo de campo. Clique no PDF para posicionar; arraste a caixa para mover e o canto para ajustar o tamanho.</p>
         <div class="campos">
           <div class="campo"><label for="signatario-atual">SIGNATÁRIO</label><select id="signatario-atual"></select></div>
           <div class="campo"><label for="tipo-campo">CAMPO</label><select id="tipo-campo"><option value="ASSINATURA">Assinatura</option><option value="RUBRICA">Rubrica</option><option value="SELFIE">Selfie</option></select></div>
         </div>
+        <button id="adicionar-campo" class="botao-carteira" type="button">+ ADICIONAR CAMPO NO CENTRO</button>
+        <p id="resumo-campos" class="resumo-campos" role="status" aria-live="polite"></p>
         <div class="paginacao"><button id="pagina-anterior" type="button">← ANTERIOR</button><span id="numero-pagina">Abra o PDF para começar.</span><button id="pagina-seguinte" type="button">PRÓXIMA →</button></div>
+        <p id="estado-pdf" role="status" aria-live="polite" hidden></p>
         <div id="visualizador" class="visualizador" hidden><img id="imagem-pagina" alt="Prévia da página do PDF"><div id="camada-campos" class="camada-campos"></div></div>
-        <p class="nota-seguranca">Posições acompanham tamanho de cada página. Remova campo pelo botão ×.</p>
+        <p class="nota-seguranca">Use também as setas do teclado para mover um campo em foco; Shift + seta move mais rápido. Remova pelo botão ×.</p>
       </div>
       <div class="rodape-formulario" style="display: flex; gap: 16px;">
         <button id="voltar-step-1" class="botao-secundario botao" type="button">← VOLTAR</button>
@@ -51,29 +70,30 @@
     </section>
 
     <section id="step-3-finalizar" class="area-trabalho" aria-label="Passo 3: Finalizar" hidden>
-      <div class="cabecalho-area"><span>parte final</span><span>aaa</span></div>
+      <div class="cabecalho-area"><span>03 / FINALIZAR</span><span>PREPARE OS CONVITES</span></div>
       <div class="etapa campos">
          <div class="campo campo-largo"><label for="nome-assinatura">NOME DA ASSINATURA *</label><input id="nome-assinatura" maxlength="255" required placeholder="Ex: Contrato de Prestação de Serviços"></div>
       </div>
+      <div id="revisao-assinatura" class="etapa"></div>
       <div class="rodape-formulario" style="display: flex; gap: 16px;">
         <button id="voltar-step-2" class="botao-secundario botao" type="button">← VOLTAR</button>
         <button id="criar-envelope" class="botao-primario botao" type="button">GERAR CONVITES ↗</button>
       </div>
-      <div id="erro-preparacao" class="erro" role="alert" hidden></div>
       <div id="loading-finalizacao" class="finalizado-com-sucesso" hidden>
          <span class="loading-roca-neon">Finalizando assinatura...</span>
       </div>
       <section id="resultado-convites" class="etapa" hidden>
         <h2>Finalizado com sucesso!</h2>
         <p>Agora os documentos estão aguardando assinatura. Copie os links abaixo:</p>
+        <p id="estado-notificacoes" role="status" aria-live="polite"></p><button id="enviar-notificacoes" class="botao-carteira" type="button" hidden>ENVIAR NOTIFICAÇÕES</button>
         <div id="lista-convites" class="lista-convites"></div>
         <div style="margin-top: 20px;">
-           <a href="/assinatura" class="botao-carteira">VER ASSINATURAS</a>
+           <a href="/assineai/trator" class="botao-carteira">VER ASSINATURAS</a>
         </div>
       </section>
     </section>
   </main>
-  
+
   <nav class="modulos-wizard" aria-label="Passos do Wizard">
     <div id="btn-step-1" class="modulo-wizard ativo">
       <span class="modulo-icone">1</span>
