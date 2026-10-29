@@ -705,3 +705,8 @@ document.addEventListener('DOMContentLoaded', () => {
   atualizarSignatarios();
   atualizarControlesPdf();
 });
+
+// Renderiza o signatário inicial
+document.addEventListener('DOMContentLoaded', () => {
+  atualizarSignatarios();
+});
