@@ -166,6 +166,8 @@ public class IdentidadeAssineai {
         dados.put(campo, valor);
       }
     }
+    if (entrada.containsKey("EmpresaTemplates"))
+      dados.put("EmpresaTemplates", TemplatesEmpresa.validar(entrada.get("EmpresaTemplates")));
     banco.atualizar(
       "Empresas",
       "EmpresaId",

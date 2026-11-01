@@ -160,6 +160,11 @@ public class PdfAssineai {
     List<Map<String, Object>> posicoes,
     Map<Long, byte[]> rubricas
   ) throws Exception {
+    return aplicar(documento,pessoas,posicoes,rubricas,TemplatesEmpresa.padrao(),"Sua empresa");
+  }
+
+  public byte[] aplicar(Map<String,Object> documento,List<Map<String,Object>> pessoas,
+      List<Map<String,Object>> posicoes,Map<Long,byte[]> rubricas,Map<String,Object> modelo,String nomeEmpresa) throws Exception {
     byte[] original = (byte[]) documento.get("DocumentoBuffer");
     var marcas = new ArrayList<ServicoCamposPdf.Marca>();
     for (var pessoa : pessoas) {
@@ -211,122 +216,11 @@ public class PdfAssineai {
       }
     }
     byte[] marcado = campos.aplicar(original, marcas);
-    try (
-      var leitor = new PdfReader(marcado);
-      var saida = new ByteArrayOutputStream()
-    ) {
-      var editor = new PdfStamper(leitor, saida, null, true);
-      int pagina = leitor.getNumberOfPages();
-      float y = 0;
-      var fonte = BaseFont.createFont(
-        BaseFont.HELVETICA,
-        BaseFont.CP1252,
-        BaseFont.NOT_EMBEDDED
-      );
-      List<String> linhas = new ArrayList<>();
-      linhas.add("aFIRMA. / REGISTRO DE ASSINATURAS");
-      linhas.add(BancoAssineai.texto(documento, "DocumentoTitulo"));
-      linhas.add(
-        "Documento: " + BancoAssineai.texto(documento, "DocumentoToken")
-      );
-      linhas.add(
-        "SHA-256 original: " +
-          BancoAssineai.texto(documento, "DocumentoHashDoPDFOriginal")
-      );
-      linhas.add(
-        "Autenticidade: " +
-          BancoAssineai.texto(documento, "DocumentoLinkAutenticacao")
-      );
-      for (var pessoa : pessoas) {
-        linhas.add(" ");
-        linhas.add(
-          BancoAssineai.texto(pessoa, "SignatarioNome") +
-            " / " +
-            BancoAssineai.texto(pessoa, "SignatarioQualificacao")
-        );
-        linhas.add(
-          Boolean.TRUE.equals(pessoa.get("SignatarioAssinou"))
-            ? "Assinou em " +
-                BancoAssineai.texto(pessoa, "SignatarioDataAssinatura")
-            : "Assinatura pendente"
-        );
-        if (Boolean.TRUE.equals(pessoa.get("SignatarioAssinou"))) {
-          linhas.add(
-            "Metodos: " +
-              BancoAssineai.texto(pessoa, "SignatarioAutenticadoVia")
-          );
-          for (String chave : java.util.List.of(
-            "SignatarioEmail",
-            "SignatarioWhatsApp",
-            "SignatarioCPF",
-            "SignatarioRG"
-          ))
-            if (!BancoAssineai.texto(pessoa, chave).isBlank()) linhas.add(
-              chave.substring(10) + ": " + BancoAssineai.texto(pessoa, chave)
-            );
-          linhas.add("IP: " + BancoAssineai.texto(pessoa, "SignatarioIp"));
-          linhas.add(
-            "Dispositivo: " +
-              BancoAssineai.texto(pessoa, "SignatarioDispositivo")
-          );
-          if (
-            !BancoAssineai.texto(pessoa, "SignatarioGeolocalizacao").isBlank()
-          ) linhas.add(
-            "Localizacao informada: " +
-              BancoAssineai.texto(pessoa, "SignatarioGeolocalizacao")
-          );
-        }
-      }
-      for (String linha : linhas)
-        for (int i = 0; i < Math.max(1, linha.length()); i += 95) {
-          if (y < 55) {
-            editor.insertPage(++pagina, new Rectangle(595, 842));
-            var c = editor.getOverContent(pagina);
-            c.setColorFill(new java.awt.Color(14, 33, 23));
-            c.rectangle(0, 0, 595, 842);
-            c.fill();
-            y = 795;
-          }
-          var c = editor.getOverContent(pagina);
-          c.beginText();
-          c.setFontAndSize(fonte, 10);
-          c.setColorFill(new java.awt.Color(201, 255, 61));
-          c.setTextMatrix(30, y);
-          c.showText(linha.substring(i, Math.min(i + 95, linha.length())));
-          c.endText();
-          y -= 17;
-        }
-      // As imagens de assinatura e selfie também acompanham o relatório de evidências.
-      for (var pessoa : pessoas)
-        if (Boolean.TRUE.equals(pessoa.get("SignatarioAssinou"))) {
-          var imagens = new ArrayList<byte[]>();
-          for (String chave : List.of(
-            "SignatarioAssinaturaEscritaBase64",
-            "SignatarioSelfieBase64"
-          )) {
-            byte[] b = imagem(pessoa.get(chave), false);
-            if (b != null) imagens.add(b);
-          }
-          if (imagens.isEmpty()) continue;
-          editor.insertPage(++pagina, new Rectangle(595, 842));
-          var c = editor.getOverContent(pagina);
-          c.beginText();
-          c.setFontAndSize(fonte, 13);
-          c.setTextMatrix(30, 800);
-          c.showText(BancoAssineai.texto(pessoa, "SignatarioNome"));
-          c.endText();
-          float topo = 760;
-          for (byte[] b : imagens) {
-            var img = Image.getInstance(b);
-            img.scaleToFit(500, 310);
-            img.setAbsolutePosition(35, topo - img.getScaledHeight());
-            c.addImage(img);
-            topo -= img.getScaledHeight() + 30;
-          }
-        }
-      editor.close();
-      return saida.toByteArray();
-    }
+    var dados = new PaginaRegistroAssinaturas.Dados(nomeEmpresa,
+      BancoAssineai.texto(documento,"DocumentoTitulo"), BancoAssineai.texto(documento,"DocumentoToken"),
+      BancoAssineai.texto(documento,"DocumentoHashDoPDFOriginal"),BancoAssineai.texto(documento,"DocumentoLinkAutenticacao"),
+      java.time.OffsetDateTime.now(java.time.ZoneId.of("America/Sao_Paulo")).format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss XXX")), pessoas);
+    return PaginaRegistroAssinaturas.acrescentar(marcado, modelo, dados);
   }
 
   public byte[] imagem(Object valor, boolean obrigatoria) throws Exception {

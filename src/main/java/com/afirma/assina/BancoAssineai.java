@@ -113,7 +113,7 @@ public class BancoAssineai {
     Map<String, Object> params
   ) {
     Object valor = item.getValue();
-    if (item.getKey().equals("DocumentoColecaoDeDivArrastavel")) {
+    if (Set.of("DocumentoColecaoDeDivArrastavel", "EmpresaTemplates").contains(item.getKey())) {
       params.put(nome, json.writeValueAsString(valor));
       return "CAST(:" + nome + " AS JSON)";
     }

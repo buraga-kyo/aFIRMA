@@ -36,6 +36,11 @@ public class ServicoAssinaturaPdf {
 	public byte[] assinar(byte[] pdf, byte[] certificado, char[] senha,
 			boolean permitirCertificadoVencido, boolean paginaPersonalizada,
 			String nomeEmpresa, byte[] imagemEmpresa) throws Exception {
+        return assinar(pdf,certificado,senha,permitirCertificadoVencido,paginaPersonalizada,nomeEmpresa,imagemEmpresa,TemplatesEmpresa.padrao());
+    }
+
+    public byte[] assinar(byte[] pdf,byte[] certificado,char[] senha,boolean permitirCertificadoVencido,
+            boolean paginaPersonalizada,String nomeEmpresa,byte[] imagemEmpresa,Map<String,Object> modelo) throws Exception {
 		if (pdf == null || pdf.length == 0 || certificado == null || certificado.length == 0) {
 			throw new IllegalArgumentException("PDF e certificado são obrigatórios");
 		}
@@ -80,7 +85,7 @@ public class ServicoAssinaturaPdf {
 		}
 		if (paginaPersonalizada) {
 			pdf = new PaginaComprovante().acrescentar(pdf, nomeEmpresa, imagemEmpresa,
-					"Certificado digital", folha.getSubjectX500Principal().getName());
+					"Certificado digital", folha.getSubjectX500Principal().getName(), modelo);
 		}
 
 		ByteArrayOutputStream saida = new ByteArrayOutputStream();

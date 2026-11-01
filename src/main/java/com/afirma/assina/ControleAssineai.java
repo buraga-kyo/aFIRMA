@@ -80,6 +80,27 @@ public class ControleAssineai {
     return identidade.salvar(usuario(r), dados);
   }
 
+  @GetMapping("/api/assineai/empresa/templates")
+  public Object catalogoTemplates(HttpServletRequest r) { usuario(r); return TemplatesEmpresa.catalogo(); }
+
+  @PostMapping("/api/assineai/empresa/templates/validar")
+  public Object validarTemplates(@RequestBody Map<String,Object> dados,HttpServletRequest r) {
+    usuario(r); return TemplatesEmpresa.validar(dados);
+  }
+
+  @PostMapping("/api/assineai/empresa/templates/previa")
+  public ResponseEntity<byte[]> previaTemplate(@RequestBody Map<String,Object> dados,HttpServletRequest r) throws Exception {
+    var empresa=identidade.empresa(usuario(r));
+    var modelo=TemplatesEmpresa.validarModelo(dados.get("modelo"));
+    String nome=Objects.toString(dados.get("empresa"),Objects.toString(empresa.get("EmpresaNome"),"Sua empresa"));
+    if(nome.isBlank() || nome.length()>255) throw new org.springframework.web.server.ResponseStatusException(HttpStatus.BAD_REQUEST,"Informe o nome da empresa");
+    byte[] pdf=PaginaRegistroAssinaturas.gerar(modelo,PaginaRegistroAssinaturas.amostra(nome));
+    boolean imagem=!Objects.equals(dados.get("formato"),"pdf");
+    return ResponseEntity.ok().header(HttpHeaders.CACHE_CONTROL,"no-store")
+      .contentType(imagem?MediaType.IMAGE_PNG:MediaType.APPLICATION_PDF)
+      .body(imagem?new ServicoCamposPdf().previsualizar(pdf,1):pdf);
+  }
+
   @PostMapping("/JLv3HEzbcO2uKlg0rsELA66dou")
   public Object login(@RequestBody Map<String, Object> dados) {
     return identidade.login(dados);

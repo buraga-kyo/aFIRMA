@@ -34,6 +34,7 @@ async function carregar() {
       ? "Cor Solida"
       : "firma";
   $("perfil-empresa").hidden = false;
+  await EditorTemplates.carregar(dados.EmpresaTemplates);
   localStorage.setItem("assineai-token", $("empresa-token").value.trim());
 }
 $("login-empresa").addEventListener("submit", async (evento) => {
@@ -73,6 +74,7 @@ $("dados-empresa").addEventListener("submit", async (evento) => {
     await pedido(
       "/api/assineai/empresa",
       {
+        EmpresaTemplates: EditorTemplates.dados(),
         EmpresaNome: $("perfil-nome").value,
         EmpresaCNPJ: $("perfil-cnpj").value,
         EmpresaEmail: $("perfil-email").value,
@@ -80,7 +82,8 @@ $("dados-empresa").addEventListener("submit", async (evento) => {
       },
       "PUT",
     );
-    mensagem("Dados da empresa salvos.");
+    EditorTemplates.salvo();
+    mensagem("Dados da empresa e página de assinaturas salvos.");
   } catch (erro) {
     mensagem(erro.message);
   }
@@ -88,3 +91,5 @@ $("dados-empresa").addEventListener("submit", async (evento) => {
 $("empresa-token").value = localStorage.getItem("assineai-token") || "";
 if ($("empresa-token").value)
   carregar().catch((erro) => mensagem(erro.message));
+
+$("template-salvar").onclick = () => $("dados-empresa").requestSubmit();

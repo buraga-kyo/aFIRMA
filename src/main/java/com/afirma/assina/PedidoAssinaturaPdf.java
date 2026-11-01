@@ -19,6 +19,11 @@ public class PedidoAssinaturaPdf {
 
 	private boolean paginaPersonalizada;
 
+    @Size(max = 800000)
+    private String templatePagina;
+    public String getTemplatePagina() { return templatePagina; }
+    public void setTemplatePagina(String valor) { templatePagina=valor; }
+
 	@Size(max = 120)
 	private String nomeEmpresa;
 

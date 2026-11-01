@@ -33,10 +33,12 @@ function adicionarPersonalizacao(dados) {
   dados.append('nomeEmpresa', nomeEmpresa.value.trim());
   if (!escolhaPagina.checked) return;
   const imagem = imagemEmpresa.files[0];
-  if (imagem && (imagem.size > 1024 * 1024 || !['image/png', 'image/jpeg'].includes(imagem.type))) {
-    throw new Error('Use imagem PNG ou JPEG de até 1 MB.');
+  if (imagem && (imagem.size > 500000 || !['image/png', 'image/jpeg'].includes(imagem.type))) {
+    throw new Error('Use imagem PNG ou JPEG de até 500 KB.');
   }
   if (imagem) dados.append('imagemEmpresa', imagem);
+  const modelo=modelosPagina.find(m=>m.id===document.getElementById('modelo-pagina-assinatura').value);
+  if(modelo) dados.append('templatePagina',JSON.stringify(modelo));
 }
 
 function mostrarNomePdf() {
@@ -184,3 +186,19 @@ formulario.addEventListener('submit', async ocorrencia => {
 window.addEventListener('pagehide', () => {
   if (enderecoArquivo) URL.revokeObjectURL(enderecoArquivo);
 });
+
+let modelosPagina=[];
+document.getElementById('carregar-modelos-pagina').onclick=async()=>{
+  const estado=document.getElementById('estado-modelo-pagina');
+  try {
+    const token=localStorage.getItem('assineai-token');if(!token)throw Error('Entre na conta da empresa em /empresa para carregar seus modelos.');
+    const r=await fetch('/api/assineai/empresa',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});
+    if(!r.ok)throw Error('Entre novamente no perfil da empresa para carregar os modelos.');
+    const empresa=await r.json();const biblioteca=empresa.EmpresaTemplates;
+    if(biblioteca?.versao!==2)throw Error('Escolha e salve um modelo da folha de assinaturas no perfil da empresa.');
+    modelosPagina=biblioteca.modelos;const sel=document.getElementById('modelo-pagina-assinatura');sel.replaceChildren();
+    for(const m of modelosPagina){const o=document.createElement('option');o.value=m.id;o.textContent=m.nome;sel.append(o);}sel.value=biblioteca.ativo;
+    nomeEmpresa.value=empresa.EmpresaNome||nomeEmpresa.value;nomeEmpresa.dispatchEvent(new Event('input'));
+    estado.textContent='Modelo padrão da empresa carregado. A folha será acrescentada antes da assinatura do PDF.';
+  } catch(e){estado.textContent=e.message;}
+};

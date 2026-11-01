@@ -50,6 +50,20 @@ class ServicoAssinaturaPdfTest {
 		}
 	}
 
+    @Test
+    void todosOsDesignsFicamCobertosPelaAssinaturaCriptografica() throws Exception {
+        byte[] certificado=criarCertificado(false);
+        for(var modelo:TemplatesEmpresa.catalogo()) {
+            byte[] assinado=servico.assinar(criarPdf(),certificado,"senha-teste".toCharArray(),false,true,"Empresa Exemplo",null,modelo);
+            try(var leitor=new PdfReader(assinado)) {
+                assertEquals(2,leitor.getNumberOfPages());
+                var campos=leitor.getAcroFields();var nome=campos.getSignedFieldNames().getFirst();
+                assertTrue(campos.verifySignature(nome).verify(),modelo.get("id").toString());
+                assertTrue(campos.signatureCoversWholeDocument(nome));
+            }
+        }
+    }
+
 	@Test
 	void paginaPreservaAssinaturaAnterior() throws Exception {
 		byte[] certificado = criarCertificado(false);

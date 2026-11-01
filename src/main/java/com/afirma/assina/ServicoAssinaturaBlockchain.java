@@ -33,6 +33,10 @@ public class ServicoAssinaturaBlockchain {
 	@Transactional
 	public Preparacao preparar(MultipartFile arquivo, String carteira, boolean paginaPersonalizada,
 			String nomeEmpresa, MultipartFile imagemEmpresa) throws Exception {
+        return preparar(arquivo,carteira,paginaPersonalizada,nomeEmpresa,imagemEmpresa,TemplatesEmpresa.padrao());
+    }
+    public Preparacao preparar(MultipartFile arquivo,String carteira,boolean paginaPersonalizada,String nomeEmpresa,
+            MultipartFile imagemEmpresa,java.util.Map<String,Object> modelo) throws Exception {
 		protocolo.bytesHex(carteira, 20);
 		String dominio = nomeEmpresa == null || nomeEmpresa.isBlank()
 				? "Assinatura de documento" : nomeEmpresa;
@@ -47,7 +51,7 @@ public class ServicoAssinaturaBlockchain {
 		if (paginaPersonalizada) {
 			byte[] imagem = imagemEmpresa == null ? null : imagemEmpresa.getBytes();
 			original = paginaComprovante.acrescentar(original, dominio, imagem,
-					"Assinatura eletrônica", carteira);
+					"Assinatura eletrônica", carteira,modelo);
 		}
 		ServicoPdfBlockchain.PdfPreparado preparado = pdfs.preparar(original);
 		UUID identificador = UUID.randomUUID();
