@@ -883,6 +883,9 @@ public class ServicoAssineai {
   private void gerarDocumentos(long assinatura, byte[] pfx, char[] senha)
     throws Exception {
     var ps = pessoas(assinatura);
+    var empresa = banco.um("SELECT e.* FROM \"Empresas\" e JOIN firma_assineai_controle c ON c.empresa_id=e.\"EmpresaId\" WHERE c.assinatura_id=:id", Map.of("id",assinatura));
+    var modelo = TemplatesEmpresa.ativo(empresa == null ? null : empresa.get("EmpresaTemplates"));
+    String nomeEmpresa = empresa == null ? "Sua empresa" : Objects.toString(empresa.get("EmpresaNome"),"Sua empresa");
     var rubricas = new HashMap<Long, byte[]>();
     for (var p : ps) {
       var r = banco.um(
@@ -906,7 +909,9 @@ public class ServicoAssineai {
           d,
           ps,
           lista(d.get("DocumentoColecaoDeDivArrastavel")),
-          rubricas
+          rubricas,
+          modelo,
+          nomeEmpresa
         );
         if (chave != null) pdf = certificado.assinar(
           pdf,

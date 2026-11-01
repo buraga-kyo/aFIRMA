@@ -29,8 +29,13 @@ public class ControleAssinaturaBlockchain {
 			@RequestParam("carteira") String carteira,
 			@RequestParam(value = "paginaPersonalizada", defaultValue = "false") boolean paginaPersonalizada,
 			@RequestParam(value = "nomeEmpresa", required = false) String nomeEmpresa,
-			@RequestParam(value = "imagemEmpresa", required = false) MultipartFile imagemEmpresa) throws Exception {
+			@RequestParam(value = "imagemEmpresa", required = false) MultipartFile imagemEmpresa,
+            @RequestParam(value = "templatePagina", required = false) String templatePagina) throws Exception {
 		try {
+            if(paginaPersonalizada && templatePagina!=null && !templatePagina.isBlank()) {
+                var modelo=TemplatesEmpresa.lerModelo(templatePagina);
+                return servico.preparar(pdf,carteira,true,nomeEmpresa,imagemEmpresa,modelo);
+            }
 			return servico.preparar(pdf, carteira, paginaPersonalizada, nomeEmpresa, imagemEmpresa);
 		} catch (IllegalArgumentException erro) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, erro.getMessage(), erro);

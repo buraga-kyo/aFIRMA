@@ -55,7 +55,11 @@ public class ControleAssinaturaPdf {
 		try {
 			byte[] imagem = pedido.isPaginaPersonalizada() && pedido.getImagemEmpresa() != null
 					? pedido.getImagemEmpresa().getBytes() : null;
-			byte[] assinado = servico.assinar(arquivos.pdf(), arquivos.certificado(), senhaCertificado,
+			byte[] assinado;
+            if (pedido.isPaginaPersonalizada() && pedido.getTemplatePagina()!=null && !pedido.getTemplatePagina().isBlank()) {
+                var modelo=TemplatesEmpresa.lerModelo(pedido.getTemplatePagina());
+                assinado=servico.assinar(arquivos.pdf(),arquivos.certificado(),senhaCertificado,permitirCertificadoVencido,true,pedido.getNomeEmpresa(),imagem,modelo);
+            } else assinado = servico.assinar(arquivos.pdf(), arquivos.certificado(), senhaCertificado,
 					permitirCertificadoVencido, pedido.isPaginaPersonalizada(), pedido.getNomeEmpresa(), imagem);
 			return ResponseEntity.ok()
 					.header(HttpHeaders.CONTENT_DISPOSITION,
@@ -81,6 +85,8 @@ public class ControleAssinaturaPdf {
 		} catch (GeneralSecurityException | IOException erro) {
 			log.warn("Assinatura recusada: falha ao processar PDF ou certificado", erro);
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não foi possível processar o PDF ou certificado", erro);
+        } catch (ResponseStatusException erro) {
+            throw erro;
 		} catch (Exception erro) {
 			String referencia = UUID.randomUUID().toString();
 			log.error("Falha interna ao assinar PDF. Referência {}", referencia, erro);

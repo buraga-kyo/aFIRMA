@@ -36,8 +36,8 @@
         <div class="campo campo-largo campo-empresa"><label for="nome-empresa">NOME DA EMPRESA</label><input id="nome-empresa" type="text" maxlength="120" autocomplete="organization" required placeholder="Nome da empresa que assina"></div>
         <label class="escolha-pagina" for="pagina-personalizada"><input id="pagina-personalizada" type="checkbox"><span>Adicionar página personalizada ao PDF assinado</span></label>
         <div id="campos-personalizacao" class="campos" hidden>
-          <div class="campo campo-largo"><label for="imagem-empresa">IMAGEM DA EMPRESA (PNG OU JPEG, ATÉ 1 MB)</label><input id="imagem-empresa" type="file" accept="image/png,image/jpeg"></div>
-          <p class="nota-seguranca campo-largo">A página usa o visual atual. Esta seção reunirá futuras opções de layout.</p>
+          <div class="campo campo-largo"><label for="imagem-empresa">IMAGEM DA EMPRESA (PNG OU JPEG, ATÉ 500 KB)</label><input id="imagem-empresa" type="file" accept="image/png,image/jpeg"></div>
+          <div class="campo campo-largo"><label for="modelo-pagina-assinatura">MODELO DA FOLHA DE ASSINATURAS</label><select id="modelo-pagina-assinatura"><option value="">Atlas · padrão</option></select><button id="carregar-modelos-pagina" class="botao-carteira" type="button">CARREGAR MODELOS DO MEU PERFIL</button><a href="/empresa" target="_blank" rel="noopener">Escolher e personalizar os designs no perfil da empresa ↗</a><span id="estado-modelo-pagina" role="status"></span></div>
         </div>
       </section>
       <form id="formulario-assinatura" class="formulario" th:action="@{/api/pdfs/assinar}" action="/api/pdfs/assinar" method="post" enctype="multipart/form-data">

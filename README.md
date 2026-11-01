@@ -102,7 +102,7 @@ Confira o texto antes de mandar para o cliente. Por enquanto ele é montado com 
 
 O cadastro novo usa as tabelas originais do Assineai, com os mesmos IDs inteiros, vínculos e tokens. Cada PDF guarda seu original, sua versão assinada e sua consulta de autenticidade. Os registros que foram criados com UUID na Firma continuam na opção **Registros anteriores da Firma**, lá na tabela.
 
-Em `/empresa` você entra na conta, preenche CNPJ/e-mail e escolhe o tema. No `local-test`, dá para cadastrar e entrar com o segredo de teste. Para manter as sessões antigas em produção, configure `APP_ASSINEAI_JWT_SECRET` ou `JWT_SECRET` com o segredo que o Assineai já usava.
+Em `/empresa` você entra na conta, preenche CNPJ/e-mail e escolhe o design da folha de registro acrescentada ao PDF. O estúdio permite editar a composição e criar versões próprias; veja [os designs e o editor](docs/templates-empresa.md). No `local-test`, dá para cadastrar e entrar com o segredo de teste. Para manter as sessões antigas em produção, configure `APP_ASSINEAI_JWT_SECRET` ou `JWT_SECRET` com o segredo que o Assineai já usava.
 
 Os registros antigos que ainda não têm dono na estrutura nova usam a empresa de `APP_ASSINEAI_EMPRESA_LEGADA_ID`. Se seus clientes antigos chamam as rotas sem Authorization, existe `APP_ASSINEAI_COMPATIBILIDADE_PUBLICA=true` para essas rotas, associado à empresa configurada. A API nova `/api/assineai` continua exigindo autenticação.
 
