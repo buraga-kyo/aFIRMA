@@ -1,0 +1,430 @@
+[
+  {
+    "origem": "empresa",
+    "destino": "Cliente",
+    "campos": {
+      "ClienteNome": "nome",
+      "ClienteStatus": "ativa",
+      "ClienteRazaoSocial": "razao_social",
+      "ClienteCpfCnpj": "documento",
+      "ClienteTelefone": "telefone",
+      "ClienteEmail": "email"
+    },
+    "relacionamentos": {}
+  },
+  {
+    "origem": "chat_plano",
+    "destino": "Plano",
+    "campos": {
+      "PlanoNome": "nome",
+      "PlanoStatus": "ativo",
+      "PlanoValor": "valor_centavos",
+      "PlanoRenovacaoDias": "renovacao_dias",
+      "PlanoQtdDisparos": "limite_envios_dia",
+      "PlanoQtdCanais": "limite_canais",
+      "PlanoQtdAtendentes": "limite_atendentes",
+      "PlanoPermiteIntegracao": "permite_integracao",
+      "PlanoPermiteWebhook": "permite_webhook"
+    },
+    "relacionamentos": {}
+  },
+  {
+    "origem": "chat_canal",
+    "destino": "Canal",
+    "campos": {
+      "CanalNome": "nome",
+      "CanalGUID": "id",
+      "CanalNumeroCelular": "telefone",
+      "CanalStatus": "conexao",
+      "CanalStatusUso": "ativo",
+      "CanalProvedorAPI": "provedor",
+      "CanalMsgEncerramentoAtendimento": "mensagem_encerramento",
+      "CanalMetaNumeroIdentificador": "identificador_meta"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_setor",
+    "destino": "Setor",
+    "campos": {
+      "SetorNome": "nome",
+      "SetorStatus": "ativo"
+    },
+    "relacionamentos": {}
+  },
+  {
+    "origem": "chat_atendente",
+    "destino": "Atendente",
+    "campos": {
+      "AtendenteNome": "nome",
+      "AtendenteStatus": "ativo",
+      "AtendenteStatusChat": "disponibilidade"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_contato",
+    "destino": "Contato",
+    "campos": {
+      "ContatoNome": "nome",
+      "ContatoNumero": "telefone",
+      "ContatoEmail": "email",
+      "ContatoInformacaoAdicional": "informacoes",
+      "ContatoAvatarChave": "avatar_chave",
+      "ContatoJidWhatsApp": "identificador_whatsapp"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_atendimento",
+    "destino": "Atendimento",
+    "campos": {
+      "AtendimentoProtocolo": "protocolo",
+      "AtendimentoStatus": "estado",
+      "AtendimentoAvaliacao": "avaliacao",
+      "AtendimentoQtdMensagensNaoLidas": "mensagens_nao_lidas",
+      "AtendimentoBOTExterno": "bot_externo",
+      "AtendimentoDataFinalizado": "finalizado_em",
+      "AtendimentoReceptivo": "receptivo",
+      "AtendimentoDuracao": "duracao_segundos",
+      "AtendimentoTempoPendente": "espera_segundos",
+      "AtendimentoContextoIA": "contexto_ia",
+      "AtendimentoDataUltimaMensagemCliente": "ultima_mensagem_cliente_em"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ],
+      "CanalId": [
+        "chat_canal",
+        "canal_id"
+      ],
+      "ContatoId": [
+        "chat_contato",
+        "contato_id"
+      ],
+      "SetorId": [
+        "chat_setor",
+        "setor_id"
+      ],
+      "AtendenteId": [
+        "chat_atendente",
+        "atendente_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_arquivo",
+    "destino": "Arquivo",
+    "campos": {
+      "ArquivoNome": "nome",
+      "ArquivoMimeType": "tipo_mime",
+      "ArquivoSize": "tamanho",
+      "ArquivoChave": "chave_armazenamento",
+      "ArquivoExtensao": "extensao",
+      "ArquivoThumbnailChave": "miniatura_chave",
+      "ArquivoLatitude": "latitude",
+      "ArquivoLongitude": "longitude"
+    },
+    "relacionamentos": {}
+  },
+  {
+    "origem": "chat_mensagem",
+    "destino": "Mensagem",
+    "campos": {
+      "MensagemTexto": "texto",
+      "MensagemTipo": "tipo",
+      "MensagemIdWhatsApp": "identificador_externo",
+      "MensagemACK": "confirmacao",
+      "MensagemEditada": "editada",
+      "MensagemDeletada": "excluida",
+      "MensagemReacao": "reacoes",
+      "MensagemInterativa": "conteudo_interativo"
+    },
+    "relacionamentos": {
+      "AtendimentoId": [
+        "chat_atendimento",
+        "atendimento_id"
+      ],
+      "CanalId": [
+        "chat_canal",
+        "canal_id"
+      ],
+      "ArquivoId": [
+        "chat_arquivo",
+        "arquivo_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_atendente_setor",
+    "destino": "AtendenteSetor",
+    "campos": {},
+    "relacionamentos": {
+      "AtendenteId": [
+        "chat_atendente",
+        "atendente_id"
+      ],
+      "SetorId": [
+        "chat_setor",
+        "setor_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_acao",
+    "destino": "AtendimentoAcao",
+    "campos": {
+      "AtendimentoAcaoTipo": "tipo",
+      "AtendimentoAcaoTexto": "descricao"
+    },
+    "relacionamentos": {
+      "AtendimentoId": [
+        "chat_atendimento",
+        "atendimento_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_etiqueta",
+    "destino": "Tag",
+    "campos": {
+      "TagNome": "nome",
+      "TagStatus": "ativa"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_atendimento_etiqueta",
+    "destino": "AtendimentoTag",
+    "campos": {},
+    "relacionamentos": {
+      "AtendimentoId": [
+        "chat_atendimento",
+        "atendimento_id"
+      ],
+      "TagId": [
+        "chat_etiqueta",
+        "etiqueta_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_mensagem_rapida",
+    "destino": "MensagemRapida",
+    "campos": {
+      "MensagemRapidaTexto": "texto"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ],
+      "SetorId": [
+        "chat_setor",
+        "setor_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_modelo_mensagem",
+    "destino": "MensagemTemplate",
+    "campos": {
+      "MensagemTemplateNome": "nome",
+      "MensagemTemplateCategoria": "categoria",
+      "MensagemTemplateCorpo": "corpo",
+      "MensagemTemplateStatusMeta": "estado",
+      "MensagemTemplateStatusUso": true,
+      "MensagemTemplateCabecalhoConteudo": "cabecalho",
+      "MensagemTemplateRodape": "rodape",
+      "MensagemTemplateBotoes": "botoes",
+      "MensagemTemplateMetaId": "identificador_meta",
+      "MensagemTemplateCabecalhoTipo": "cabecalho_tipo",
+      "MensagemTemplateCabecalhoVariaveis": "cabecalho_variaveis",
+      "MensagemTemplateCorpoVariaveis": "corpo_variaveis",
+      "MensagemTemplateMotivoRejeicaoMeta": "motivo_rejeicao",
+      "MensagemTemplateMetodoEnvio": "metodo_envio"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ],
+      "CanalId": [
+        "chat_canal",
+        "canal_id"
+      ],
+      "SetorId": [
+        "chat_setor",
+        "setor_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_lista_contatos",
+    "destino": "ListaContato",
+    "campos": {
+      "ListaContatoNome": "nome",
+      "ListaContatoStatus": "ativa",
+      "ListaContatoFonteContatos": "fonte"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_integracao",
+    "destino": "Integracao",
+    "campos": {
+      "IntegracaoNome": "nome",
+      "IntegracaoDados": "configuracao",
+      "IntegracaoStatus": "ativa"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_agente_ia",
+    "destino": "InteligenciaArtificial",
+    "campos": {
+      "InteligenciaArtificialNome": "nome",
+      "InteligenciaArtificialStatus": "ativa",
+      "InteligenciaArtificialProvedor": "provedor",
+      "InteligenciaArtificialModelo": "modelo",
+      "InteligenciaArtificialTextoPrompt": "instrucoes",
+      "InteligenciaArtificialAtivador": "ativador"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ],
+      "CanalId": [
+        "chat_canal",
+        "canal_id"
+      ],
+      "SetorId": [
+        "chat_setor",
+        "setor_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_bot_definicao",
+    "destino": "ChatbotDefinicao",
+    "campos": {
+      "ChatbotDefinicaoNome": "nome",
+      "ChatbotDefinicaoStatus": "ativo",
+      "ChatbotDefinicaoFuncionamento": "funcionamento",
+      "ChatbotDefinicaoFlow": "fluxo",
+      "ChatbotDefinicaoProvedor": "provedor",
+      "ChatbotDefinicaoN8nURL": "endereco_externo"
+    },
+    "relacionamentos": {
+      "CanalId": [
+        "chat_canal",
+        "canal_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_webhook",
+    "destino": "Webhook",
+    "campos": {
+      "WebhookURL": "destino",
+      "WebhookTodosCanais": "todos_canais",
+      "WebhookEvento": "eventos"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_webhook_entrega",
+    "destino": "WebhookLog",
+    "campos": {
+      "WebhookLogEvento": "evento",
+      "WebhookLogDados": "dados"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_chave_integracao",
+    "destino": "ChaveAPI",
+    "campos": {
+      "ChaveAPIDescricao": "nome",
+      "ChaveAPIStatus": "ativa"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ]
+    }
+  },
+  {
+    "origem": "chat_campanha",
+    "destino": "DisparoMassa",
+    "campos": {
+      "DisparoMassaDataHoraInicio": "agendada_em",
+      "DisparoMassaStatus": "estado",
+      "DisparoMassaIntervaloEntreDisparos": "intervalo_segundos",
+      "DisparoMassaConteudo": "texto",
+      "DisparoMassaMaxMensagemDia": "maximo_diario"
+    },
+    "relacionamentos": {
+      "ClienteId": [
+        "empresa",
+        "empresa_id"
+      ],
+      "CanalId": [
+        "chat_canal",
+        "canal_id"
+      ],
+      "MensagemTemplateId": [
+        "chat_modelo_mensagem",
+        "modelo_id"
+      ],
+      "ListaContatoId": [
+        "chat_lista_contatos",
+        "lista_id"
+      ]
+    }
+  }
+]

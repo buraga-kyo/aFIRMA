@@ -15,6 +15,9 @@ public class SegurancaAssineai {
     return http
       .securityMatcher(
         "/api/assineai/**",
+        "/api/autentica/**",
+        "/API/v1/**",
+        "/n8n/**",
         "/CriarAssinaturaViaAPI",
         "/AssineAi_AssinarDocumentoViaAPI",
         "/ValidarToken",

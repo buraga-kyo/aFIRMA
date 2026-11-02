@@ -1,0 +1,62 @@
+/* O trator de assinaturas fornece a estrutura, as abas e os controles da tabela. */
+body.zapiou-trator{padding:24px 24px 140px;--shell-side:0px}
+.zapiou-trator .firma-sidebar,.zapiou-trator .firma-appbar{display:none}
+.zapiou-trator main.trator-relacionamento.lista-documentos{display:block;height:auto;overflow:visible;margin:0 auto;padding:0;max-width:100%}
+.zapiou-trator main[data-largura="total"]{width:100%}
+.zapiou-trator .lista-toolbar{flex-wrap:wrap}.zapiou-trator .lista-toolbar .toolbar-faixa{flex-wrap:wrap;width:100%}
+.zapiou-trator .lista-toolbar .toolbar-grupo{flex-wrap:wrap;align-items:flex-end}
+.zapiou-trator .zapiou-busca{display:flex;align-items:center;gap:8px;flex:1 1 230px;padding:8px 12px;min-width:180px;margin-left:20px}
+.zapiou-busca input{width:100%;min-height:38px;padding:8px 12px;font-size:12px}
+.zapiou-trator #chat-aviso{flex-basis:100%;margin:0;font-size:12px;color:var(--muted-foreground)}.zapiou-trator #chat-aviso:empty{display:none}
+.zapiou-trator .autentica-inbox{display:none}#chat-tabela{min-width:0}#chat-lista{display:none}
+#chat-painel{display:grid;grid-template-columns:minmax(0,1fr) 260px;min-width:0;background:var(--background);border-top:3px solid var(--primary);white-space:normal}
+#chat-painel .autentica-chat-body{min-height:520px;overflow:hidden}#chat-painel #chat-conversa{display:flex;flex-direction:column;height:650px;min-height:0}#chat-painel .autentica-mensagens{flex:1;min-height:180px;overflow:auto;max-height:none}#chat-painel .autentica-chat-detalhes{display:block;max-height:650px}#chat-painel .autentica-conversa-topo{flex-wrap:wrap;gap:15px}#chat-painel .autentica-chat-acoes{flex-wrap:wrap}#chat-painel .autentica-composer{flex-shrink:0}
+.zapiou-linha-chat>td{padding:0!important}#chat-tabela tbody tr[data-conversa-id]{cursor:pointer}#chat-tabela tbody td:first-child{white-space:normal}#chat-tabela .trator-controles{margin-top:5px}
+.zapiou-trator .lista-rodape .titulo-trator{margin:0 auto;font-size:clamp(14px,1.5vw,22px)}
+.zapiou-integral #chat-tabela{grid-column:1/-1}.zapiou-integral #chat-tabela .tabela-painel,.zapiou-integral #chat-tabela .chips-filtros{display:none}
+.zapiou-integral main.trator-relacionamento.lista-documentos{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px}
+.zapiou-integral .autentica-inbox{display:block;max-height:calc(100dvh - 290px);overflow:auto;padding:0;border:2px solid var(--border)}
+.zapiou-integral .autentica-inbox-title{display:none}.zapiou-integral #chat-lista{display:grid}.zapiou-integral #chat-lista button{display:grid;text-align:left;gap:5px;width:100%}.zapiou-integral #chat-lista small{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;max-width:235px}
+@media(max-width:1000px){#chat-painel{grid-template-columns:minmax(0,1fr)}#chat-painel .autentica-chat-detalhes{max-height:250px;border-top:2px solid var(--border)}.zapiou-integral main.trator-relacionamento.lista-documentos{grid-template-columns:240px minmax(0,1fr)}}
+@media(max-width:900px){body.zapiou-trator{padding:12px}.zapiou-trator>.rodape-fixo-trator{margin-top:30px}}
+@media(max-width:700px){.zapiou-integral main.trator-relacionamento.lista-documentos{display:flex;flex-direction:column}.zapiou-integral .autentica-inbox{max-height:260px}#chat-painel #chat-conversa{height:700px}.zapiou-trator .zapiou-busca{margin-left:0}}
+
+.zapiou-trator select,.zapiou-trator textarea{background:var(--background);color:var(--foreground);border:1px solid var(--border);font:inherit}.zapiou-trator .autentica-dialog{background:var(--card);color:var(--foreground)}
+
+/* Contato é uma célula especializada; os filtros continuam no cabeçalho comum. */
+.zapiou-contato{display:flex;align-items:center;gap:12px;min-width:0}
+.zapiou-contato-avatar{position:relative;display:inline-flex;flex:0 0 46px;align-items:center;justify-content:center;width:46px;height:46px;overflow:hidden;border-radius:50%;border:2px solid var(--border);background:var(--secondary);color:var(--primary);font-weight:800;font-size:15px}
+.zapiou-contato-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.zapiou-contato-identidade{display:grid;gap:4px;min-width:0}.zapiou-contato-identidade strong{font-size:13px;overflow-wrap:anywhere}.zapiou-contato-identidade small{font-size:11px;color:var(--muted-foreground)}
+.zapiou-integral #chat-lista button{display:flex;align-items:center;gap:10px}.zapiou-integral #chat-lista button>span:last-child{display:grid;gap:4px;min-width:0}
+#chat-avatar:has(.zapiou-contato-avatar){background:transparent;border:0}
+
+@media(max-width:760px){.zapiou-trator main.trator-relacionamento[data-largura]{width:100%}}
+
+.zapiou-impressao{display:none}
+@media print{body.zapiou-trator>*{display:none!important}body.zapiou-trator>.zapiou-impressao{display:block!important;color:#111;background:#fff}.zapiou-impressao table{width:100%;border-collapse:collapse;font:10px sans-serif}.zapiou-impressao th,.zapiou-impressao td{padding:6px;border:1px solid #777;text-align:left}}
+
+/* O chat ocupa a largura visível do trator, mesmo com muitas colunas. */
+.zapiou-linha-chat #chat-painel{position:sticky;left:0;width:var(--zapiou-chat-largura,100%);max-width:100%}
+#chat-painel .autentica-conversa-topo{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;position:sticky;top:0;z-index:3;background:var(--card);flex-shrink:0}
+#chat-painel .autentica-contact-name{min-width:0;overflow-wrap:anywhere}
+#chat-painel .autentica-chat-acoes{grid-column:1/-1;min-width:0}
+#chat-painel #chat-recolher{display:flex;align-items:center;justify-content:center;justify-self:end;width:44px;height:44px;min-height:44px;padding:0;border:2px solid var(--primary);background:var(--background);color:var(--primary);font:28px/1 sans-serif;box-shadow:none;cursor:pointer}
+#chat-painel #chat-recolher:hover{background:var(--primary);color:var(--background)}
+#chat-painel #chat-recolher:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+
+/* Uma linha só: as abas correm por baixo do Burro de Carga. */
+.zapiou-trator #chat-tabela .lista-toolbar{flex-wrap:nowrap;padding:0;border-bottom:8px solid var(--cor-aba-ativa);overflow:visible}
+.zapiou-trator #chat-tabela .toolbar-faixa{position:relative;display:block;flex:none;width:100%;min-width:0;--zapiou-burro-largura:clamp(190px,28vw,340px)}
+.zapiou-trator #chat-tabela .toolbar-faixa>.zapiou-faixa-abas{position:relative;z-index:0;display:flex;flex-wrap:nowrap;align-items:flex-end;gap:0;width:100%;max-width:100%;min-height:64px;padding:8px calc(var(--zapiou-burro-largura) + 36px) 0 0;box-sizing:border-box;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;cursor:grab;overscroll-behavior-x:contain}
+.zapiou-trator #chat-tabela .zapiou-faixa-abas::-webkit-scrollbar{display:none;width:0;height:0}
+.zapiou-trator #chat-tabela .zapiou-faixa-abas.arrastando,.zapiou-trator #chat-tabela .zapiou-faixa-abas.arrastando *{cursor:grabbing!important;user-select:none}
+.zapiou-trator #chat-tabela .zapiou-faixa-abas:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
+.zapiou-trator #chat-tabela .toolbar-faixa>.zapiou-burro-fixo{position:absolute;z-index:2;right:0;bottom:0;display:flex;flex:none;flex-wrap:nowrap;width:var(--zapiou-burro-largura);max-width:100%;overflow:visible;background:var(--background);box-shadow:-12px 0 0 var(--background)}
+.zapiou-trator #chat-tabela .zapiou-burro-fixo .af-busca{width:100%;min-width:0;min-height:56px;box-sizing:border-box}
+.zapiou-trator #chat-tabela .zapiou-burro-fixo .af-busca input{width:0;min-width:0}
+.zapiou-trator #chat-tabela .zapiou-faixa-abas .zapiou-busca{flex:0 0 240px;min-width:0;margin:0 0 0 20px;padding:0 8px;height:50px}
+.zapiou-trator #chat-tabela .zapiou-faixa-abas .zapiou-navegacao .acao{--cor-aba:var(--secondary);z-index:5}
+.zapiou-trator #chat-tabela .zapiou-faixa-abas .zapiou-navegacao #importar-dados{--cor-aba:color-mix(in srgb,var(--border) 65%,var(--card));z-index:4}
+.zapiou-trator #chat-tabela .zapiou-faixa-abas .zapiou-navegacao #exportar-dados{--cor-aba:color-mix(in srgb,var(--border) 85%,var(--background));z-index:3}
+.zapiou-trator #chat-tabela .zapiou-faixa-abas .zapiou-navegacao #zapiou-colunas-botao{--cor-aba:var(--secondary);z-index:2}

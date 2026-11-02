@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* TalkAtive: organização de atendimento com a identidade Roça Neon da FIRMA. */
+body.firma-shell {
+  --background:#0E2117; --card:#173225; --secondary:#3B2A1A;
+  --border:#2E5A3F; --foreground:#F2F7EC; --muted-foreground:#A9C2AC;
+  --primary:#C9FF3D; --accent:#E8792B; --shell-side:238px;
+  margin:0; min-height:100dvh; padding:64px 0 0 var(--shell-side);
+  background:var(--background); color:var(--foreground); font:14px/1.5 Inter,system-ui,sans-serif;
+  color-scheme:dark;
+}
+.firma-shell * {box-sizing:border-box}
+.firma-shell [hidden] {display:none!important}
+.firma-shell button,.firma-shell input,.firma-shell select,.firma-shell textarea {font:inherit}
+.firma-shell button {cursor:pointer}
+.firma-shell button:disabled {cursor:default;opacity:.5}
+.firma-shell :focus-visible {outline:3px solid var(--primary);outline-offset:3px}
+.firma-shell h1,.firma-shell h2,.firma-shell h3 {font-family:'Archivo Black',sans-serif;font-weight:400;letter-spacing:-.04em}
+.firma-shell a {color:inherit}
+.firma-shell input,.firma-shell select,.firma-shell textarea {border-radius:0;border:1px solid var(--border);background:var(--background);color:var(--foreground);accent-color:var(--primary)}
+.firma-shell input::placeholder,.firma-shell textarea::placeholder {color:var(--muted-foreground);opacity:.8}
+.firma-shell main {min-width:0}
+.firma-sidebar {position:fixed;inset:0 auto 0 0;z-index:70;width:var(--shell-side);display:flex;flex-direction:column;background:var(--card);border-right:2px solid var(--border)}
+.firma-workspace {display:flex;align-items:center;gap:10px;text-decoration:none;padding:18px 16px;min-height:84px}
+.firma-logo {display:flex;align-items:center;justify-content:center;width:42px;height:38px;border:2px solid var(--primary);background:var(--background);color:var(--foreground);font:22px 'Archivo Black',sans-serif;letter-spacing:-.09em;flex-shrink:0;box-shadow:3px 3px 0 var(--accent)}
+.firma-logo>span {color:var(--primary)}
+.firma-workspace strong {display:block;font:20px 'Archivo Black',sans-serif;letter-spacing:-.06em;color:var(--primary)}
+.firma-workspace small {display:block;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--muted-foreground);margin-top:4px}
+.firma-chevron {margin-left:auto;color:var(--muted-foreground)}
+.firma-sidebar-search {display:flex;align-items:center;gap:8px;margin:0 12px 14px;padding:9px 10px;background:var(--background);border:1px solid var(--border);color:var(--muted-foreground);font-size:11px}
+.firma-sidebar-search kbd {margin-left:auto;font-size:9px;border:1px solid var(--border);padding:1px 3px}
+.firma-menu {flex:1;overflow-y:auto;padding:0 10px 16px;scrollbar-color:var(--border) transparent}
+.firma-menu-grupo {display:block;margin:20px 10px 7px;color:var(--muted-foreground);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.13em}
+.firma-menu a {display:flex;align-items:center;gap:9px;text-decoration:none;min-height:36px;padding:8px 10px;margin:3px 0;border:1px solid transparent;font-size:12px;font-weight:600;color:var(--foreground)}
+.firma-menu a:hover {background:var(--background);border-color:var(--border)}
+.firma-menu a[aria-current=page] {background:var(--primary);color:var(--background);border-color:var(--primary);box-shadow:3px 3px 0 var(--accent);font-weight:800}
+.firma-menu-icon {display:inline-grid;place-items:center;flex-shrink:0;width:19px;font-size:16px}
+.firma-sidebar-bottom {padding:12px;border-top:2px solid var(--border)}
+.firma-sidebar-bottom button {display:flex;align-items:center;gap:9px;width:100%;border:0;background:none;color:var(--foreground);text-align:left;padding:3px}
+.firma-sidebar-bottom button>span:last-child {margin-left:auto}
+.firma-sidebar-bottom strong,.firma-sidebar-bottom small {display:block;font-size:11px}
+.firma-sidebar-bottom small {color:var(--muted-foreground);font-size:9px}
+.firma-avatar {display:grid;place-items:center;background:var(--background);border:1px solid var(--border);color:var(--primary);border-radius:50%;width:32px;height:32px;font-size:12px;font-weight:800}
+.firma-appbar {position:fixed;inset:0 0 auto var(--shell-side);height:64px;border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--background);z-index:60;font-weight:700}
+.firma-appbar>div {display:flex;align-items:center;gap:14px}
+.firma-appbar button {border:1px solid transparent;background:transparent;color:var(--muted-foreground);padding:6px 8px;font-size:12px}
+.firma-appbar button:hover {border-color:var(--border);color:var(--primary)}
+.firma-appbar-acoes .firma-novo {color:var(--primary);padding:7px 0;border-bottom:2px solid var(--primary);text-decoration:none;font-size:10px;font-weight:800;letter-spacing:.09em}
+.firma-shell #firma-menu-toggle {font-size:17px}
+.firma-dialog {padding:28px;border:2px solid var(--border);color:var(--foreground);background:var(--card);width:min(440px,calc(100vw - 30px));box-shadow:8px 8px 0 var(--secondary)}
+.firma-dialog::backdrop {background:#061109cc;backdrop-filter:blur(3px)}
+.firma-dialog h2 {margin:22px 0 6px;font-size:23px}
+.firma-dialog p {font-size:12px;color:var(--muted-foreground)}
+.firma-dialog label {display:grid;gap:6px;margin:18px 0;color:var(--muted-foreground);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.firma-dialog input {width:100%;padding:11px}
+.firma-dialog-heading {display:flex;justify-content:space-between;align-items:center}
+.firma-dialog-heading button {border:0;background:transparent;color:var(--muted-foreground);font-size:24px}
+.firma-dialog .firma-submit {width:100%;background:var(--primary);border:2px solid var(--primary);padding:11px;color:var(--background);font-weight:800;box-shadow:4px 4px 0 var(--accent);margin:8px 0 20px}
+.firma-dialog a {display:block;font-size:12px;color:var(--primary)}
+.firma-dialog #firma-login-erro {color:#ffb590}
+.firma-dialog #firma-sair {margin-top:18px;border:1px solid var(--border);background:var(--background);padding:8px 12px;color:var(--muted-foreground)}
+#firma-busca-resultados {display:grid;max-height:50vh;overflow:auto;padding-top:12px}
+#firma-busca-resultados a {padding:10px;color:var(--foreground);text-decoration:none}
+#firma-busca-resultados a:hover {background:var(--background);color:var(--primary)}
+.firma-shell.firma-menu-recolhido {--shell-side:68px}
+.firma-menu-recolhido .firma-workspace>span:not(.firma-logo),.firma-menu-recolhido .firma-sidebar-search,.firma-menu-recolhido .firma-menu-grupo,.firma-menu-recolhido .firma-menu a>span:last-child,.firma-menu-recolhido .firma-sidebar-bottom button>span:not(.firma-avatar) {display:none}
+.firma-menu-recolhido .firma-workspace {padding-inline:11px}
+.firma-menu-recolhido .firma-menu a {padding:8px 3px;justify-content:center}
+@media(max-width:850px) {
+  body.firma-shell {padding-left:0}
+  .firma-appbar {left:0;padding:0 12px}
+  .firma-sidebar {transform:translateX(-100%);width:238px;box-shadow:8px 0 30px #0006}
+  .firma-shell.firma-menu-aberto .firma-sidebar {transform:translateX(0)}
+  .firma-appbar>div {gap:7px}
+  .firma-appbar #firma-entrar {font-size:10px;padding:5px}
+  .firma-appbar-acoes .firma-novo {font-size:9px}
+  .firma-shell.firma-menu-recolhido {--shell-side:238px}
+  .firma-menu-recolhido .firma-workspace>span,.firma-menu-recolhido .firma-menu a>span:last-child,.firma-menu-recolhido .firma-menu-grupo {display:block}
+  .firma-menu-recolhido .firma-menu a {justify-content:flex-start;padding:8px 10px}
+  #firma-pagina {font-size:12px}
+}
+
+/* Os grupos são abas da mesma navegação usada pelo trator de assinaturas. */
+.zapiou-navegacao #zapiou-grupos{display:contents}
+.lista-toolbar .zapiou-navegacao .zapiou-grupo-aba{--cor-aba:var(--border);z-index:4;cursor:pointer}
+.lista-toolbar .zapiou-navegacao .zapiou-grupo-aba[aria-expanded=true]{--cor-aba:var(--primary);color:var(--background);text-shadow:none}
+.zapiou-menu-popover{position:fixed;inset:auto;margin:0;width:260px;max-width:calc(100vw - 16px);overflow:auto;padding:8px;border:2px solid var(--primary);background:var(--card);color:var(--foreground);box-shadow:5px 5px 0 var(--secondary);font:12px/1.5 Inter,sans-serif}
+.zapiou-menu-popover a{display:flex;gap:10px;padding:10px;text-decoration:none;color:inherit}.zapiou-menu-popover a:hover,.zapiou-menu-popover a:focus-visible{background:var(--background);color:var(--primary)}
+.firma-shell:not(.zapiou-trator){padding:0}.firma-shell .firma-sidebar,.firma-shell .firma-appbar{display:none}
+
+/* Popovers herdam a cor padrão do navegador; fixamos o contraste em todos os estados. */
+.zapiou-menu-popover:popover-open{color:var(--foreground,#F2F7EC);background:var(--card,#173225)}
+.zapiou-menu-popover a:link,.zapiou-menu-popover a:visited{color:var(--foreground,#F2F7EC);background:transparent}
+.zapiou-menu-popover a:hover,.zapiou-menu-popover a:focus-visible,.zapiou-menu-popover a:active,.zapiou-menu-popover a[aria-current="page"]{color:var(--background,#0E2117);background:var(--primary,#C9FF3D);outline-color:var(--foreground,#F2F7EC)}

@@ -249,7 +249,7 @@
         });
       };
       busca.addEventListener('input', preencher); preencher();
-      menu.replaceChildren(busca, lista, this.botao('Restaurar', () => { rascunho.clear(); this.colunas.filter(c => c.visivel !== false || c.ocultavel === false).forEach(c => rascunho.add(c.id)); preencher(); }), this.botao('Aplicar', () => this.definirColunas([...rascunho]), 'primaria'));
+      menu.replaceChildren(busca, lista, this.botao('Selecionar todas', () => { this.colunas.forEach(c => rascunho.add(c.id)); preencher(); }), this.botao('Desmarcar opcionais', () => { rascunho.clear(); this.colunas.filter(c => c.ocultavel === false).forEach(c => rascunho.add(c.id)); preencher(); }), this.botao('Restaurar', () => { rascunho.clear(); this.colunas.filter(c => c.visivel !== false || c.ocultavel === false).forEach(c => rascunho.add(c.id)); preencher(); }), this.botao('Aplicar', () => this.definirColunas([...rascunho]), 'primaria'));
       menu.hidden = false; b.setAttribute('aria-expanded', 'true'); this.posicionar(menu, b);
     }
     abrirHeader(c, ancora) {
@@ -319,7 +319,7 @@
         if (c.render) c.render(item, td, this);
         else if (this.config.renderCelula) this.config.renderCelula(item, id, td, this.estado, () => this.render(), this.api.bind(this), this);
         else td.textContent = String(this.formatado(item, id) ?? '');
-        if (this.permitido('edicao', id) && c.editavel !== false) {
+        if (this.permitido('edicao', id) && c.editavel !== false && this.config.edicaoInline !== false) {
           td.classList.add('af-editavel'); td.addEventListener('dblclick', e => {
             if (!e.target.closest('button,a,input,select,textarea') && !window.getSelection()?.toString()) this.editar(item, c, td);
           });
@@ -359,17 +359,20 @@
       if ((!editar && !this.recursos.detalhes) || (editar && !this.recursos.edicao)) return;
       this.dialogo?.remove(); const dialog = criar('dialog', 'modal-exportacao af-detalhes'); dialog.dataset.tabelaInstancia = this.id; this.dialogo = dialog;
       dialog.setAttribute('aria-label', editar ? 'Editar registro' : 'Detalhes do registro');
-      dialog.append(criar('h2', '', editar ? 'Editar registro' : 'Detalhes do registro'));
+      const topo = criar('header', 'af-detalhes-topo'), x = this.botao('×', () => dialog.close(), 'af-detalhes-fechar');
+      x.setAttribute('aria-label', editar ? 'Fechar edição de registro' : 'Fechar detalhes do registro'); x.title = 'Fechar';
+      topo.append(criar('h2', '', editar ? 'Editar registro' : 'Detalhes do registro'), x); dialog.append(topo);
       const campos = new Map();
       this.colunas.forEach(c => {
+        if(c.detalhes===false)return;
         const label = criar('label', 'af-campo', c.nome);
         if (editar && this.permitido('edicao', c.id) && c.editavel !== false) {
-          const input = criar('input'); input.type = c.tipo === 'numero' ? 'number' : 'text'; input.value = this.valor(item, c) ?? ''; campos.set(c.id, input); label.append(input);
+          const input = criar('input'); input.type = c.tipo === 'numero' ? 'number' : 'text'; input.value = this.valor(item, c) ?? ''; input.autofocus = campos.size === 0; campos.set(c.id, input); label.append(input);
         } else label.append(criar('div', '', this.formatado(item, c.id)));
         dialog.append(label);
       });
-      const fechar = this.botao('Fechar', () => dialog.close()); dialog.append(fechar);
-      if (editar) dialog.append(this.botao('Salvar alterações', async e => {
+      const acoes = criar('footer', 'af-detalhes-acoes'), fechar = this.botao('Fechar', () => dialog.close()); acoes.append(fechar); dialog.append(acoes);
+      if (editar) acoes.append(this.botao('Salvar alterações', async e => {
         e.currentTarget.disabled = true;
         const alteracoes = Object.fromEntries([...campos].map(([id, input]) => [id, this.coluna(id).tipo === 'numero' ? Number(input.value) : input.value]));
         if (await this.salvar(item, alteracoes)) dialog.close(); else e.target.disabled = false;
@@ -386,7 +389,7 @@
       this.estado.pagina = Math.max(1, Math.min(this.estado.pagina, totalPaginas));
       const head = this.no('cabecalho'); head.replaceChildren();
       if (this.recursos.selecao) {
-        const th = criar('th', this.config.acoesFixas ? 'coluna-selecao-fixa' : ''), check = criar('input'); check.type = 'checkbox'; check.setAttribute('aria-label', 'Selecionar os registros carregados e filtrados');
+        const th = criar('th', this.config.acoesFixas ? 'coluna-selecao-fixa' : ''), check = criar('input'); check.type = 'checkbox'; check.setAttribute('aria-label', 'Selecionar os registros carregados e filtrados'); check.title = 'Selecionar tudo no resultado filtrado';
         const selecionados = itens.filter(item => this.estado.selecionados.has(this.chave(item))).length;
         check.checked = itens.length > 0 && selecionados === itens.length; check.indeterminate = selecionados > 0 && selecionados < itens.length;
         check.addEventListener('change', () => { itens.forEach(item => check.checked ? this.estado.selecionados.add(this.chave(item)) : this.estado.selecionados.delete(this.chave(item))); this.config.onSelecao?.(this.obterSelecionados(), this); this.render(); }); th.append(check); head.append(th);
@@ -428,7 +431,29 @@
       this.config.onRender?.(this);
     }
 
+    confirmarExclusao(rotulo,origem) {
+      if(this.confirmacaoExclusao||this.destruida)return Promise.resolve(false);
+      const dialog=criar('dialog','af-confirmacao-exclusao');dialog.setAttribute('aria-label','Confirmar exclusão');
+      const titulo=criar('h2','','Excluir este registro?'),texto=criar('p','',rotulo||'Excluir registro'),ajuda=criar('p','','Deseja realmente excluir? O registro será removido desta listagem.');
+      const form=criar('form','af-confirmacao-acoes');form.method='dialog';
+      const cancelar=criar('button','','Cancelar');cancelar.type='button';cancelar.value='cancelar';cancelar.autofocus=true;
+      const excluir=criar('button','destrutivo','Sim, excluir');excluir.type='button';excluir.value='excluir';form.append(cancelar,excluir);dialog.append(titulo,texto,ajuda,form);
+      this.confirmacaoExclusao=dialog;document.body.append(dialog);
+      return new Promise(resolve=>{
+        let finalizada=false;const finalizar=sim=>{if(finalizada)return;finalizada=true;dialog.close(sim?'excluir':'cancelar');dialog.remove();this.confirmacaoExclusao=null;this.cancelarConfirmacaoExclusao=null;if(origem?.isConnected)origem.focus();resolve(sim);};
+        cancelar.onclick=()=>finalizar(false);excluir.onclick=()=>finalizar(true);this.cancelarConfirmacaoExclusao=()=>finalizar(false);
+        dialog.addEventListener('cancel',e=>{e.preventDefault();finalizar(false);},{once:true});dialog.addEventListener('close',()=>finalizar(dialog.returnValue==='excluir'),{once:true});dialog.showModal();
+      });
+    }
     vincular() {
+      const confirmados=new WeakSet();
+      this.ouvir(this.raiz,'click',e=>{
+        const b=e.target.closest('button.destrutivo,button[data-confirmar-exclusao]');
+        if(!b||!this.raiz.contains(b)||b.closest('.af-confirmacao-exclusao'))return;
+        if(confirmados.has(b)){confirmados.delete(b);return;}
+        e.preventDefault();e.stopImmediatePropagation();
+        this.confirmarExclusao(b.getAttribute('aria-label')||b.title||b.textContent,b).then(sim=>{if(sim&&!this.destruida&&b.isConnected&&!b.disabled){confirmados.add(b);b.click();confirmados.delete(b);}});
+      },{capture:true});
       this.ouvir(this.no('colunas-botao'), 'click', () => this.abrirColunas());
       this.ouvir(this.no('pagina-texto'), 'click', () => {
         const menu = this.no('menu-pagina'), b = this.no('pagina-texto'), aberto = !menu.hidden; this.fecharMenus(); if (aberto) return;
@@ -480,6 +505,12 @@
       this.validarChaves(itens); this.estado.todos = [...itens];
       const chaves = new Set(itens.map(item => this.chave(item))); this.estado.selecionados = new Set([...this.estado.selecionados].filter(id => chaves.has(id)));
       this.render();
+    }
+    limparDados() {
+      this.versao++; this.requisicao?.abort(); this.fecharMenus(); this.dialogo?.close();
+      this.estado.todos = []; this.estado.total = 0; this.estado.pagina = 1;
+      this.estado.carregando = false; this.estado.filtros = {}; this.estado.ordem = null;
+      this.estado.selecionados.clear(); this.config.onSelecao?.([], this); this.render();
     }
     validarChaves(itens) {
       if (!this.recursos.selecao) return;
@@ -556,15 +587,29 @@
             this.estado.pagina = 1; this.estado.plano = null; this.render();
           }, 'primaria'), this.botao('Cancelar', () => { painel.hidden = true; this.estado.plano = null; }));
         }; mostrar();
-      } catch (erro) { if (!this.destruida && versao === this.versaoBusca) painel.replaceChildren(criar('p', '', erro.message)); }
+      } catch (erro) { if (!this.destruida && versao === this.versaoBusca) { painel.replaceChildren(criar('p', '', erro.message)); this.config.toast?.(erro.message, true); } }
     }
     destruir() {
       if (this.destruida) return;
+      this.cancelarConfirmacaoExclusao?.();
       this.destruida = true; this.versao++; this.versaoBusca++; this.requisicao?.abort(); this.requisicaoBusca?.abort(); this.eventos.abort(); this.fecharMenus(); this.dialogo?.remove();
       montadas.delete(this.raiz); delete this.raiz.dataset.tabelaInstancia;
       if (this.config.elemento) this.raiz.replaceChildren();
     }
   }
+  // Ações básicas compartilham os ícones e as classes do Trator de assinaturas.
+  FirmaTabela.botaoAcao = (tipo, rotulo, executar) => {
+    const tipos={visualizar:['👁','Visualizar detalhes','btn-ver-linha'],editar:['✎','Editar registro','btn-editar-linha'],historico:['◷','Histórico',''],remover:['✖','Excluir registro','destrutivo'],finalizar:['✓','Finalizar atendimento',''],reativar:['↻','Reativar atendimento','']};
+    if(!tipos[tipo])throw new Error('Ação padrão desconhecida');
+    const [icone,titulo,classe]=tipos[tipo],b=criar('button','icone '+classe,icone);b.type='button';b.title=rotulo||titulo;b.setAttribute('aria-label',b.title);
+    if(executar)b.onclick=async e=>{e.stopPropagation();b.disabled=true;try{await executar(e);}finally{b.disabled=false;}};
+    return b;
+  };
+  FirmaTabela.botaoControle = (rotulo, icone, executar) => {
+    const b=criar('button','controle-roca');b.type='button';b.title=rotulo;if(/^Excluir\b/i.test(rotulo))b.setAttribute('data-confirmar-exclusao','');
+    const marca=criar('span','controle-roca-icone',icone);marca.setAttribute('aria-hidden','true');b.append(marca,criar('span','',rotulo));
+    b.onclick=async e=>{e.stopPropagation();b.disabled=true;b.setAttribute('aria-busy','true');try{await executar(e);}finally{b.disabled=false;b.removeAttribute('aria-busy');}};return b;
+  };
   FirmaTabela.recursosPadrao = padroes;
   window.FirmaTabela = FirmaTabela;
   window.aFirmaTabela = config => new FirmaTabela(config);

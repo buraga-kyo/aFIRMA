@@ -48,6 +48,7 @@ public class IdentidadeAssineai {
       "Informe o acesso da empresa"
     );
     String token = header.substring(7);
+
     try {
       Jwt jwt = atual.decode(token);
       String escopos = jwt.getClaimAsString("scope");
@@ -63,6 +64,14 @@ public class IdentidadeAssineai {
       );
       try {
         String email = TokensEmpresaAssineai.ler(token, segredo);
+        var revogacao=banco.um("SELECT true AS revogado FROM firma_autentica_token_revogado WHERE resumo=:resumo AND expira_em>now()",Map.of("resumo",AutenticacaoAutentica.resumo(token)));if(revogacao!=null&&Boolean.TRUE.equals(revogacao.get("revogado")))throw erro(HttpStatus.UNAUTHORIZED,"Sessão encerrada");
+        if(email.matches("usuario:[1-9][0-9]*")) {
+          long uid=Long.parseLong(email.substring(8));
+          var sessao=banco.um("SELECT u.id FROM autentica_identidade.\"Usuario\" u JOIN autentica_identidade.\"Sessao\" s ON s.\"UsuarioId\"=u.id JOIN autentica.\"Cliente\" c ON c.id=u.\"UsuarioClienteId\" WHERE u.id=:id AND s.\"SessaoJWT\"=:token AND s.\"SessaoStatus\"='A' AND NOT COALESCE(u.\"UsuarioBloqueado\",false) AND COALESCE(c.\"ClienteStatus\",true)",Map.of("id",uid,"token",token));
+          if(sessao==null)throw erro(HttpStatus.UNAUTHORIZED,"Sessão expirada ou usuário bloqueado");
+          banco.executar("UPDATE autentica_identidade.\"Sessao\" SET \"SessaoUltimoAcesso\"=now() WHERE \"SessaoJWT\"=:token",Map.of("token",token));
+          return "autentica:"+uid;
+        }
         if (
           banco.um(
             "SELECT e.\"EmpresaId\" FROM \"Empresas\" e LEFT JOIN firma_assineai_identidade i ON i.empresa_id=e.\"EmpresaId\" WHERE (lower(e.\"EmpresaEmail\")=lower(:email) OR i.identidade=:identidade) AND e.\"EmpresaSenha\" IS NOT NULL LIMIT 1",
@@ -78,6 +87,10 @@ public class IdentidadeAssineai {
 
   @Transactional
   public Map<String, Object> empresa(String identidade) {
+    if(identidade.startsWith("autentica:")) {
+      var empresa=banco.um("SELECT e.* FROM \"Empresas\" e JOIN firma_autentica_empresa v ON v.empresa_id=e.\"EmpresaId\" JOIN autentica_identidade.\"Usuario\" u ON u.\"UsuarioClienteId\"=v.cliente_id AND u.\"RepositorioId\"=v.repositorio_id WHERE u.id=:id",Map.of("id",Long.parseLong(identidade.substring(10))));
+      if(empresa==null)throw erro(HttpStatus.FORBIDDEN,"Usuário sem vínculo com a empresa");return publico(empresa);
+    }
     var vinculo = banco.um(
       "SELECT e.* FROM \"Empresas\" e JOIN firma_assineai_identidade i ON i.empresa_id=e.\"EmpresaId\" WHERE i.identidade=:i",
       Map.of("i", identidade)
@@ -134,6 +147,10 @@ public class IdentidadeAssineai {
     String identidade,
     Map<String, Object> entrada
   ) {
+    if(identidade.startsWith("autentica:")) {
+      var permissao=banco.um("SELECT count(*) n FROM autentica_identidade.\"Permissao\" p JOIN autentica_identidade.\"Usuario\" u ON u.\"RepositorioId\"=p.\"RepositorioId\" WHERE u.id=:id AND ((p.\"PermissaoNome\"='all' AND p.\"PermissaoAcao\"='manage') OR (p.\"PermissaoNome\"='clientedetail' AND p.\"PermissaoAcao\"='update')) AND (p.id IN(SELECT pp.\"PermissaoId\" FROM autentica_identidade.\"PerfilPermissao\" pp WHERE pp.\"PerfilId\"=u.\"PerfilId\" AND pp.\"RepositorioId\"=u.\"RepositorioId\") OR p.id IN(SELECT up.\"PermissaoId\" FROM autentica_identidade.\"UsuarioPermissao\" up WHERE up.\"UsuarioId\"=u.id AND up.\"RepositorioId\"=u.\"RepositorioId\"))",Map.of("id",Long.parseLong(identidade.substring(10))));
+      if(((Number)permissao.get("n")).longValue()==0)throw erro(HttpStatus.FORBIDDEN,"Seu perfil não permite editar a empresa");
+    }
     var empresa = empresa(identidade);
     var dados = new LinkedHashMap<String, Object>();
     for (String campo : List.of(
@@ -174,6 +191,7 @@ public class IdentidadeAssineai {
       BancoAssineai.id(empresa, "EmpresaId"),
       dados
     );
+    banco.executar("UPDATE autentica.\"Cliente\" c SET \"ClienteNome\"=e.\"EmpresaNome\",\"ClienteEmail\"=e.\"EmpresaEmail\",\"ClienteCpfCnpj\"=e.\"EmpresaCNPJ\",\"updatedAt\"=now() FROM firma_autentica_empresa v JOIN \"Empresas\" e ON e.\"EmpresaId\"=v.empresa_id WHERE c.id=v.cliente_id AND e.\"EmpresaId\"=:id",Map.of("id",BancoAssineai.id(empresa,"EmpresaId")));
     return empresa(identidade);
   }
 

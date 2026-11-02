@@ -130,13 +130,6 @@ public class ServicoConfiguracoesRelacionamento {
 				|| referenciaSegredo != null && !referenciaSegredo.matches("APP_INTEGRACAO_[A-Z0-9_]{1,80}"))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Integração inválida");
 		validarJson(configuracao, false);
-		Integer permitido = banco.queryForObject("""
-			SELECT count(*) FROM chat_assinatura_plano assinatura JOIN chat_plano plano
-			ON plano.id=assinatura.plano_id WHERE assinatura.empresa_id=:empresa
-			AND assinatura.estado='ATIVA' AND plano.permite_integracao
-			""", dados("empresa", empresa), Integer.class);
-		if (permitido == null || permitido != 1)
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Plano não permite integração");
 		return banco.queryForMap("""
 			INSERT INTO chat_integracao(empresa_id,nome,tipo,configuracao,referencia_segredo)
 			VALUES (:empresa,:nome,:tipo,CAST(:configuracao AS jsonb),:segredo)
@@ -153,15 +146,8 @@ public class ServicoConfiguracoesRelacionamento {
 	}
 
 	public Map<String, Object> plano(Authentication usuario) {
-		var planos = banco.queryForList("""
-			SELECT plano.nome,plano.valor_centavos,plano.renovacao_dias,
-			plano.limite_envios_dia,plano.limite_canais,plano.limite_atendentes,
-			plano.permite_integracao,plano.permite_webhook,
-			assinatura.estado,assinatura.iniciada_em,assinatura.termina_em
-			FROM chat_assinatura_plano assinatura JOIN chat_plano plano ON plano.id=assinatura.plano_id
-			WHERE assinatura.empresa_id=:empresa
-			""", dados("empresa", empresas.identificar(usuario)));
-		if (planos.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Plano não encontrado");
-		return planos.getFirst();
-	}
+        empresas.identificar(usuario);
+        return Map.of("nome", "FIRMA gratuita", "valor_centavos", 0,
+            "permite_integracao", true, "permite_webhook", true, "estado", "GRATUITA");
+    }
 }

@@ -278,7 +278,7 @@
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 50' preserveAspectRatio='none'%3E%3Cpath d='M0 50V23Q0 0 24 0H116C149 0 141 50 180 50Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;
 }
 .lista-toolbar .trator-firma .trator-aba:nth-child(1){--cor-aba:var(--card);z-index:12}
-.lista-toolbar .trator-firma .trator-aba:nth-child(2){--cor-aba:var(--primary);z-index:11}
+.lista-toolbar .trator-firma .trator-aba:nth-child(2){--cor-aba:color-mix(in srgb,var(--border) 75%,var(--card));z-index:11}
 .lista-toolbar .trator-firma .trator-aba:nth-child(3){--cor-aba:color-mix(in srgb,var(--border) 75%,var(--card));z-index:10}
 .lista-toolbar .trator-firma .trator-aba:nth-child(4){--cor-aba:var(--border);z-index:9}
 .lista-toolbar .toolbar-grupo>.acao{--cor-aba:var(--secondary);z-index:8}

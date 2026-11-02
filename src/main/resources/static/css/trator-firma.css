@@ -16,3 +16,6 @@ body.pagina-chatwoot #chatwoot{position:static;flex:1;min-height:0;width:100%;he
 
 /* Mesma tipografia da marca principal da página inicial. */
 .trator-firma .trator-aba.trator-marca{font-family:'Archivo Black',sans-serif;font-weight:400;letter-spacing:-.075em}
+.lista-toolbar .trator-firma .trator-aba[aria-current=page]{--cor-aba:var(--primary)}
+
+.lista-rodape .trator-selecao{color:var(--primary);font:800 11px Inter,sans-serif}

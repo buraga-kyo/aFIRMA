@@ -4,7 +4,7 @@ Este recurso personaliza **a folha de registro de assinaturas acrescentada ao PD
 
 ## Escolher e editar
 
-Em `/empresa`, entre na conta, preencha o nome da empresa e abra o estúdio **Um registro. Seis expressões.**
+Entre em `/firma` e salve o nome daFIRMA. Depois abra `/advai`, na seção **A folha de assinaturas.** O ADVai usa o token salvo; também dá para informar outro token em **Carregar modelos**.
 
 A galeria usa miniaturas renderizadas pelo próprio gerador de PDF:
 
@@ -19,9 +19,9 @@ A galeria usa miniaturas renderizadas pelo próprio gerador de PDF:
 
 Selecione um design ou clique em **Criar minha versão**. **Começar do zero** abre uma composição sem os ornamentos dos modelos predefinidos. Também é possível carregar uma imagem de fundo/marca d’água e ajustar sua opacidade. É possível ajustar cores, logotipo, tipografia, título, linha de apresentação e assinatura da marca. Em **Composição livre dos blocos**, ative as alças para arrastar e redimensionar as quatro áreas da folha. Também é possível usar as setas do teclado, medidas em pontos, desfazer e refazer. Blocos não podem se sobrepor nem sair da página.
 
-Clique em **Definir como padrão** e **Salvar identidade e modelo**. A próxima geração da folha no fluxo de assinatura usa o modelo ativo da empresa. PDFs já gerados não mudam só porque a preferência foi alterada. **Baixar amostra em PDF** contém apenas a folha, com dados fictícios para avaliação visual. Não cria um contrato ou documento de negócio.
+Clique em **Definir como padrão** e **Salvar modelo**. A próxima geração da folha no fluxo de assinatura usa o modelo ativo da empresa. PDFs já gerados não mudam só porque a preferência foi alterada. **Baixar amostra em PDF** contém apenas a folha, com dados fictícios para avaliação visual. Não cria um contrato ou documento de negócio.
 
-O perfil permite exportar e importar a biblioteca em JSON; a importação passa pela validação do servidor antes de entrar no editor. São aceitas até 24 versões e 4 MB por biblioteca. Logotipos são PNG/JPEG, até 500 KB.
+O editor no ADVai permite exportar e importar a biblioteca em JSON; a importação passa pela validação do servidor antes de entrar no editor. São aceitas até 24 versões e 4 MB por biblioteca. Logotipos são PNG/JPEG, até 500 KB.
 
 ## Campos preservados
 
@@ -73,3 +73,5 @@ node src/test/js/templates-empresa.browser.cjs
 ```
 
 `CHROME_BIN` indica o executável do Chrome. `FIRMA_TEST_ARTIFACTS` escolhe o diretório das evidências; padrão `/tmp/firma-registro-browser`.
+
+Os dados e a aparência do convite ficam em `/firma`. Salvar esses dados não altera a biblioteca de modelos. No ADVai, **Salvar modelo** atualiza somente `EmpresaTemplates`.

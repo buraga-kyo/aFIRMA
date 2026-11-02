@@ -27,7 +27,7 @@ Os títulos podem ser grandes e em caixa alta. O limão destaca o que precisa ch
 
 A página inicial mantém o header dela. As telas que ainda não têm trator próprio também mantêm o header que já tinham.
 
-No trator de assinaturas, a navegação fica na mesma barra de **+ Assinatura**, Exportar, Importar e Colunas. A ordem é **aFIRMA. | AssineAI | T@klATIVE | ADVai**. A aba aFIRMA. abre o perfil da empresa. Ali não tem botão para voltar à página inicial.
+No trator de assinaturas, a navegação fica na mesma barra de **+ Assinatura**, Exportar, Importar e Colunas. A ordem é **aFIRMA. | AssineAI | Zapiou | ADVai**. A aba aFIRMA. abre o perfil da empresa. Ali não tem botão para voltar à página inicial.
 
 As abas seguem as curvas e a sobreposição de `tabs_tabela.png`, mas as cores são as da FIRMA. O desenho da referência serve para a forma, não para copiar a paleta. A barra acomoda os controles conforme a largura da tela, sem scroll horizontal. A tabela pode rolar quando precisar mostrar mais colunas.
 
@@ -39,4 +39,14 @@ No rodapé do trator ficam as credenciais e a origem dos registros. Conectar e C
 
 Até 760px, reorganize campos e botões para caber na tela. Os detalhes decorativos podem sair, mas os controles precisam continuar acessíveis. Use `prefers-reduced-motion: reduce` para respeitar quem desativou animações.
 
+O trator de assinaturas é o modelo para todos os tratores. Monte as telas com `FirmaTrator.montar`, em `trator-firma.js`, para herdar os recursos básicos; veja a [comparação entre assinatura e Zapiou](docs/trator-padrao.md). A estrutura, as abas curvas dentro da barra de comandos, os filtros de cabeçalho, a paginação e o rodapé de credenciais são compartilhados. Cada módulo muda as colunas e habilita recursos próprios; não cria outro tipo de trator. Filas e situações de atendimento pertencem à coluna Atendimentos, com filtro no cabeçalho, sem uma barra de filtros paralela.
+
+Credenciais salvas apenas preenchem os campos. Os registros são consultados após Conectar validar o token. Alterar as credenciais limpa os dados e exige nova conexão. A coluna de contato do Zapiou pode especializar a célula com foto, nome e telefone, preservando os filtros comuns do cabeçalho.
+
 Antes de inventar outro componente, veja se o que já existe resolve. Para tabelas, comece pelo [guia da FirmaTabela](docs/tabela.md). Os nomes e os botões de cada sistema ficam na página que usa a classe.
+
+## Os recados daFIRMA
+
+As notificações usam `mensagens-firma.js` e `mensagens-firma.css` em todos os módulos. Ficam perto do centro, deslocadas para a direita e para cima, com uma pequena inclinação, sombra laranja e um X acessível para fechar. Não usar avisos presos sobre os controles do rodapé ou `alert()` nativo.
+
+Para feedback textual existente, marque o elemento com `data-firma-mensagem`: o componente apresenta o texto, acompanha mudanças e remove o aviso quando a origem fica vazia ou oculta. Fechar um recado não deve fazê-lo reaparecer em atualizações da tabela. Para notificações diretas, use `FirmaMensagens.mostrar(texto, {id, tipo, duracao})`; `duracao: 0` mantém o recado até fechar. Conteúdo é tratado como texto, nunca HTML. Resultados estruturados, documentos e resumos de campos permanecem na sua própria área.

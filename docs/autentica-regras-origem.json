@@ -1,0 +1,2201 @@
+{
+  "origem": "/home/aluno/autentica/zapio",
+  "criterio": "Rotas e rotinas operacionais. Planos excluídos. Helpers não chamados não são funcionalidades ativas.",
+  "fontes": [
+    {
+      "arquivo": "model/src/consultas/TabelaAPILog.js",
+      "sha256": "2c7c13068601b8312ddfffac310a264dd28556f6fd4c12c65b234a72421dc5f8",
+      "funcoes": [
+        "CriarAPILog",
+        "LimparLogs"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaArquivo.js",
+      "sha256": "6aa6583a8fc405b8ca5f0300b19485df305fb3bbd67f98ff1fd9afad424b67dc",
+      "funcoes": [
+        "CriarArquivo",
+        "CriarArquivoSemEnviarS3",
+        "CriarArquivoTemplateMeta",
+        "RecuperarArquivoChat",
+        "EnviarArquivoChat",
+        "RecuperarArquivoPorId",
+        "DeletarArquivosSemReferencia",
+        "RecuperarDadosArquivoEnviarMensagem",
+        "DeletarArquivo"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaAtendente.js",
+      "sha256": "24498e3200a55cf0591bd75d27a53a8af0b0173a33162499b09d010c4e7a0d63",
+      "funcoes": [
+        "Insert",
+        "Update",
+        "Display",
+        "Delete",
+        "Grid",
+        "BuscarDadosChatAtendente",
+        "AtualizarDadosAtendenteChat",
+        "BuscarAtendenteIdPorUsuarioLogado",
+        "RecuperarAtendenteIdPorUsuarioId",
+        "AtualizarNotificacoesAtendente"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaAtendenteSetor.js",
+      "sha256": "8216d78c15ab02c09c637e4c05360060c35fd545bf2a3588e6ff392c819e4822",
+      "funcoes": [
+        "CriarAtendenteSetor",
+        "AtualizarAtendenteSetor",
+        "DeletarAtendenteSetor",
+        "BuscarAtendenteSetor",
+        "BuscarRegistroAtendenteSetor",
+        "BuscarCanaisAtendente",
+        "BuscarRegistrosComboAtendentePorSetor",
+        "GridPorSetores"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaAtendimento.js",
+      "sha256": "e2288d339d6de5db39311fc6fa3ec82809d429815244687e671d5221cb3bf4f2",
+      "funcoes": [
+        "CriarAtendimentoViaChat",
+        "ReativarAtendimentoViaChat",
+        "CriarAtendimentoViaNovaMensagem",
+        "AtualizarAtendimento",
+        "DeletarAtendimento",
+        "BuscarAtendimentosEmAndamento",
+        "BuscarAtendimentosPendentes",
+        "BuscarAtendimentosFinalizados",
+        "BuscarAtendimentosBot",
+        "VerificarPossuiAtendimento",
+        "VerificarPossuiAtendimentoPorContatoId",
+        "VerificarPossuiAtendimentoEmAndamentoChat",
+        "RecuperarOuCriarAtendimentoBotExterno",
+        "CriarAtendimentoViaChatbot",
+        "GravarUltimaMensagemRecebida",
+        "AtualizarQtdMensagensNaoLidasAtendimento",
+        "RecuperarDadosAtendimento",
+        "RecuperarDadosCanalPorAtendimento",
+        "ZerarQtdMensagensNaoLidasAtendimento",
+        "SetarStatusAtendimento",
+        "SetarAtendenteNoAtendimento",
+        "FinalizarAtendimento",
+        "AssumirAtendimento",
+        "TransferirAtendimento",
+        "RecuperarInfoAtendimentoAnoAtualAtendente",
+        "RecuperarInfoAtendimentoMesAtualAtendente",
+        "RecuperarInfoAtendimentoEmAndamentoHojeAtendente",
+        "RecuperarInfoAtendimentoFinalizadosHojeAtendente",
+        "RecuperarInfoAtendimentoFinalizadosSemanaAtendente",
+        "RecuperarInfoAtendimentoUltimos6MesesAtendente",
+        "RecuperarInfoAtendimentoVisaoGeralAnoAtualAtendente",
+        "BuscarAtendimentosContato",
+        "GerarAcaoFinalizarAtendimento",
+        "EnviarNovoStatusAtendimentoChat",
+        "BuscarAtendimentoPorId",
+        "BuscarContextoIA",
+        "GravarContextoIA",
+        "BuscarStatusAtendimentoPorId",
+        "RecuperarGraficoAtendimentosPorAtendente",
+        "RecuperarGraficoAtendimentosPorSetor",
+        "RecuperarGraficoAtendimentosPorTag",
+        "RecuperarGraficoAtendimentosPorHora",
+        "RecuperarGraficoMediaAtendimentosPorAtendente",
+        "RecuperarGraficoAtendimentosAtivosVsReceptivos",
+        "RecuperarGraficoAtendimentosCards",
+        "calcularMetricasAtendimento",
+        "VerificarUltimaMensagemAtendimento",
+        "FinalizarAtendimentoInativo"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaAtendimentoAcao.js",
+      "sha256": "b48ed6dc9163366ca07ea92f0e4dd313497f20767ad95dcfd12cc84a90be769a",
+      "funcoes": [
+        "CriarAtendimentoAcao",
+        "RecuperarAtendimentoAcao"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaAtendimentoTag.js",
+      "sha256": "3af78628662be44dbcebf7af1acf19952f9ed266a4cad271b90e3f5ac13cf33a",
+      "funcoes": [
+        "CriarAtendimentoTag",
+        "salvarTagsAtendimento",
+        "DeletarAtendimentoTag",
+        "BuscarTagsAtendimento"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaCanal.js",
+      "sha256": "c900f14d7e259b9d4800c03c05b9a31ee991353f9dcf6d57781fc85183a9dc13",
+      "funcoes": [
+        "CriarClienteCanalWhatsApp",
+        "CriarCanalAPIMeta",
+        "CriarCanal",
+        "AtualizarStatusCanal",
+        "RecuperarListaCanaisBaileysAtivos",
+        "RecuperarListaCanaisWWebJSAtivos",
+        "Update",
+        "DeletarCanal",
+        "BuscarCanais",
+        "BuscarRegistroCanal",
+        "TirarPrintscreen",
+        "RestaurarClienteWhatsApp",
+        "AtualizarCanalNomePastaWhatsApp",
+        "DestruirClienteWhatsApp",
+        "RecuperarDadosCanalPorGUID",
+        "RecuperarProvedorApiCanal",
+        "RecuperarProvedorApiCanalPorId",
+        "RecuperarCanalGUIDPorId",
+        "BuscarRegistrosComboCanal",
+        "BuscarCanaisOnlineClientes",
+        "RecuperarDadosCanal",
+        "RecuperarCredencialAcessoWhatsApp",
+        "SalvarCredencialAcessoWhatsApp",
+        "VerificarCanalValidoPorGUID",
+        "RecuperarClientePorCanal",
+        "RecuperarDadosCanalWebhookPorId",
+        "RecuperarDadosCanalWebhookPorGUID",
+        "RecuperarCanalPorIdentificadorMeta",
+        "BuscarRegistrosComboCanalPorCliente",
+        "BuscarRegistrosComboCanalMeta",
+        "RemoverPastaSessaoCanal",
+        "VerificarCanalAPIOficialMeta",
+        "AtendentesPorCanal"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaChatbotDefinicao.js",
+      "sha256": "e3ba77618e91d32192648607c614bbe1a27f3ac7c317bade4bbd2b2e3c8096f0",
+      "funcoes": [
+        "Insert",
+        "Update",
+        "Delete",
+        "Grid",
+        "Display",
+        "BuscarDefinicaoBotProcessarMensagem",
+        "Execucoes",
+        "RemoverExecucao"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaChatbotMetadata.js",
+      "sha256": "a49cdb5a0bfc1430cff1c70947a7ede0780f3933012da0c89e06301f7e04862a",
+      "funcoes": [
+        "CriarChatbotMetadata",
+        "AtualizarChatbotMetadata",
+        "GravarMensagensChatbot",
+        "GravarMensagensChatbotN8N",
+        "DeletarChatbotMetadata",
+        "BuscarRegistroChatbotMetadata",
+        "BuscarRegistroChatbotMetadataEmAndamento",
+        "FinalizarChatbotPorInatividade",
+        "BuscarNumeroChatbotMetadata",
+        "AtualizarMetadataN8N"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaChaveAPI.js",
+      "sha256": "34598ad5b40073bec5f87e053a9993dff5ad3fc7497debac07494baace9b6601",
+      "funcoes": [
+        "CriarChaveAPI",
+        "AtualizarChaveAPI",
+        "DeletarChaveAPI",
+        "BuscarChavesAPIsCliente"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaCliente.js",
+      "sha256": "ccc56c4a895cb6491f8df03f915e8bf45778d5d38d1b53a81bc3ee4d41e05dc4",
+      "funcoes": [
+        "CriarCliente",
+        "AtualizarCliente",
+        "DeletarCliente",
+        "BuscarClientes",
+        "BuscarRegistroCliente",
+        "BuscarRegistrosComboCliente",
+        "RecuperarProvedorApi",
+        "BuscarVariaveisClienteChatbot",
+        "RecuperarClientePorToken",
+        "RecuperarClientePorMetaWAID"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaContato.js",
+      "sha256": "25ebe847c69967502acddf402725dd0af6eaaaf35b41e1fa6977242299eff3c1",
+      "funcoes": [
+        "CriarContato",
+        "AtualizarContato",
+        "DeletarContato",
+        "BuscarContatos",
+        "BuscarContatosChat",
+        "BuscarRegistroContato",
+        "BuscarRegistroContatoPorNumero",
+        "BuscarIdContatoPorNumero",
+        "CriarContatoViaChatbot",
+        "CriarContatoInterno",
+        "DeletarContatoPorId",
+        "BuscarVariaveisContatoChatbot",
+        "BuscarContatosCliente",
+        "AtualizarContatoAvatar",
+        "BuscarRegistrosComboContato",
+        "BuscarContatoPorId",
+        "AdicionarJidWhatsAppContato",
+        "AtualizarJidWhatsAppContato",
+        "AtualizarNumeroEJidWhatsAppContato",
+        "AtualizarContatoChat",
+        "BuscarContatoWebhookPorId",
+        "BuscarJidContatoPorNumero"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaDisparoMassa.js",
+      "sha256": "32db351577b25fbbe5f289ecf797af7b7cd1cefb5e52fb756b038a787c515a48",
+      "funcoes": [
+        "Insert",
+        "Update",
+        "Cancelar",
+        "Display",
+        "Grid",
+        "IniciarDisparoMassa"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaFCMToken.js",
+      "sha256": "e88b0d78321fee67ba8e81ff1f1a3e8d538cbe2a7d093180373bf8f4195a67c3",
+      "funcoes": [
+        "CadastrarToken",
+        "RecuperarTokenAtendente",
+        "LimparTokensExpirados",
+        "DeletarToken"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaIntegracao.js",
+      "sha256": "f128c3dc1630fd5621e1f854aec681d5e95fde7f6c68b669a3f5d36dd439a6dd",
+      "funcoes": [
+        "Insert",
+        "Update",
+        "Display",
+        "Grid",
+        "Desabilitar",
+        "Habilitar",
+        "VerificarIntegracaoHabilitada"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaInteligenciaArtificial.js",
+      "sha256": "c02fce3babc8df337ca99cab8d1fe9d4037226e2de976c82aacffcf478e91b62",
+      "funcoes": [
+        "CriarInteligenciaArtificial",
+        "AtualizarInteligenciaArtificial",
+        "DeletarInteligenciaArtificial",
+        "BuscarInteligenciaArtificial",
+        "BuscarRegistroInteligenciaArtificial",
+        "RecuperarInteligenciaArtificialPorCanal",
+        "RecuperarIACanalChat",
+        "GerarMensagemIAChat",
+        "ProcessarPDF",
+        "ProcessarLinks"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaListaContato.js",
+      "sha256": "55ee754769223804a8f75688cdb38bbc31556ab593940a9f8d7cd7b77ec2dde9",
+      "funcoes": [
+        "Insert",
+        "Update",
+        "Delete",
+        "Display",
+        "Grid",
+        "GridDisparoMassa",
+        "ComboBox"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaMensagem.js",
+      "sha256": "4de1b81383453a3cae8f1de383c88344dcb5cb88341daaaf168bcf263b976268",
+      "funcoes": [
+        "Grid",
+        "Display",
+        "BuscarMensagensAtendimento",
+        "GravarMensagem",
+        "Update",
+        "SetarAtendimentoIdMensagem",
+        "BuscarQtdMensagensNaoLidasAtendimento",
+        "AtualizarACKMensagem",
+        "BuscarMensagemPorId",
+        "BuscarMensagemWebhookPorId",
+        "RecuperarMensagemParaDeletar",
+        "BuscarMensagemEnviadaAtendimentoPorId",
+        "BuscarMensagemECanalPorId",
+        "BuscarIdMensagensWhatsAppPorAtendimento",
+        "MarcarMensagensComoLidasPorAtendimento",
+        "MarcarMensagemComoDeletada",
+        "AtualizarMensagemEditada",
+        "RecuperarReacaoMensagem",
+        "GravarReacaoMensagem",
+        "MarcarMensagemComoDeletadaPorId",
+        "BuscarMensagemParaResponderPorId",
+        "BuscarIdMetaMensagemParaResponderPorId",
+        "BuscarMensagemParaResponderPorIdeCanal",
+        "BuscarMensagemIdPorMensagemIdWhatsApp",
+        "BuscarMensagemRAWPorWhatsAppId",
+        "GravarAtendimentoMensagensChatbot",
+        "BuscarMensagemProcessarChatbot"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaMensagemRapida.js",
+      "sha256": "8d08f1afc204f83fa216fb7da130f42cc28ddc1e0bdd7b5c609ada5a5dbb039b",
+      "funcoes": [
+        "CriarMensagemRapida",
+        "AtualizarMensagemRapida",
+        "DeletarMensagemRapida",
+        "BuscarMensagensRapidas",
+        "BuscarRegistroMensagemRapida",
+        "BuscarMensagensRapidasCliente"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaMensagemTemplate.js",
+      "sha256": "a486cc8131a4b449135f1ff7605481a193e8c5354a5f6ccb7f295d0c12d7eb04",
+      "funcoes": [
+        "CriarMensagemTemplate",
+        "AtualizarMensagemTemplate",
+        "AtualizarStatusMeta",
+        "BuscarMensagensTemplates",
+        "BuscarRegistroMensagemTemplate",
+        "DeletarMensagemTemplate",
+        "BuscarRegistrosComboMensagemTemplate",
+        "BuscarRegistrosComboMensagemTemplateCadastro",
+        "AtualizarMensagemTemplateWebhook",
+        "RecuperarDadosMensagemTemplatePorId"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaPlano.js",
+      "sha256": "d644228bc3f4088b2a9d7b4eba693d1f233c273da9f14e24b8913c4ae1b1850a",
+      "funcoes": [
+        "Insert",
+        "Update",
+        "Display",
+        "Delete",
+        "Grid",
+        "Combo"
+      ],
+      "rotas": [],
+      "excluido": true
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaSetor.js",
+      "sha256": "996ae9941acb6a288d40f89199d63dea8b4b5d3459d091c324234b589306385e",
+      "funcoes": [
+        "CriarSetor",
+        "AtualizarSetor",
+        "DeletarSetor",
+        "BuscarSetor",
+        "BuscarRegistroSetor",
+        "BuscarRegistrosComboSetor",
+        "BuscarRegistrosComboSetorCadastro",
+        "BuscarSetoresAtivos",
+        "VerificarSetorValidoCanal",
+        "BuscarRegistrosComboSetorPorCliente",
+        "BuscarListaSetoresHome",
+        "BuscarSetoresFiltroChat"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaTag.js",
+      "sha256": "8b5b20c73b96f72c20b46f151e6ca9d4c1efd31bf9501c00bd9a1ec57be37c38",
+      "funcoes": [
+        "CriarTag",
+        "AtualizarTag",
+        "DeletarTag",
+        "BuscarTags",
+        "BuscarRegistroTag",
+        "BuscarTagsCliente",
+        "BuscarTagsAdicionarAtendimento",
+        "BuscarTagsFiltroChat"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaWebhook.js",
+      "sha256": "7b9e13091d4ed5b8297d81bb98b4cd4d3056f6181d5164ff41063b7376a04db7",
+      "funcoes": [
+        "CriarWebhook",
+        "DeletarWebhook",
+        "BuscarWebhooks",
+        "BuscarWebhooksParaDisparar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/consultas/TabelaWebhookLog.js",
+      "sha256": "fb80f822292a3f87ccba0b47b63a11cbbdc1d32adb9315a19c9533e950a3fa2b",
+      "funcoes": [
+        "CriarWebhookLog",
+        "LimparLogs"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/asaas/cliente.js",
+      "sha256": "92f777b8e3c05d806650e783cb0c8d7e3b72691cde76a3b54caea715536b26b9",
+      "funcoes": [
+        "listar",
+        "getById"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/asaas/cobranca.js",
+      "sha256": "5ba9b6992a97bcb9ea7c133a352153c047dcb9eaa2f74b41a7c730799d84228a",
+      "funcoes": [
+        "listar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/asaas/index.js",
+      "sha256": "1047b648756afef72de01a65ddae26cb750f3ef6cc64acbcbcffe1af63b8a59b",
+      "funcoes": [
+        "_ListarClientes",
+        "_ListarCobrancas",
+        "_getCliente",
+        "ListarCobrancas"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/aws/S3.js",
+      "sha256": "05400612bade8baaaf35851e2dff377151cc01b8a41d3de2d0c404431f5e16fe",
+      "funcoes": [
+        "Upload",
+        "Delete",
+        "GetFile"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/email/Nodemailer.js",
+      "sha256": "464aab528a6ee3305415ad29d7490f13f29fc525fcb0bc6b59269de7a61d8187",
+      "funcoes": [
+        "EnviarEmailTemplate",
+        "EnviarEmailHtml"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/email/modelos/ContatoLandingPage.js",
+      "sha256": "b8c05b608ea2363e892ee540636e27f57241c2b9a225f277d827fcce7567fefc",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/email/modelos/RecuperarSenha.js",
+      "sha256": "8150664e7258c1b315210a12cffd88b2899b89e0fc6fe749a6b3532cce9a9a7f",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/firebase/index.js",
+      "sha256": "6964d5eab424fbc862abc7b47855441da4b42c6cf49d25659afb7b1798c22bb8",
+      "funcoes": [
+        "EnviarPush",
+        "VerificarToken"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/firebase/instancia.js",
+      "sha256": "7a4bdeb41cc74228798ee2bf582348d550e89a146fdb02ad6246f42c1c5e8a62",
+      "funcoes": [
+        "firebase",
+        "initialize",
+        "getConfig"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/hcontrol/account.js",
+      "sha256": "0d4d258924d6f56675c1dc6e18088da260fc6bf3bb658d66f7e05dc662b6521f",
+      "funcoes": [
+        "getToken"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/hcontrol/cliente.js",
+      "sha256": "3572491950a1a743a7f5af32cb57e3d811dacc38858cae2350a19d8df17124f8",
+      "funcoes": [
+        "ObterClientes"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/hcontrol/financeiro.js",
+      "sha256": "622ef4190be831d03b7482b4b68631304e59f4970da5be7c4a3cda7e77820faf",
+      "funcoes": [
+        "ObterBoletosEmAbertoPorCpfCnpj",
+        "ObterBoletosEmAberto",
+        "ImprimirBoleto"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/hcontrol/index.js",
+      "sha256": "36efac76127e15b2b4ebd1f77db1b2ecb213a8296801708a3becf6ceb64e3157",
+      "funcoes": [
+        "_ListarBoletos",
+        "_ImprimirBoleto",
+        "ListarBoletos"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/ia/chat-gpt/Assistants.js",
+      "sha256": "cc4e7ab1082b4e771c613b4464149006f757952b198fca8eefcb04cf7cd9db1e",
+      "funcoes": [
+        "CriarNovoAssistant"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/ia/chat-gpt/Completions.js",
+      "sha256": "786edddd4f1e7a519f4c877b483a51a942c9c09be17093eea8ddd15c8578a208",
+      "funcoes": [
+        "ExecutarChatCompletions"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/ia/chat-gpt/getModels.js",
+      "sha256": "a53f2b629d6580125977f180d802265f0eafe483a1f95f5d6e8e92796c5b370c",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/ia/deepseek/Completions.js",
+      "sha256": "c704d569e0abc47ba18f2b657a04a5d4483ecaf3e9285d25c060d97460c95bc8",
+      "funcoes": [
+        "ExecutarChatCompletions"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/ia/index.js",
+      "sha256": "c3a64e9930c2e1880bf1caaed3b7021c6ccb2e69cab2d37d826122c51666f3c7",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/n8n/index.js",
+      "sha256": "f169015e1cf5a545347a178fc557c630cf96a6d86c97a83773014738a30c6cfd",
+      "funcoes": [
+        "EnviarMensagem",
+        "AtualizarContextoChatbot",
+        "IniciarWorkflowN8n",
+        "ContinuarWorkflowN8n",
+        "FinalizarChatbot",
+        "GerarAtendimento"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/sga/Boleto.js",
+      "sha256": "a9d62f157861adf470c28d2a7a49228bf84fad3a541db623a4f42b2b32944683",
+      "funcoes": [
+        "ListarBoletoAssociadoBeneficiario",
+        "ListarSituacao"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/sga/index.js",
+      "sha256": "cd0c813e9be95dcba6bcfe211547ce275b4c36c0cd40deaeda959c2e7fa232b1",
+      "funcoes": [
+        "ListarSituacaoBoleto",
+        "ListarAssociadosPorBoleto"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/baileys/Cliente.js",
+      "sha256": "4a0a3b87b67d2dcab96ba87bfd98468590c4f273f0cdbffd975cb605bcf93c94",
+      "funcoes": [
+        "ClientesWhatsApp",
+        "InicializarClientes",
+        "DestruirClientes",
+        "CriarCliente",
+        "ExcluirCliente",
+        "ExcluirSessaoCliente",
+        "RestaurarCliente",
+        "AtualizarFotosContato",
+        "RecuperarClienteWhatsApp",
+        "ReiniciarSocket"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/baileys/Processar.js",
+      "sha256": "36926f50d9c7dcceb6df6aefa053360165b92ff5f88babcc849e19990ddd6462",
+      "funcoes": [
+        "Processar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/baileys/auth/Auth.js",
+      "sha256": "aa3ee9e92c20a483c26bf8da61145f19ed590c783de90584008e1c883bf53acb",
+      "funcoes": [
+        "AuthHandle"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/controller/Mensagem.js",
+      "sha256": "ba6f06f19383a14762bde7659a1e626dbc96c870bcfc0f9356708b257b03d149",
+      "funcoes": [
+        "EnviarMensagemChatBot",
+        "EnviarMensagemIA",
+        "EnviarMensagem",
+        "_EnviarMensagem",
+        "ResponderMensagem",
+        "EnviarMensagemMassa",
+        "DeletarMensagem",
+        "EnviarMensagemIniciarAtendimento",
+        "EnviarMensagemReativarAtendimento",
+        "EnviarMensagemViaAPI",
+        "EnviarMensagemN8n",
+        "EnviarMensagemTemplateViaAPI",
+        "EnviarMensagemEncerramentoChatbot",
+        "EnviarMensagemInatividadeAtendimento",
+        "MarcarComoLido"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/meta/Media.js",
+      "sha256": "315d01a940da29640e498c1e9cc6e64171f3c2cc6cfc9cbe0ae7d5660dd82c23",
+      "funcoes": [
+        "BaixarMedia",
+        "EnviarMedia"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/meta/Mensagem.js",
+      "sha256": "474d6e56bed36fc5551a57ff54659935808b179022dd1a465c27f2978aca4abe",
+      "funcoes": [
+        "EnviarTemplate",
+        "EnviarMensagem"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/meta/Template.js",
+      "sha256": "3c111f8b9041f310ea69c83735de48c3a3af3595967725fdda94104849222bfb",
+      "funcoes": [
+        "BuscarTemplate",
+        "CadastrarTemplate",
+        "EditarTemplate",
+        "DeletarTemplate"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/meta/webhook.js",
+      "sha256": "8cbfe5c62dd0fe9390737956ad7b3a90f9ada224977ac14b03251b2921ed4cbb",
+      "funcoes": [
+        "Processar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/utils/Baileys.js",
+      "sha256": "006f3710c6155c6b952e4900addfff20a6cfd3da2d93948278355545ca4a7a1d",
+      "funcoes": [
+        "MarcarComoLido",
+        "DeletarMensagem",
+        "formatarACK",
+        "RecuperarJidPorNumero",
+        "VerificarNumeroCadastradoWhatsApp",
+        "RecuperarTipoMensagem",
+        "RecuperarTextoMensagem",
+        "SaveMessagePromiseBD",
+        "GravarMensagemBD",
+        "GravarArquivoBD",
+        "GravarMensagemProtocoloBD",
+        "GravarReacaoMensagemBD"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/utils/Mensagem.js",
+      "sha256": "e9ff2e40424502cacc883ce9faadb955387a18f42913bcd8182ebd23bfbc7230",
+      "funcoes": [
+        "UpdateMessagePromiseBD",
+        "FormatSentMessage"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/utils/Meta.js",
+      "sha256": "b2c2395daed3fedf159ee6a383daab4bdd476467257c6d23ce2f4dd03cbd2c45",
+      "funcoes": [
+        "FormatarParametrosEnvioTemplate",
+        "SaveMessagePromiseBD",
+        "EnviarMensagemAvulsa",
+        "ResponderMensagemAvulsa",
+        "GravarMensagemTemplateBD",
+        "GravarMensagemTemplateViaAPIBD",
+        "GravarMensagemAvulsaBD",
+        "GravarMensagemWebhookBD",
+        "FormatarMensagemInterativaAPI",
+        "FormatarACK",
+        "GravarReacaoMensagemBD",
+        "GravarLocalizacaoMensagemBD",
+        "GravarMensagemContatoBD",
+        "GravarArquivoBD",
+        "RecuperarMensagemRespostaId"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/services/whatsapp/wwebjs/Cliente.js",
+      "sha256": "149079f548c5f67a43b359d6531eafe6da8c797219e531eca7971703ca5de5b6",
+      "funcoes": [
+        "ClientesWhatsApp",
+        "InicializarClientes",
+        "DestruirClientes",
+        "CriarCliente",
+        "ExcluirSessaoCliente",
+        "RecuperarClienteWhatsApp",
+        "ExcluirCliente",
+        "RestaurarCliente",
+        "ReiniciarClientes",
+        "AtualizarFotosContato"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/scheduler/ServidorSchedule.js",
+      "sha256": "a5fb9223f3a4f5f940779acf3d2c04abb00f10761971245e98b72ab79a096571",
+      "funcoes": [
+        "InicializarSchedules"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/scheduler/Tarefas/AtualizarFotoContato.js",
+      "sha256": "0eb9e9226a85087f8777373da9d108f21e97688f39ed05b0bea11c23b16d7f1f",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/scheduler/Tarefas/DisparosMassa.js",
+      "sha256": "1f3f55482f689920b3ef6dfdbd077361f622b7a7108665f4097cfb63a75b49ff",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/scheduler/Tarefas/FinalizarAtendimentoInativo.js",
+      "sha256": "eb18b8af178d24bee83eca85056afad94db5200b684a547c57c4eb74c6d45b16",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/scheduler/Tarefas/FinalizarChatbotInativo.js",
+      "sha256": "5a5169ea002a3315aa6580c018f6df3ea7b7f6ebe455ac839335b4a105fb4ea1",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/scheduler/Tarefas/LimparArquivoS3.js",
+      "sha256": "0c31f5b66c3903a350cf720993cef67265b73ebc0df4e989d317fb64a9548655",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/scheduler/Tarefas/LimparLogs.js",
+      "sha256": "e3db5aad3209e371685d66355a34972c97f93806a2fcd2b73da3a5f51d306c51",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/scheduler/Tarefas/LimparTokensFCM.js",
+      "sha256": "83f0bf4dd132379de216d03fdebfae61f36ef3df8077d16f157b910fb155e2d0",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/scheduler/Tarefas/ManutencaoAutenticaAI.js",
+      "sha256": "cfe812a69e3856d4824d39170ddfbc288a3e40f400306e8dd1d1bdfe78c020c7",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/scheduler/Tarefas/ReiniciarSocket.js",
+      "sha256": "811702faad51543b4adae3e737b2e2fd2732a5b2a78d3a5b0986cf74fc86ac92",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/routes/API/v1.js",
+      "sha256": "2ec947b2c07ade00de3cb0805cf05b1ea4626f1da55c944b1af60c6044523089",
+      "funcoes": [],
+      "rotas": [
+        {
+          "metodo": "POST",
+          "caminho": "/API/v1/Mensagem/Extraoficial/Enviar"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/API/v1/Mensagem/Oficial/EnviarTemplate"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/API/v1/Mensagem/Oficial/Enviar"
+        },
+        {
+          "metodo": "GET",
+          "caminho": "/API/v1/Setor/Listar"
+        },
+        {
+          "metodo": "GET",
+          "caminho": "/API/v1/Canal/Listar"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/API/v1/Contato/Cadastrar"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/API/v1/Atendimento/Finalizar"
+        }
+      ],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/routes/RotasAutenticaAI.js",
+      "sha256": "1d04214f6277766ea31d85744965cb332ddc14b4f58cb4ed32345ea30a97ffe7",
+      "funcoes": [],
+      "rotas": [
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Logar"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Deslogar"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/VerificarSessao"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/RecuperarHabilidadesSessao"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Usuario/Insert"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Usuario/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Usuario/Display"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Usuario/Delete"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Usuario/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Usuario/BuscarInformacoesCard"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Usuario/ComboBox"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Usuario/SetarSenha"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Usuario/AlterarSenha"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/EsqueciMinhaSenha/GerarToken"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/EsqueciMinhaSenha/ValidarToken"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/EsqueciMinhaSenha/AlterarSenha"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Perfil/Insert"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Perfil/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Perfil/Display"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Perfil/Delete"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Perfil/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Perfil/ComboBox"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Permissao/Insert"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Permissao/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Permissao/Display"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Permissao/Delete"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Permissao/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/PerfilPermissao/Insert"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/PerfilPermissao/Delete"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/PerfilPermissao/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/PerfilPermissao/GridPendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Configuracoes/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/AutenticaAI/Sessao/RecuperarUsuario"
+        }
+      ],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/routes/RotasChat.js",
+      "sha256": "0f8f120304b3cea5c8bedac8cd4192e22ca34d2d34c83cbed3b5017fc2fa4518",
+      "funcoes": [],
+      "rotas": [
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BuscarMensagensRapidas"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BuscarContatos"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/AtualizarContato"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BuscarDadosChatAtendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/AtualizarDadosAtendenteChat"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BuscarAtendenteIdPorUsuarioLogado"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/AtualizarNotificacoesAtendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BuscarAtendimentosEmAndamento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BuscarAtendimentosPendentes"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BuscarAtendimentosFinalizados"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BuscarAtendimentosBot"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/ZerarQtdMensagensNaoLidasAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/SetarStatusAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/SetarAtendenteNoAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/FinalizarAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/AssumirAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/TransferirAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/CriarAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/ReativarAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BuscarAtendimentosContato"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BuscarMensagensAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/EnviarMensagemAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/ResponderMensagemAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/MarcarMensagemComoLida"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/DeletarMensagem"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/BaixarArquivo"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/EnviarArquivo"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Chat/GerarRespostaIA"
+        }
+      ],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/routes/RotasLandingPage.js",
+      "sha256": "a5876e673d62f56aa68d749eac1e8afb3b3975efae3451a8349e9fa33a496eab",
+      "funcoes": [],
+      "rotas": [
+        {
+          "metodo": "POST",
+          "caminho": "/Landing/Contato"
+        }
+      ],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/routes/RotasMetaWhatsapp.js",
+      "sha256": "3e12d7f262b62753001b4cb3c963c5dea48628f8a4c72fe0bac3f6d2893d41d4",
+      "funcoes": [],
+      "rotas": [
+        {
+          "metodo": "GET",
+          "caminho": "/meta/webhook"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/meta/webhook"
+        }
+      ],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/routes/RotasN8n.js",
+      "sha256": "2a6de42d3885eb371806f4af9d1e9882eb2b46b280b64103c7c7b824383e1350",
+      "funcoes": [],
+      "rotas": [
+        {
+          "metodo": "POST",
+          "caminho": "/n8n/mensagem/enviar"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/n8n/chatbot/contexto"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/n8n/chatbot/finalizar"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/n8n/atendimento/insert"
+        }
+      ],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/routes/RotasSistema.js",
+      "sha256": "72e6b65ddf199090e9c3aadb923869a0faad69ed29a040fcdd9538828c85eac5",
+      "funcoes": [],
+      "rotas": [
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Atendente/infoAtendimentoAnoAtual"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Atendente/infoAtendimentoMesAtual"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Atendente/RecuperarInfoAtendimentoEmAndamentoHojeAtendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Atendente/RecuperarInfoAtendimentoFinalizadosHojeAtendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Atendente/RecuperarInfoAtendimentoNaSemanaAtendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Atendente/RecuperarInfoAtendimentoUltimos6MesesAtendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Atendente/RecuperarInfoAtendimentoVisaoGeralAnoAtualAtendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Gestor/AtendimentosPorAtendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Gestor/AtendimentosPorSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Gestor/AtendimentosPorTag"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Gestor/AtendimentosPorHora"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Gestor/MediaAtendimentosPorAtendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Gestor/AtendimentosAtivosVsReceptivos"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Gestor/AtendimentosCards"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Home/Gestor/BuscarListaSetoresHome"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarCliente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/AtualizarCliente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarCliente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarClientes"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistroCliente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboCliente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarCanal"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarCanalAPIMeta"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/TirarPrintscreen"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/RestaurarClienteWhatsApp"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DestruirClienteWhatsApp"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarClienteCanalWhatsApp"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Canal/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarCanal"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarCanais"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistroCanal"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboCanal"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboCanalPorCliente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboCanalMeta"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Canal/VerificarAPI"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Canal/Atendentes"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Atendente/Insert"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Atendente/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Atendente/Delete"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Atendente/Display"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Atendente/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarMensagemRapida"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/AtualizarMensagemRapida"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarMensagemRapida"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarMensagensRapidas"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistroMensagemRapida"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarTag"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/AtualizarTag"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarTag"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarTags"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistroTag"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarTagsAdicionarAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarTagsFiltroChat"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarAtendimentoTag"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/salvarTagsAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarAtendimentoTag"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarTagsAtendimento"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarContato"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/AtualizarContato"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarContato"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarContatos"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistroContato"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboContato"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Mensagem/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Mensagem/Display"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/AtualizarSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistroSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboSetorCadastro"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarSetoresAtivos"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboSetorPorCliente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarSetoresFiltroChat"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarAtendenteSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/AtualizarAtendenteSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarAtendenteSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarAtendenteSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistroAtendenteSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarCanaisAtendente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboAtendentePorSetor"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/AtendenteSetor/GridPorSetores"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ChatbotDefinicao/Insert"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ChatbotDefinicao/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ChatbotDefinicao/Display"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ChatbotDefinicao/Delete"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ChatbotDefinicao/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ChatbotDefinicao/Execucoes"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ChatbotDefinicao/RemoverExecucao"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarChaveAPI"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/AtualizarChaveAPI"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarChaveAPI"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarChavesAPIsCliente"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarWebhook"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarWebhook"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarWebhooks"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarMensagemTemplate"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/AtualizarMensagemTemplate"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/MensagemTemplate/AtualizarStatusMeta"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarMensagensTemplates"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistroMensagemTemplate"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarMensagemTemplate"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboMensagemTemplate"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistrosComboMensagemTemplateCadastro"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/CriarInteligenciaArtificial"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/AtualizarInteligenciaArtificial"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DeletarInteligenciaArtificial"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarInteligenciaArtificial"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/BuscarRegistroInteligenciaArtificial"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/InteligenciaArtificial/ProcessarPDF"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/InteligenciaArtificial/ProcessarLinks"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ListaContato/Insert"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ListaContato/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ListaContato/Display"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ListaContato/Delete"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ListaContato/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ListaContato/GridDisparoMassa"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/ListaContato/ComboBox"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DisparoMassa/Insert"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DisparoMassa/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DisparoMassa/Display"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DisparoMassa/Cancelar"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DisparoMassa/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/Insert"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/Display"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/Desabilitar"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/Habilitar"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/VerificarIntegracaoHabilitada"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/SGA/ListarSituacaoBoleto"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/SGA/ListarAssociadosPorBoleto"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/Asaas/ListarCobrancas"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Integracao/hControl/ListarBoletos"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Plano/Insert"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Plano/Update"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Plano/Display"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Plano/Delete"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Plano/Grid"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/Plano/Combo"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/FCM/Cadastrar"
+        },
+        {
+          "metodo": "GET",
+          "caminho": "/Sistema/BuscarVersao"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/EncriptarRota"
+        },
+        {
+          "metodo": "POST",
+          "caminho": "/Sistema/DecriptarRota"
+        },
+        {
+          "metodo": "GET",
+          "caminho": "/Sistema/firebaseConfig"
+        }
+      ],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/routes/corsConfig.js",
+      "sha256": "96bd0e0729770001243199b7aa00e427941037fc3479a4603664e7638068cbe4",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/API/v1/Atendimento/Finalizar.js",
+      "sha256": "9043b496e4dcb9d98a530cbe7e38aa80326c33654d2ff1fa71ec9c588b71475b",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/API/v1/Canal/Listar.js",
+      "sha256": "71d393adb88a7eafe550ed12070e267cb5403a4dc7a2274f4ba56c1990e51489",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/API/v1/Contato/Cadastrar.js",
+      "sha256": "434aa06c1cb069c3da7f23f20b08d8873bdec0074e200f0ec39ab9ab0c18fd95",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/API/v1/Mensagem/Extraoficial/Enviar.js",
+      "sha256": "b9d5cc8952e4b1b78e26d3fbce2ea75df7228972b4590a93e4289354b2bfb409",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/API/v1/Mensagem/Oficial/Enviar.js",
+      "sha256": "884f3dffa605620fe222df8c018fe7f788f00642fa3d8e75d1ada43ecc37f85f",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/API/v1/Mensagem/Oficial/EnviarTemplate.js",
+      "sha256": "de186f62676edbeaeb92004cf8adfca1e7f8d7af155f9b765aee3cdba8e1c203",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/API/v1/Setor/Listar.js",
+      "sha256": "f5724c98f0fc0ed4dfd69c98945a14c83dd1a053d31bfe0df3851529688cd089",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/middleware/GravarLogAPI.js",
+      "sha256": "295cc08fb863e1d9cd3c4e558291c126b192b56b52342f1ef6a025e1c00dac6f",
+      "funcoes": [
+        "GravarLogAPI",
+        "GravarLogAPIMiddleware"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/middleware/ValidadorAPI_v1.js",
+      "sha256": "a9d56efa91b587c45dc6b2f0faec58afba6990f0c8bb89b989315b2bf81c5716",
+      "funcoes": [
+        "Validar_Mensagem_Enviar",
+        "Validar_Mensagem_EnviarTemplate",
+        "Validar_Setor_Listar",
+        "Validar_Canal_Listar",
+        "Validar_Contato_Cadastrar",
+        "Validar_Atendimento_Finalizar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/middleware/ValidadorAcesso.js",
+      "sha256": "9c9814277d3181f48b13cbb6480b3107bf6aba82fb0ffe61e428b1670c3775a9",
+      "funcoes": [
+        "VerificarSessaoValida"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/middleware/ValidadorAcessoAPI.js",
+      "sha256": "2c653f1b200eb3c9cdbf30ca71e62a1ee3b0360893a6c12c8113622215415c9e",
+      "funcoes": [
+        "Validar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/middleware/ValidadorAcessoN8n.js",
+      "sha256": "625415bcc09ee80f1eb314250582c69b8e645b188cbde27a55b7ed672ff6d373",
+      "funcoes": [
+        "Validar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/middleware/ValidadorN8n.js",
+      "sha256": "aa60bd60aed00e1a8723e11312a82bbc6cc4e084dc3d8ddf27b8e7a700eaa57d",
+      "funcoes": [
+        "Validar_Mensagem_Enviar",
+        "Validar_Chatbot_Contexto",
+        "Validar_Chatbot_Finalizar",
+        "Validar_Atendimento_Insert"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/ScriptsChatbot/BuscarBoletos_hControl.js",
+      "sha256": "60892173371d75695067c0ec82bc7cb8848623a3837fdf81bca0d35fea46c50f",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/ScriptsChatbot/CadastrarContato.js",
+      "sha256": "3f9ef09f4b6cdc56436cd2b0a53368fac68aee38d5837c57bd9935fd0eff6787",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/ScriptsChatbot/ExecutarAPI.js",
+      "sha256": "a6604c9758de8116e04f37d79a2602957acbfac916746f0ce2f8898789de1bc7",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/ScriptsChatbot/GerarAtendimento.js",
+      "sha256": "18b41c422e751c0f56042ea7684dde3ffdf23fec3915e37b0fbed0fbbae94701",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/ScriptsChatbot/VerificarNumeroContato.js",
+      "sha256": "c6ca926423891baee4e3c03db571f82e0745c7811c1a805a3193c86f6c325340",
+      "funcoes": [
+        "Executar"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/Autenticacao.js",
+      "sha256": "077ca283a574584c442f8865f5a698752390e52eccecfb8a03ecc26169dac5d9",
+      "funcoes": [
+        "Login",
+        "Logout",
+        "VerificarSessao",
+        "_VerificarSessao",
+        "BuscarHabilidades"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/CargaInicial/CargaInicial.js",
+      "sha256": "8f2647b072832deea398c8d6b9ab10f9c5469c1ef8e8c38cc900f9e0873b674a",
+      "funcoes": [],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/CargaInicial/Perfis.js",
+      "sha256": "e5a8b3c7c9a1c1fcc4382c65b222f983b1019d4da1e5e28039438837be107f5e",
+      "funcoes": [
+        "Perfis"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/CargaInicial/PermissaoPerfil.js",
+      "sha256": "96f93789ca3a26f30a907e2aa70e332e5b2c947ceeb23b8e163485789b034d79",
+      "funcoes": [
+        "PermissaoPerfil"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/CargaInicial/Permissoes.js",
+      "sha256": "d7b1e75347910e70eae60a87e80336430f17838370cdbb0642e4d8d15acae11f",
+      "funcoes": [
+        "Permissoes"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/Configuracoes.js",
+      "sha256": "2b9a6a1653270575cffb8b9e3a51c1fc54da6ff6f19247bab47a2eb9464f9ffb",
+      "funcoes": [
+        "Update"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/Manutencao.js",
+      "sha256": "179a523d1727e522030c268cb02e4d83b6eacb97e79d150a0e3d59637b32ceab",
+      "funcoes": [
+        "ExpirarSessoesInativas",
+        "DeletarSessoesExpiradas"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/Perfil.js",
+      "sha256": "05648658e1680667fdb78b3732c88507d9417242a479cc26b8f48b9855f7c7c0",
+      "funcoes": [
+        "Insert",
+        "Update",
+        "Display",
+        "Delete",
+        "Grid",
+        "ComboBox",
+        "BuscarPorNome"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/PerfilPermissao.js",
+      "sha256": "e5c08eff4907f55bec2ddada45676c95fa8a481df46bcbcc6a4f1b71fbc780d2",
+      "funcoes": [
+        "Insert",
+        "Delete",
+        "Grid",
+        "GridPendente"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/Permissao.js",
+      "sha256": "c419503c90fd1c7fd56614a21a18acd2b131737d8a936563bc3f03c7daa9ab37",
+      "funcoes": [
+        "Insert",
+        "Update",
+        "Display",
+        "Delete",
+        "Grid"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/Sessao.js",
+      "sha256": "ac09585c237fa0c8a948d6ff93fa82ed990921140924e93f8bc8777e01452011",
+      "funcoes": [
+        "RecuperarUsuario",
+        "_RecuperarUsuario",
+        "RecuperarUsuarioNome",
+        "RecuperarPerfilECliente"
+      ],
+      "rotas": [],
+      "excluido": false
+    },
+    {
+      "arquivo": "model/src/AutenticaAI/Usuario.js",
+      "sha256": "0376c8dea83796f26b98a5ad6572f631ebab77d7393cc5fde60e18e3c419f9db",
+      "funcoes": [
+        "Insert",
+        "_Insert",
+        "Update",
+        "_Update",
+        "Display",
+        "Grid",
+        "_BuscarPorEmail",
+        "_BuscarFoto",
+        "Delete",
+        "BuscarInformacoesCard",
+        "ComboBox",
+        "_ComboBoxPorId",
+        "SetarSenha",
+        "AlterarSenha",
+        "EsqueciMinhaSenha_GerarToken",
+        "EsqueciMinhaSenha_ValidarToken",
+        "EsqueciMinhaSenha_AlterarSenha"
+      ],
+      "rotas": [],
+      "excluido": false
+    }
+  ]
+}

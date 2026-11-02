@@ -55,12 +55,15 @@ public class ChatTransporte {
 			throw erro;
 		} catch (Exception erro) {
 			if (erro instanceof InterruptedException) Thread.currentThread().interrupt();
-			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
+			if(metodo.equals("POST")&&(caminho.endsWith("/mensagens")||caminho.endsWith("/arquivos")))throw new EntregaIndeterminada();
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
 					"Ponte WhatsApp indisponível", erro);
 		}
 	}
 
 	public void conectar(UUID canal) { chamar("POST", "/sessoes/" + canal, null); }
+ public JsonNode conexao(UUID canal){return chamar("GET","/sessoes/"+canal+"/conexao",null);}
+ public JsonNode historico(UUID canal,boolean iniciar){return chamar(iniciar?"POST":"GET","/sessoes/"+canal+"/historico",null);}
 	public boolean configurado() { return chave.length() >= 32; }
 	public void desconectar(UUID canal) { chamar("DELETE", "/sessoes/" + canal, null); }
 	public String qr(UUID canal) {
@@ -71,15 +74,22 @@ public class ChatTransporte {
 	public String estado(UUID canal) {
 		return chamar("GET", "/sessoes/" + canal + "/estado", null).path("estado").asText();
 	}
-	public String enviar(UUID canal, String telefone, String texto) {
+	public String enviar(UUID canal, String telefone, String texto) { return enviar(canal,telefone,texto,null); }
+	public String enviar(UUID canal, String telefone, String texto,String resposta) {
 		String provedor = banco.queryForObject("SELECT provedor FROM chat_canal WHERE id = ?", String.class, canal);
-		if ("META".equals(provedor)) return oficial.enviar(canal, telefone, texto);
+		if ("META".equals(provedor)) return oficial.enviar(canal, telefone, texto,resposta);
 		String identificador = chamar("POST", "/sessoes/" + canal + "/mensagens",
-				Map.of("telefone", telefone, "texto", texto)).path("identificador").asText();
+				Map.of("telefone", telefone, "texto", texto,"resposta",resposta==null?"":resposta)).path("identificador").asText();
 		if (identificador.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,
 				"WhatsApp não confirmou mensagem");
 		return identificador;
 	}
+
+    public void mensagem(UUID canal,String telefone,String externo,boolean fromMe,String acao) {
+        String provedor=banco.queryForObject("SELECT provedor FROM chat_canal WHERE id=?",String.class,canal);
+        if("META".equals(provedor)){if(acao.equals("lida")){oficial.marcarLida(canal,externo);return;}throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,"A Meta não permite apagar mensagens enviadas por esta API");}
+        chamar("POST","/sessoes/"+canal+"/"+acao,Map.of("telefone",telefone,"identificador",externo,"fromMe",fromMe));
+    }
 
 	public String enviarArquivo(UUID canal, String telefone, String nome,
 			String tipoMime, byte[] conteudo, String legenda) {

@@ -21,7 +21,7 @@ def script(caminho):
 
 def css(caminho):
     # Não depender da rede de fontes durante testes de comportamento/layout.
-    return '<style>' + re.sub(r'@import[^;]+;', '', caminho.read_text()) + '</style>'
+    return '<style>' + re.sub(r'@import\s+url\([^)]*\)\s*;', '', caminho.read_text()) + '</style>'
 
 
 nucleo = '<!doctype html><meta charset="utf-8">' + css(recursos / 'css/tabela-core.css') + '<body>'
@@ -29,6 +29,7 @@ nucleo += script(recursos / 'js/tabela-core.js')
 nucleo += script(raiz / 'src/test/js/tabela-core.browser.js') + '</body>'
 
 pagina = (raiz / 'src/main/resources/templates/documentos-assinatura.html').read_text()
+pagina = pagina.replace('<div th:replace="~{fragments/trator :: acesso(true)}"></div>', (raiz / 'src/main/resources/templates/fragments/trator.html').read_text())
 pagina = re.sub(r'<script.*?</script>', '', pagina, flags=re.S)
 pagina = re.sub(r'<link[^>]+href="(/css/[^\"]+)"[^>]*>', lambda m: css(recursos / m.group(1).lstrip('/')), pagina)
 preparar = '''<script>
@@ -48,8 +49,8 @@ window.FirmaTabela = class extends FirmaTabelaOriginal {
   constructor(config) { super(config); window.tabelaTeste = this; }
 };
 </script>'''
-pagina = pagina.replace('</body>', preparar + script(recursos / 'js/tabela-core.js') + registrar
-                        + script(recursos / 'js/documentos-assinatura.js')
+pagina = pagina.replace('</body>', preparar + script(recursos / 'js/mensagens-firma.js') + script(recursos / 'js/tabela-core.js') + registrar
+                        + script(recursos / 'js/trator-firma.js') + script(recursos / 'js/documentos-assinatura.js')
                         + script(raiz / 'src/test/js/documentos-tabela.browser.js') + '</body>')
 
 falhas = 0

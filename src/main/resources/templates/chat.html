@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head>
+<head><link rel="stylesheet" href="/css/mensagens-firma.css"><script src="/js/mensagens-firma.js" defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chat | aFIRMA</title>
@@ -14,7 +14,7 @@
     <section class="acesso painel" aria-label="Acesso ao chat">
       <label for="token">Token de acesso</label>
       <div class="linha"><input id="token" type="password" autocomplete="off" placeholder="Cole seu JWT"><label for="chave" class="sr">Chave de API</label><input id="chave" type="password" autocomplete="off" placeholder="Chave de API"><button id="entrar">Entrar</button><button id="teste" hidden>Usar credenciais locais</button></div>
-      <p id="aviso" role="status" aria-live="polite"></p>
+      <p id="aviso" role="status" aria-live="polite" data-firma-mensagem></p>
     </section>
     <div id="aplicacao" hidden>
       <section class="grade">

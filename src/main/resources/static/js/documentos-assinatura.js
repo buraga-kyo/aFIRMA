@@ -3,15 +3,7 @@
   
   function toast(msg, erro = false) {
     const box = $('lista-toast');
-    if (box) {
-      box.replaceChildren(document.createTextNode(msg));
-      box.style.color = erro ? 'var(--accent)' : '';
-      if (!erro) {
-        box.append(Object.assign(document.createElement('button'), { type: 'button', textContent: '✕', onclick: () => box.hidden = true }));
-        setTimeout(() => box.hidden = true, 4500);
-      }
-      box.hidden = false;
-    }
+    if (box) { box.dataset.firmaTipo = erro ? 'erro' : 'sucesso'; box.textContent = msg; box.hidden = !msg; }
   }
 
   function getCredenciais() {
@@ -20,6 +12,7 @@
     return token ? { ...(chave ? { 'X-API-Key': chave } : {}), Authorization: `Bearer ${token}` } : {};
   }
 
+  let carregandoRegistros = false;
   let versaoHistorico = 0;
   const modalHistorico = $('modal-historico-assinatura');
   modalHistorico.addEventListener('close', () => { versaoHistorico++; });
@@ -122,21 +115,16 @@
 
   $('lista-conectar').addEventListener('click', conectar);
 
-  const tabela = new window.FirmaTabela({
+  const tabela = window.FirmaTrator.montar({
     elemento: '#tabela-montagem',
     rotulo: 'Documentos para assinatura',
-    recursos: {
-      selecao: true, acoes: true, paginacao: true, selecionarColunas: true,
-      filtrosHeader: true, ordenacao: true, redimensionamento: true, reordenacao: true,
-      filtrosSalvos: true, buscaIA: true, edicao: true, detalhes: true, persistencia: true
-    },
     slots: {
       comandos: $('tabela-comandos').content.cloneNode(true),
       rodape: $('tabela-rodape').content.cloneNode(true)
     },
     textos: {
       busca: 'FALAR COM O BURRO DE CARGA...',
-      pagina: ({ pagina, totalPaginas, tamanho }) => `ÁREA ${pagina} de ${totalPaginas} do TERRENO → ${tamanho} Sementes ▾`
+
     },
     salvar: (item, alteracoes, instancia) => instancia.api(`/${item.id}`, { method: 'PATCH', body: JSON.stringify({ titulo: alteracoes.titulo }) }),
     containerId: 'tabela',
@@ -145,6 +133,17 @@
     get buscaEndpoint() { return $('fonte-assinaturas').value === 'legado' ? '/api/assineai/plano-busca' : '/api/envelopes/documentos/plano-busca'; },
     credenciais: getCredenciais,
     toast: toast,
+    onRender: instancia => {
+      const carregando = instancia.getEstado().carregando;
+      if (carregando && !carregandoRegistros) {
+        const box = $('lista-toast');
+        box.dataset.firmaTipo = 'info';
+        box.textContent = 'Carregando registros...';
+        box.hidden = false;
+      }
+      carregandoRegistros = carregando;
+    },
+    onCarregar: () => toast(''),
     colunas: [
       { id: 'id', nome: 'ID', tipo: 'texto', largura: 200 },
       { id: 'titulo', nome: 'TÍTULO', tipo: 'texto', largura: 200 },
@@ -155,31 +154,14 @@
       { id: 'signatarios', nome: 'SIGNATÁRIOS', tipo: 'texto', largura: 200, formatar: (v) => Array.isArray(v) ? v.map(s => s.nome || s).join(', ') : v }
     ].map(coluna => ({ ...coluna, editavel: coluna.id === 'titulo' })),
     renderAcoes: (item, acoesTd, estado, render, api) => {
-      const btnEdit = document.createElement('button');
-      btnEdit.textContent = '✎';
-      btnEdit.title = 'Editar título do documento';
-      btnEdit.className = 'icone btn-editar-linha';
-      
-      const btnView = document.createElement('button');
-      btnView.textContent = '👁';
-      btnView.title = 'Visualizar detalhes';
-      btnView.className = 'icone btn-ver-linha';
-
-      const btnDel = document.createElement('button');
-      btnDel.textContent = '✖';
-      btnDel.className = 'icone destrutivo';
-      btnDel.onclick = () => {
-        if (confirm(`Excluir documento ${item.titulo}?`)) {
-          api(`/${item.id}`, { method: 'DELETE' }).then(() => tabela.carregar()).catch(e => toast(e.message, true));
-        }
-      };
-
-      const btnHistorico = document.createElement('button');
-      btnHistorico.type = 'button'; btnHistorico.className = 'icone'; btnHistorico.textContent = '◷'; btnHistorico.title = 'HISTÓRICO';
-      btnHistorico.setAttribute('aria-label', `Histórico de ${item.titulo}`);
-      btnHistorico.onclick = evento => { evento.stopPropagation(); abrirHistorico(item); };
-      acoesTd.classList.add('acoes-assinatura');
-      acoesTd.append(btnView, btnEdit, btnHistorico, btnDel);
+      const btnEdit = FirmaTabela.botaoAcao('editar','Editar título do documento');
+      const btnView = FirmaTabela.botaoAcao('visualizar','Visualizar detalhes');
+      const btnDel = FirmaTabela.botaoAcao('remover',`Excluir ${item.titulo}`,()=>{
+        return api(`/${item.id}`,{method:'DELETE'}).then(()=>tabela.carregar()).catch(e=>toast(e.message,true));
+      });
+      const btnHistorico=FirmaTabela.botaoAcao('historico',`Histórico de ${item.titulo}`,()=>abrirHistorico(item));
+      acoesTd.classList.add('acoes-assinatura','acoes-padrao');
+      acoesTd.append(btnView,btnEdit,btnHistorico,btnDel);
     },
     renderCelula: (item, idColuna, td, estado, render, api) => {
       if (idColuna === 'titulo') {
@@ -242,21 +224,7 @@
 
   $('fonte-assinaturas').addEventListener('change', () => { tabela.limparSelecao(); tabela.carregar(); });
 
-  const modosLargura = [['total', 'TELA INTEIRA'], ['largo', '80% DA TELA'], ['centro', 'CENTRO']];
-  function aplicarModoLargura(modo) {
-    const atual = modosLargura.findIndex(([id]) => id === modo);
-    const indice = atual < 0 ? 0 : atual;
-    $('pagina-documentos').dataset.largura = modosLargura[indice][0];
-    $('alternar-largura').textContent = `▤ ${modosLargura[indice][1]}`;
-    localStorage.setItem('assineai-largura-documentos-v2', modosLargura[indice][0]);
-  }
-  
-  $('alternar-largura').addEventListener('click', () => {
-    const atual = modosLargura.findIndex(([id]) => id === $('pagina-documentos').dataset.largura);
-    aplicarModoLargura(modosLargura[(atual + 1) % 3][0]);
-  });
-  
-  aplicarModoLargura(localStorage.getItem('assineai-largura-documentos-v2') || 'total');
+  FirmaTrator.configurarLargura($('pagina-documentos'),$('alternar-largura'),'assineai-largura-documentos-v2');
 
   const modalExport = $('modal-exportacao');
   const btnExport = $('exportar-dados');
@@ -333,6 +301,11 @@
       modalImport.close();
     }
   });
+
+  const avisoInicial = $('lista-toast');
+  avisoInicial.dataset.firmaTipo = 'info';
+  avisoInicial.textContent = 'Conecte o token no rodapé para carregar os registros.';
+  avisoInicial.hidden = false;
 
   // preenchimento de credenciais salvas ou dados do perfil de teste local
   const chaveGuardada = localStorage.getItem('assineai-chave');

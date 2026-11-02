@@ -110,7 +110,7 @@ public class ControleAssineai {
   public ResponseEntity<?> registrar(@RequestBody Map<String, Object> dados) {
     identidade.registrar(dados);
     return ResponseEntity.status(201).body(
-      Map.of("message", "Usuário registrado com sucesso.")
+      Map.of("message", "Usuário cadastrado.")
     );
   }
 

@@ -122,7 +122,7 @@ public class ControleDocumentosAssinatura {
 
 		return ResponseEntity.ok()
 				.contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-				.body("{\"mensagem\":\"Importação concluída com sucesso\"}");
+				.body("{\"mensagem\":\"Importação concluída\"}");
 	}
 
 	@PatchMapping("/{id}")

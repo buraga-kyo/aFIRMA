@@ -6,6 +6,9 @@ const makeWASocket = require('@whiskeysockets/baileys').default;
 const { useMultiFileAuthState, DisconnectReason, downloadMediaMessage } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const QRCode = require('qrcode');
+const { Browsers } = require('@whiskeysockets/baileys');
+const { HistoricoWhatsApp } = require('./historico.cjs');
+const {configuracaoConexao,mensagemFalha,podeReconectar,PrazoConexao}=require('./conexao.cjs');
 process.umask(0o077);
 
 const chave = process.env.APP_CHAT_BRIDGE_KEY || '';
@@ -17,6 +20,7 @@ const diretorio = path.resolve(process.env.APP_CHAT_AUTH_DIR || './dados');
 if (chave.length < 32) throw new Error('APP_CHAT_BRIDGE_KEY exige 32 caracteres ou mais');
 const sessoes = new Map();
 const pendencias = path.join(diretorio, 'pendencias');
+const historico = new HistoricoWhatsApp({diretorio,publicar,textoMensagem});
 
 function conferirChave(recebida) {
   const a = Buffer.from(chave);
@@ -96,48 +100,65 @@ function textoMensagem(mensagem) {
     corpo?.imageMessage?.caption || corpo?.videoMessage?.caption || null;
 }
 
-async function conectar(id) {
-  if (sessoes.has(id)) return;
-  const pasta = path.join(diretorio, id);
-  await fs.mkdir(pasta, { recursive: true, mode: 0o700 });
-  const { state, saveCreds } = await useMultiFileAuthState(pasta);
-  const sessao = { cliente: null, qr: null, estado: 'CONECTANDO', reiniciar: true };
-  sessoes.set(id, sessao);
-  await publicar({ tipo: 'estado', canalId: id, estado: 'CONECTANDO' });
-  let cliente;
-  try { cliente = makeWASocket({
-    auth: state,
-    printQRInTerminal: false,
-    markOnlineOnConnect: false,
-    logger: pino({ level: 'silent' })
-  }); } catch (erro) { sessoes.delete(id); throw erro; }
-  sessao.cliente = cliente;
-  setTimeout(() => {
-    if (sessoes.get(id) === sessao && !sessao.cliente.user)
-      desconectar(id).catch(erro => console.error('QR expirado:', erro));
-  }, 600000).unref();
+async function conectar(id,tentativa=0) {
+  const anterior=sessoes.get(id);
+  if(anterior&&anterior.estado!=='DESCONECTADO')return;
+  anterior?.prazo?.cancelar();
+  const sessao = { cliente: null, qr: null, estado: 'CONECTANDO', reiniciar: true,erro:null,codigo:null,jaConectou:false };
+  // Reserva antes de qualquer I/O: duas abas não criam sockets concorrentes.
+  sessoes.set(id,sessao);
+  const falhar=async(codigo,mensagem)=>{
+    if(sessoes.get(id)!==sessao)return;
+    sessao.prazo?.cancelar();sessao.reiniciar=false;sessao.estado='DESCONECTADO';sessao.qr=null;sessao.codigo=codigo;sessao.erro=mensagem;
+    sessao.cliente?.end(undefined);
+    await publicar({tipo:'estado',canalId:id,estado:'DESCONECTADO'});
+  };
+  sessao.prazo=new PrazoConexao(()=>falhar(408,sessao.qr?'O QR expirou. Gere um novo código.':'O WhatsApp não gerou o QR em 45 segundos. Tente novamente.').catch(console.error));
+  let cliente,saveCreds;
+  try {
+    const pasta = path.join(diretorio, id);
+    await fs.mkdir(pasta, { recursive: true, mode: 0o700 });
+    const auth=await useMultiFileAuthState(pasta);saveCreds=auth.saveCreds;
+    if(sessoes.get(id)!==sessao||!sessao.reiniciar)return;
+    await publicar({ tipo: 'estado', canalId: id, estado: 'CONECTANDO' });
+    cliente = makeWASocket({auth:auth.state,...configuracaoConexao(Browsers),printQRInTerminal:false,markOnlineOnConnect:false,logger:pino({level:'silent'})});
+    sessao.cliente=cliente;
+  }catch(erro){await falhar(null,'Não foi possível iniciar a conexão WhatsApp.');throw erro;}
   cliente.ev.on('creds.update', saveCreds);
+  let filaHistorico=Promise.resolve();
+  cliente.ev.on('messaging-history.set', payload => {filaHistorico=filaHistorico.then(()=>historico.receber(id,payload)).catch(e=>historico.erro(id,e).catch(console.error));});
+  cliente.ev.on('contacts.upsert', contatos=>{filaHistorico=filaHistorico.then(()=>historico.contatos(id,contatos)).catch(e=>console.error('Contatos do histórico:',e.message));});
   cliente.ev.on('connection.update', async ({ connection, qr, lastDisconnect }) => {
     try {
+      if(sessoes.get(id)!==sessao||!sessao.reiniciar)return;
       if (qr) {
+        sessao.prazo.qr();sessao.erro=null;
         sessao.qr = qr;
         sessao.estado = 'QR_PENDENTE';
         await publicar({ tipo: 'estado', canalId: id, estado: 'QR_PENDENTE' });
       }
       if (connection === 'open') {
+        sessao.prazo.cancelar();sessao.jaConectou=true;sessao.erro=null;
         sessao.qr = null;
         sessao.estado = 'CONECTADO';
         await publicar({ tipo: 'estado', canalId: id, estado: 'CONECTADO' });
       }
       if (connection === 'close') {
-        if (sessoes.get(id) === sessao) sessoes.delete(id);
-        await publicar({ tipo: 'estado', canalId: id, estado: 'DESCONECTADO' });
-        const codigo = lastDisconnect?.error?.output?.statusCode;
-        if (sessao.reiniciar && codigo !== DisconnectReason.loggedOut) {
-          setTimeout(() => conectar(id).catch(console.error), 3000);
-        }
+        sessao.prazo.cancelar();sessao.qr=null;
+        const codigo=lastDisconnect?.error?.output?.statusCode;
+        console.error('Conexão WhatsApp encerrada:',codigo || 'sem código');
+        if(sessao.reiniciar&&podeReconectar(codigo,sessao.jaConectou,tentativa)){
+          sessao.estado='CONECTANDO';
+          setTimeout(()=>{if(sessoes.get(id)!==sessao||!sessao.reiniciar)return;sessoes.delete(id);conectar(id,tentativa+1).catch(console.error);},1500).unref();
+        }else await falhar(codigo || null,mensagemFalha(codigo));
       }
     } catch (erro) { console.error('Estado de canal:', erro); }
+  });
+  cliente.ev.on('messages.update', async updates => {
+    for (const { key, update } of updates) {
+      if (!key?.id || update?.status == null) continue;
+      await publicar({ tipo: 'atualizacao', canalId: id, identificador: key.id, ack: Number(update.status) - 1 });
+    }
   });
   cliente.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return;
@@ -146,11 +167,25 @@ async function conectar(id) {
       const texto = textoMensagem(mensagem);
       const corpo = mensagem.message || {};
       const midia = corpo.imageMessage || corpo.videoMessage || corpo.audioMessage || corpo.documentMessage;
-      if (mensagem.key.fromMe || !jid.endsWith('@s.whatsapp.net') || (!texto && !midia)) continue;
+      const protocolo = corpo.protocolMessage;
+      if (protocolo?.key?.id) {
+        const editada = protocolo.editedMessage?.conversation || protocolo.editedMessage?.extendedTextMessage?.text;
+        await publicar({ tipo: 'atualizacao', canalId: id, identificador: protocolo.key.id,
+          deletada: Number(protocolo.type) === 0, editada: editada != null, texto: editada || null });
+        continue;
+      }
+      if (corpo.reactionMessage?.key?.id) {
+        await publicar({ tipo: 'atualizacao', canalId: id, identificador: corpo.reactionMessage.key.id,
+          reacao: { Numero: (mensagem.key.participant || jid).replace(/\D/g, ''), Reacao: corpo.reactionMessage.text || '' } });
+        continue;
+      }
+      if (!jid.endsWith('@s.whatsapp.net') || (!texto && !midia)) continue;
       const telefone = jid.split('@')[0];
       if (!/^\d{8,15}$/.test(telefone) || !mensagem.key.id) continue;
       const evento = { tipo: 'mensagem', canalId: id, identificador: mensagem.key.id,
-        telefone, nome: mensagem.pushName || null, texto: texto || '[anexo]' };
+        telefone, nome: mensagem.pushName || null, texto: texto || '[anexo]', fromMe: mensagem.key.fromMe === true,
+        raw: { key: mensagem.key, message: corpo }, respostaId: (corpo.extendedTextMessage || midia)?.contextInfo?.stanzaId || null };
+      if (JSON.stringify(evento.raw).length > 180000) evento.raw = { key: mensagem.key, message: { conversation: texto || '[anexo]' } };
       if (midia) {
         try {
           if (Number(midia.fileLength || 0) > 15 * 1024 * 1024) throw new Error('Arquivo grande demais');
@@ -171,6 +206,7 @@ async function desconectar(id) {
   const sessao = sessoes.get(id);
   if (!sessao) return;
   sessao.reiniciar = false;
+  sessao.prazo?.cancelar();
   sessoes.delete(id);
   try { sessao.cliente.end(undefined); }
   finally { await publicar({ tipo: 'estado', canalId: id, estado: 'DESCONECTADO' }); }
@@ -208,6 +244,11 @@ http.createServer(async (requisicao, resposta) => {
     } else if (requisicao.method === 'DELETE' && partes.length === 3) {
       await desconectar(id);
       respostaJson(resposta, 200, {});
+    } else if (requisicao.method === 'GET' && partes[3] === 'conexao') {
+      const s=sessoes.get(id);respostaJson(resposta,200,{estado:s?.estado || 'DESCONECTADO',qr:s?.qr?await QRCode.toDataURL(s.qr):'',erro:s?.erro || null,codigo:s?.codigo || null});
+    } else if (partes[3] === 'historico' && ['GET','POST'].includes(requisicao.method)) {
+      if(requisicao.method==='POST')await historico.pedir(id,sessoes.get(id)?.cliente);
+      respostaJson(resposta,200,await historico.status(id));
     } else if (requisicao.method === 'GET' && partes[3] === 'qr') {
       const qr = sessoes.get(id)?.qr;
       respostaJson(resposta, qr ? 200 : 404, { qr: qr ? await QRCode.toDataURL(qr) : '' });
@@ -219,8 +260,21 @@ http.createServer(async (requisicao, resposta) => {
           !dados.texto.trim() || dados.texto.length > 4096) throw new Error('Mensagem inválida');
       const cliente = sessoes.get(id)?.cliente;
       if (!cliente?.user) throw new Error('Canal desconectado');
-      const enviada = await cliente.sendMessage(`${dados.telefone}@s.whatsapp.net`, { text: dados.texto });
+      const jid = `${dados.telefone}@s.whatsapp.net`;
+      const quoted = typeof dados.resposta === 'string' && dados.resposta ?
+        { key: { remoteJid: jid, id: dados.resposta, fromMe: false }, message: { conversation: '' } } : undefined;
+      const enviada = await cliente.sendMessage(jid, { text: dados.texto }, quoted ? { quoted } : undefined);
       respostaJson(resposta, 200, { identificador: enviada.key.id });
+    } else if (requisicao.method === 'POST' && ['lida', 'remover'].includes(partes[3])) {
+      const dados = await corpoJson(requisicao);
+      if (!/^\d{8,15}$/.test(dados.telefone) || typeof dados.identificador !== 'string' ||
+          !dados.identificador || dados.identificador.length > 200) throw new Error('Mensagem inválida');
+      const cliente = sessoes.get(id)?.cliente;
+      if (!cliente?.user) throw new Error('Canal desconectado');
+      const key = { remoteJid: `${dados.telefone}@s.whatsapp.net`, id: dados.identificador, fromMe: dados.fromMe === true };
+      if (partes[3] === 'lida') await cliente.readMessages([key]);
+      else { if (!key.fromMe) throw new Error('Somente mensagens enviadas podem ser apagadas'); await cliente.sendMessage(key.remoteJid, { delete: key }); }
+      respostaJson(resposta, 200, {});
     } else if (requisicao.method === 'POST' && partes[3] === 'arquivos') {
       const dados = await corpoJson(requisicao, 22 * 1024 * 1024);
       if (!/^\d{8,15}$/.test(dados.telefone) || !/^[\w.+-]+\/[\w.+-]+$/.test(dados.tipoMime) ||

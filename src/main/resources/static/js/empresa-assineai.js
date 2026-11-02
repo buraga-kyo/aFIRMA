@@ -34,7 +34,7 @@ async function carregar() {
       ? "Cor Solida"
       : "firma";
   $("perfil-empresa").hidden = false;
-  await EditorTemplates.carregar(dados.EmpresaTemplates);
+  await window.FirmaCanais.carregar();
   localStorage.setItem("assineai-token", $("empresa-token").value.trim());
 }
 $("login-empresa").addEventListener("submit", async (evento) => {
@@ -82,8 +82,7 @@ $("dados-empresa").addEventListener("submit", async (evento) => {
       },
       "PUT",
     );
-    EditorTemplates.salvo();
-    mensagem("Dados da empresa e página de assinaturas salvos.");
+    mensagem("Dados daFIRMA salvos.");
   } catch (erro) {
     mensagem(erro.message);
   }

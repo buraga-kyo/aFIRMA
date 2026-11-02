@@ -246,6 +246,7 @@ O CSS genérico usa os tokens da FIRMA e mantém os seletores dentro de `.af-tab
 | Método | O que faz |
 | --- | --- |
 | `carregar()` | Consulta a fonte; Promise de booleano. |
+| `limparDados()` | Cancela a consulta pendente e limpa registros, seleção e filtros ao desconectar ou trocar a conta. Preserva a estrutura e o layout em ambos os modos. |
 | `definirDados(itens)` | Substitui o array local, remove seleções órfãs e redesenha. Apenas modo local. |
 | `dados()` | Retorna os registros filtrados/ordenados antes da paginação local; no servidor, a página recebida. |
 | `filtrar(id, filtro)` | Aplica filtro: texto, array de valores ou `{ from, to }`. `null` limpa a coluna. |
@@ -283,3 +284,21 @@ node --check src/main/resources/static/js/documentos-assinatura.js
 ```
 
 O script usa Chrome/Chromium headless e testes de DOM sem instalar dependências. Cobre recursos opcionais, permissões por coluna, dados locais/remotos, múltiplas instâncias, menus, seleção, persistência, concorrência, gravação e destruição. Esses testes simulam as respostas da API. Para conferir o backend, rode também os testes dos endpoints que sua tela usa.
+
+## Ações e controles do Trator
+
+`FirmaTabela.botaoAcao(tipo, rotulo, executar)` cria as ações básicas com os mesmos ícones das assinaturas: `visualizar`, `editar`, `historico` e `remover`. O rótulo é usado no título e no nome acessível do botão. Sem callback, visualizar/editar usam a delegação já oferecida pelo núcleo, conforme os recursos habilitados. A célula recebe a classe `acoes-padrao`.
+
+Operações específicas ficam em uma coluna **CONTROLES**, com `render`, `ordenacao: false`, `filtrosHeader: false` e `detalhes: false`. `FirmaTabela.botaoControle(rotulo, icone, executar)` padroniza esses botões com a identidade Roça da FIRMA, texto explícito e indicação de operação em andamento. O callback da página mantém as regras de autorização e o tratamento de erros. `detalhes: false` omite uma coluna operacional do diálogo de leitura/edição, sem ocultar os dados da tabela.
+
+A tabela mãe intercepta cliques em `button.destrutivo` e `button[data-confirmar-exclusao]`, antes dos handlers da página. O modal **Confirmar exclusão** só libera o callback depois de **Sim, excluir**. Cancelar, Escape e destruir a instância encerram a confirmação sem chamar a operação. `botaoAcao('remover', ...)` recebe essa proteção automaticamente; controles com rótulo iniciado por “Excluir” também. Não adicione um segundo `confirm()` no callback da página.
+
+## Rodapé de acesso compartilhado
+
+`fragments/trator.html :: acesso(fontes)` renderiza o mesmo rodapé em assinaturas e Zapiou. `fontes=true` inclui o seletor de origem das assinaturas; `false` o omite no Zapiou. Os controles e o CSS são compartilhados: `lista-chave`, `lista-token`, `lista-conectar` e `usar-credenciais-teste`. Os dados de teste são fornecidos por `CredenciaisTesteTrator` somente no perfil `local-test`. O acesso usa chave e JWT, sem uma etapa de usuário/senha no Zapiou.
+
+## Padrão dos tratores
+
+Nas telas de trator, use `FirmaTrator.montar(config)` após carregar `trator-firma.js`. Ele aplica os recursos do trator de assinaturas, o contador da seleção e o rodapé configurado. A configuração pode desativar apenas os recursos substituídos por uma operação específica do módulo. `FirmaTrator.configurarLargura(main, botao, storageId)` oferece os três modos compartilhados. Veja [a revisão dos recursos](trator-padrao.md).
+
+`edicaoInline: false` reserva o duplo clique para uma interação própria da página, mantendo o formulário de edição acessível pela coluna AÇÕES.

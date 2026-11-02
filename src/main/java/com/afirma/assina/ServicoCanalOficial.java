@@ -23,14 +23,16 @@ import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class ServicoCanalOficial {
-	private final HttpClient cliente = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+	private final HttpClient cliente;
 	private final NamedParameterJdbcTemplate banco;
 	private final ObjectMapper json;
 	private final Environment ambiente;
 	private final String versao;
 
-	public ServicoCanalOficial(NamedParameterJdbcTemplate banco, ObjectMapper json, Environment ambiente,
-			@Value("${APP_META_VERSAO:v23.0}") String versao) {
+	@org.springframework.beans.factory.annotation.Autowired
+    public ServicoCanalOficial(NamedParameterJdbcTemplate banco,ObjectMapper json,Environment ambiente,@Value("${APP_META_VERSAO:v23.0}")String versao){this(banco,json,ambiente,versao,HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());}
+    ServicoCanalOficial(NamedParameterJdbcTemplate banco, ObjectMapper json, Environment ambiente,
+            String versao,HttpClient cliente) {this.cliente=cliente;
 		this.banco = banco;
 		this.json = json;
 		this.ambiente = ambiente;
@@ -46,11 +48,22 @@ public class ServicoCanalOficial {
 		return valores;
 	}
 
-	public String enviar(UUID canal, String telefone, String texto) {
-		if (texto == null || texto.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Texto obrigatório");
-		return transmitir(canal, Map.of("messaging_product", "whatsapp", "to", telefone,
-				"type", "text", "text", Map.of("body", texto)));
-	}
+	public String enviar(UUID canal, String telefone, String texto) {return enviar(canal,telefone,texto,null);}
+    public String enviar(UUID canal,String telefone,String texto,String resposta) {
+        if(texto==null||texto.isBlank())throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Texto obrigatório");
+        var mensagem=new java.util.HashMap<String,Object>(Map.of("messaging_product","whatsapp","to",telefone,"type","text","text",Map.of("body",texto)));
+        if(resposta!=null&&!resposta.isBlank())mensagem.put("context",Map.of("message_id",resposta));
+        return transmitir(canal,mensagem);
+    }
+    public void marcarLida(UUID canal,String externo) {
+        var config=banco.queryForMap("SELECT identificador_meta,referencia_segredo_meta FROM chat_canal WHERE id=:id AND ativo AND provedor='META'",dados("id",canal));
+        try {
+            var pedido=HttpRequest.newBuilder(URI.create("https://graph.facebook.com/"+versao+"/"+config.get("identificador_meta")+"/messages")).timeout(Duration.ofSeconds(15)).header("Authorization","Bearer "+token((String)config.get("referencia_segredo_meta"))).header("Content-Type","application/json").POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(Map.of("messaging_product","whatsapp","status","read","message_id",externo)))).build();
+            var r=cliente.send(pedido,HttpResponse.BodyHandlers.discarding());if(r.statusCode()<200||r.statusCode()>=300)throw new IllegalStateException();
+        }catch(Exception e){if(e instanceof InterruptedException)Thread.currentThread().interrupt();throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"Não foi possível confirmar a leitura na Meta");}
+    }
+
+    public String enviarInterativa(UUID canal,String telefone,Map<String,Object> interativa){return transmitir(canal,Map.of("messaging_product","whatsapp","to",telefone,"type","interactive","interactive",interativa));}
 
 	public String enviarModelo(UUID canal, String telefone, String nome, String idioma) {
 		if (nome == null || !nome.matches("[a-z0-9_]{1,120}") || idioma == null
@@ -61,8 +74,28 @@ public class ServicoCanalOficial {
 					"language", Map.of("code", idioma))));
 	}
 
-	public String enviarArquivo(UUID canal, String telefone, String nome,
-			String tipoMime, byte[] conteudo, String legenda) {
+    public String enviarModelo(UUID canal,String telefone,String nome,String idioma,List<?> parametros) {
+        var template=new java.util.HashMap<String,Object>(Map.of("name",nome,"language",Map.of("code",idioma)));
+        if(!parametros.isEmpty())template.put("components",List.of(Map.of("type","body","parameters",parametros)));
+        return transmitir(canal,Map.of("messaging_product","whatsapp","to",telefone,"type","template","template",template));
+    }
+
+
+    public String enviarArquivo(UUID canal,String telefone,String nome,String tipoMime,byte[] conteudo,String legenda){
+        String arquivo=subirArquivo(canal,nome,tipoMime,conteudo);
+        String tipo=tipoMime.startsWith("image/")?"image":tipoMime.startsWith("video/")?"video":tipoMime.startsWith("audio/")?"audio":"document";
+        var detalhes=new java.util.HashMap<String,Object>(Map.of("id",arquivo));if(tipo.equals("document"))detalhes.put("filename",nome);if(legenda!=null&&!legenda.isBlank()&&!tipo.equals("audio"))detalhes.put("caption",legenda);
+        return transmitir(canal,Map.of("messaging_product","whatsapp","to",telefone,"type",tipo,tipo,detalhes));
+    }
+    public String enviarModelo(UUID canal,String telefone,String nome,String idioma,List<?> parametros,ServicoArquivosChat.Arquivo midia){
+        if(midia==null)return enviarModelo(canal,telefone,nome,idioma,parametros);
+        String tipo=midia.tipo().startsWith("image/")?"image":midia.tipo().startsWith("video/")?"video":"document";
+        var cabecalho=new java.util.HashMap<String,Object>(Map.of("id",subirArquivo(canal,midia.nome(),midia.tipo(),midia.conteudo())));if(tipo.equals("document"))cabecalho.put("filename",midia.nome());
+        var componentes=new java.util.ArrayList<Map<String,Object>>();componentes.add(Map.of("type","header","parameters",List.of(Map.of("type",tipo,tipo,cabecalho))));if(!parametros.isEmpty())componentes.add(Map.of("type","body","parameters",parametros));
+        return transmitir(canal,Map.of("messaging_product","whatsapp","to",telefone,"type","template","template",Map.of("name",nome,"language",Map.of("code",idioma),"components",componentes)));
+    }
+
+    private String subirArquivo(UUID canal,String nome,String tipoMime,byte[] conteudo){
 		if (conteudo == null || conteudo.length == 0 || conteudo.length > 15 * 1024 * 1024
 				|| nome == null || nome.length() > 255 || tipoMime == null
 				|| !tipoMime.matches("[a-zA-Z0-9.+-]+/[a-zA-Z0-9.+-]+"))
@@ -72,11 +105,7 @@ public class ServicoCanalOficial {
 			WHERE id=:id AND provedor='META' AND ativo
 			""", dados("id", canal));
 		String referencia = (String) configuracao.get("referencia_segredo_meta");
-		if (referencia == null || !referencia.matches("APP_META_TOKEN_[A-Z0-9_]{1,80}"))
-			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Token do canal inválido");
-		String segredo = ambiente.getProperty(referencia);
-		if (segredo == null || segredo.length() < 20)
-			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Token do canal indisponível");
+		String segredo = token(referencia);
 		String identificador = (String) configuracao.get("identificador_meta");
 		if (identificador == null || !identificador.matches("[0-9]{5,30}"))
 			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Identificador do canal inválido");
@@ -102,14 +131,7 @@ public class ServicoCanalOficial {
 				throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Canal oficial recusou o arquivo");
 			String arquivo = json.readTree(resposta.body()).path("id").asText();
 			if (arquivo.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Arquivo sem confirmação");
-			String tipo = tipoMime.startsWith("image/") ? "image" : tipoMime.startsWith("video/") ? "video"
-					: tipoMime.startsWith("audio/") ? "audio" : "document";
-			Map<String, Object> detalhes = new java.util.HashMap<>();
-			detalhes.put("id", arquivo);
-			if ("document".equals(tipo)) detalhes.put("filename", nome);
-			if (legenda != null && !legenda.isBlank() && !"audio".equals(tipo)) detalhes.put("caption", legenda);
-			return transmitir(canal, Map.of("messaging_product", "whatsapp", "to", telefone,
-					"type", tipo, tipo, detalhes));
+            return arquivo;
 		} catch (ResponseStatusException erro) { throw erro; }
 		catch (Exception erro) {
 			if (erro instanceof InterruptedException) Thread.currentThread().interrupt();
@@ -197,14 +219,23 @@ public class ServicoCanalOficial {
 	private record Credenciais(String token) {}
 
 	private Credenciais credenciais(Map<String, Object> configuracao) {
-		String referencia = (String) configuracao.get("referencia_segredo_meta");
-		if (referencia == null || !referencia.matches("APP_META_TOKEN_[A-Z0-9_]{1,80}"))
-			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Token do canal inválido");
-		String token = ambiente.getProperty(referencia);
-		if (token == null || token.length() < 20)
-			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Token do canal indisponível");
-		return new Credenciais(token);
-	}
+        return new Credenciais(token((String) configuracao.get("referencia_segredo_meta")));
+    }
+
+    String tokenAutentica(long cliente){return token("AUTENTICA:"+cliente);}
+    private String token(String referencia) {
+        String valor;
+        if (referencia != null && referencia.matches("AUTENTICA:[0-9]+")) {
+            var registros=banco.queryForList("SELECT \"ClienteMetaToken\" AS valor FROM autentica.\"Cliente\" WHERE id=:id",dados("id",Long.parseLong(referencia.substring(10))));
+            valor=registros.isEmpty()?null:(String)registros.getFirst().get("valor");
+            if(valor!=null&&valor.startsWith("APP_META_TOKEN_"))valor=ambiente.getProperty(valor);
+        } else {
+            if(referencia==null||!referencia.matches("APP_META_TOKEN_[A-Z0-9_]{1,80}"))throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Token do canal não configurado");
+            valor=ambiente.getProperty(referencia);
+        }
+        if(valor==null||valor.length()<20)throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Token do canal indisponível");
+        return valor;
+    }
 
 	private String traduzirEstado(String estado) {
 		return switch (estado) {
@@ -237,11 +268,7 @@ public class ServicoCanalOficial {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Canal oficial não encontrado");
 		}
 		String referencia = (String) configuracao.get("referencia_segredo_meta");
-		if (referencia == null || !referencia.matches("APP_META_TOKEN_[A-Z0-9_]{1,80}"))
-			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Token do canal não configurado");
-		String segredo = ambiente.getProperty(referencia);
-		if (segredo == null || segredo.length() < 20)
-			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Token do canal indisponível");
+		String segredo = token(referencia);
 		String identificador = (String) configuracao.get("identificador_meta");
 		if (identificador == null || !identificador.matches("[0-9]{5,30}"))
 			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Identificador do canal inválido");
@@ -260,7 +287,8 @@ public class ServicoCanalOficial {
 		} catch (ResponseStatusException erro) { throw erro; }
 		catch (Exception erro) {
 			if (erro instanceof InterruptedException) Thread.currentThread().interrupt();
-			throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Canal oficial indisponível", erro);
+			if(erro instanceof java.io.IOException||erro instanceof InterruptedException)throw new EntregaIndeterminada();
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Canal oficial indisponível", erro);
 		}
 	}
 }
