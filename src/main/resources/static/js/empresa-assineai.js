@@ -74,6 +74,7 @@ $("dados-empresa").addEventListener("submit", async (evento) => {
     await pedido(
       "/api/assineai/empresa",
       {
+        EmpresaTemplates: EditorTemplates.dados(),
         EmpresaNome: $("perfil-nome").value,
         EmpresaCNPJ: $("perfil-cnpj").value,
         EmpresaEmail: $("perfil-email").value,
@@ -89,3 +90,5 @@ $("dados-empresa").addEventListener("submit", async (evento) => {
 $("empresa-token").value = localStorage.getItem("assineai-token") || "";
 if ($("empresa-token").value)
   carregar().catch((erro) => mensagem(erro.message));
+
+$("template-salvar").onclick = () => $("dados-empresa").requestSubmit();
