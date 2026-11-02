@@ -1,0 +1,24 @@
+.trator-talkative{padding:24px 24px 70px;min-height:100dvh}
+.trator-talkative .firma-sidebar,.trator-talkative .firma-appbar{display:none}
+.trator-talkative main.lista-documentos{max-width:none;width:100%;margin:0;padding:0}
+.trator-talkative .toolbar-faixa{flex-wrap:wrap}.trator-talkative .toolbar-grupo{flex-wrap:wrap;overflow:visible;align-items:end}
+.trator-talkative .trator-firma{flex-basis:100%;margin:0 0 12px}
+.trator-talkative .trator-cadastro{display:flex;flex-direction:column;font-size:10px;letter-spacing:.08em;color:var(--primary);margin-right:10px}
+.trator-talkative select,.trator-talkative textarea{background:var(--background);color:var(--foreground);border:2px solid var(--border);padding:10px;font:inherit;max-width:100%}
+.trator-talkative .trator-cadastro select{min-height:48px;font-size:13px;max-width:260px}
+.trator-talkative .trator-pesquisa input{min-height:48px;max-width:220px;margin-left:10px}
+.trator-talkative .lista-rodape{flex-wrap:wrap}.trator-talkative .titulo-trator{margin-left:auto}.trator-talkative .titulo-trator em{color:var(--primary)}
+.trator-talkative .autentica-aviso:empty{display:none}.trator-talkative .autentica-aviso{margin:0 0 12px}
+.trator-talkative .autentica-dialog{max-width:760px;width:min(94vw,760px);background:var(--card);color:var(--foreground)}
+.canal-conexao-corpo{padding:24px}.canal-conexao-corpo img{display:block;width:280px;max-width:100%;margin:24px auto;border:12px solid white;background:white;image-rendering:auto}
+.canal-conexao-corpo p{line-height:1.6}.canal-conexao-corpo h3{color:var(--primary)}
+#canal-importacao{border-top:2px solid var(--border);margin-top:24px;padding-top:12px}#canal-conexao-status{font-weight:800;color:var(--primary)}
+.canal-carregando{width:100%;height:5px;background:linear-gradient(90deg,var(--border),var(--primary),var(--border));background-size:200%;animation:canal-progresso 1.5s linear infinite}
+@keyframes canal-progresso{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.canal-carregando{animation:none}}
+@media(max-width:700px){.trator-talkative{padding:12px}.trator-talkative .trator-cadastro{width:100%;margin-bottom:8px}.trator-talkative .trator-cadastro select{max-width:none}.trator-talkative .titulo-trator{width:100%;margin:12px 0}.trator-talkative .trator-pesquisa input{margin:8px 0;width:100%;max-width:none}}
+.trator-talkative{padding-bottom:140px}
+@media(max-width:900px){.trator-talkative{padding-bottom:20px}.trator-talkative>.rodape-fixo-trator{margin-top:30px}}
+.trator-talkative .zapiou-navegacao{margin:0}.trator-talkative[data-incorporado="true"] .zapiou-navegacao,.trator-talkative[data-incorporado="true"] .trator-firma{display:none}.trator-talkative[data-incorporado="true"]{padding:12px}
+
+.trator-talkative[data-incorporado="true"]>.rodape-fixo-trator{position:static;margin:20px -12px -12px}

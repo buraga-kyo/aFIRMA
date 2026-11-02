@@ -115,7 +115,7 @@ public class ServicoBots {
 		try {
 			anterior = banco.queryForMap("""
 				SELECT canal_id,provedor,ativa,fluxo,funcionamento,endereco_externo
-				WHERE id=:id AND empresa_id=:empresa FOR UPDATE
+				FROM chat_bot_definicao WHERE id=:id AND empresa_id=:empresa FOR UPDATE
 				""", valores);
 		} catch (EmptyResultDataAccessException erro) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bot não encontrado");
@@ -205,11 +205,14 @@ public class ServicoBots {
 			@Override public void afterCommit() {
 				try {
 					validarDestino(endereco);
-					Map<String, Object> corpo = inicio
+					Map<String, Object> formato = inicio
 						? Map.of("canal", canal, "sessao", sessao, "telefone", telefone,
 							"mensagem", mensagem)
 						: Map.of("sessao", sessao, "mensagem", mensagem);
-					HttpRequest pedido = HttpRequest.newBuilder(URI.create(endereco))
+					var corpo=new HashMap<String,Object>(formato);
+                    corpo.put("Mensagem",Map.of("message",Map.of("conversation",mensagem),"key",Map.of("remoteJid",telefone+"@s.whatsapp.net")));
+                    if(inicio){corpo.put("Canal",canal);corpo.put("Numero",telefone);var metadata=banco.queryForList("SELECT destino_id FROM firma_autentica_vinculo WHERE origem='chat_bot_sessao' AND origem_id=:id",dados("id",sessao.toString()));corpo.put("ChatbotMetadataId",metadata.isEmpty()?sessao:metadata.getFirst().get("destino_id"));}
+                    HttpRequest pedido = HttpRequest.newBuilder(URI.create(endereco))
 						.timeout(Duration.ofSeconds(15)).header("Content-Type", "application/json")
 						.POST(HttpRequest.BodyPublishers.ofString(serializar(corpo))).build();
 					HttpResponse<Void> resposta = clienteExterno.send(pedido,

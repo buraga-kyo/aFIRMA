@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head>
+<head><link rel="stylesheet" href="/css/mensagens-firma.css"><script src="/js/mensagens-firma.js" defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gestão de relacionamento | aFIRMA</title>
@@ -14,22 +14,22 @@
     <a class="marca" href="/" aria-label="aFIRMA, início">aFIRMA<span>.</span></a>
     <nav aria-label="Módulos da aFirma">
       <a href="/assinatura">AssineAi</a>
-      <a class="ativo" href="/chat">TalkAtive</a>
+      <a class="ativo" href="/chat">Zapiou</a>
       <a href="/advai">ADVai</a>
     </nav>
     <span class="identificador">GESTÃO DE RELACIONAMENTO</span>
   </header>
   <main>
     <div class="faixa">
-      <div><span class="etiqueta">02 / TALKATIVE</span><h1>GESTÃO <em>DA FIRMA.</em></h1></div>
+      <div><span class="etiqueta">02 / Zapiou</span><h1>GESTÃO <em>DA FIRMA.</em></h1></div>
       <p>Contatos, campanhas, automações e integrações em um lugar.</p>
     </div>
-    <nav class="submenu" aria-label="Gestão TalkAtive">
+    <nav class="submenu" aria-label="Gestão Zapiou">
       <a href="/chat">Conversas</a>
       <a href="/chat/canais">Canais</a>
       <a href="/chat/gestao" aria-current="page">Gestão</a>
     </nav>
-    <p id="aviso" role="status" aria-live="polite"></p>
+    <p id="aviso" role="status" aria-live="polite" data-firma-mensagem></p>
     <section id="acesso" class="painel">
       <h2>ACESSO À GESTÃO</h2>
       <p>Informe suas credenciais com permissão para gerir o relacionamento.</p>

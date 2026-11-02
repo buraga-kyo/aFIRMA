@@ -20,13 +20,15 @@ import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class ServicoInteligenciaConversacional {
-	private final HttpClient cliente = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+	private final HttpClient cliente;
 	private final NamedParameterJdbcTemplate banco;
 	private final ObjectMapper json;
 	private final Environment ambiente;
 
-	public ServicoInteligenciaConversacional(NamedParameterJdbcTemplate banco, ObjectMapper json,
-			Environment ambiente) {
+	@org.springframework.beans.factory.annotation.Autowired
+    public ServicoInteligenciaConversacional(NamedParameterJdbcTemplate banco,ObjectMapper json,Environment ambiente){this(banco,json,ambiente,HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());}
+    ServicoInteligenciaConversacional(NamedParameterJdbcTemplate banco, ObjectMapper json,
+            Environment ambiente,HttpClient cliente) {this.cliente=cliente;
 		this.banco = banco;
 		this.json = json;
 		this.ambiente = ambiente;
@@ -49,7 +51,13 @@ public class ServicoInteligenciaConversacional {
 		} catch (org.springframework.dao.EmptyResultDataAccessException erro) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Agente indisponível");
 		}
-		String segredo = ambiente.getProperty((String) configuracao.get("referencia_segredo"));
+		String referencia = (String) configuracao.get("referencia_segredo");
+        String segredo;
+        if (referencia != null && referencia.startsWith("AUTENTICA:")) {
+            var credenciais = banco.queryForList("SELECT ia.\"InteligenciaArtificialProvedorAPIKey\" AS valor FROM autentica.\"InteligenciaArtificial\" ia JOIN firma_autentica_vinculo v ON v.destino='Cliente' AND v.destino_id=ia.\"ClienteId\" AND v.origem='empresa' WHERE ia.id=:id AND v.origem_id=:empresa", dados("id", Long.parseLong(referencia.substring(10)), "empresa", Long.toString(empresa)));
+            segredo = credenciais.isEmpty() ? null : (String) credenciais.getFirst().get("valor");
+            if (segredo != null && segredo.startsWith("APP_IA_TOKEN_")) segredo=ambiente.getProperty(segredo);
+        } else segredo = ambiente.getProperty(referencia);
 		if (segredo == null || segredo.length() < 20)
 			throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Credencial do agente indisponível");
 		List<Map<String, Object>> historico = banco.queryForList("""

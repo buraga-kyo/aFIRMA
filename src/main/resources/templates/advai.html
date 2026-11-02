@@ -1,16 +1,16 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
+<head><link rel="stylesheet" href="/css/mensagens-firma.css"><script src="/js/mensagens-firma.js" defer></script>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>aFIRMA > ADVai</title>
   <link rel="stylesheet" href="/css/inicio.css"><link rel="stylesheet" href="/css/advai.css">
-  <script src="/js/advai.js" defer></script>
+  <link rel="stylesheet" href="/css/templates-empresa.css"><script src="/js/advai.js" defer></script><script src="/js/editor-templates.js" defer></script><script src="/js/advai-modelos.js" defer></script>
 </head>
 <body class="pagina-advai">
   <header class="topo"><a class="marca" href="/" aria-label="aFIRMA, página inicial">aFIRMA<span>.</span></a><a class="topo-acao" href="/preparar-assinaturas">ASSINATURAS ↗</a></header>
   <main class="advai-pagina">
     <section class="advai-abertura"><span class="selo">Gerador de PROPOSTAS</span><h1>PROPOSTAS QUE<br><span>VÃO ADIANTE.</span></h1><p>Escolha serviços, ajuste o texto e gere uma proposta com o nome da sua empresa. Revise o documento antes de enviar.</p></section>
-    <div id="erro-advai" class="advai-erro" role="alert" hidden></div>
+    <div id="erro-advai" class="advai-erro" role="alert" hidden data-firma-mensagem></div>
     <div class="advai-grade">
       <form id="formulario-proposta" class="advai-formulario">
         <section class="advai-bloco"><h2>01 / IDENTIFICAÇÃO</h2><div class="advai-campos"><label>EMPRESA<input id="empresa" maxlength="120" required placeholder="Nome da empresa"></label><label>CLIENTE<input id="cliente" maxlength="120" required placeholder="Nome do cliente"></label><label>E-MAIL DO CLIENTE<input id="email" type="email" maxlength="254" required placeholder="cliente@exemplo.com"></label><label>TÍTULO DA PROPOSTA<input id="titulo" maxlength="160" required value="Proposta de serviços jurídicos"></label></div></section>
@@ -20,6 +20,37 @@
       </form>
       <aside class="advai-previa"><div class="advai-previa-topo">PRÉVIA DA PROPOSTA <span>ATUALIZA AO DIGITAR</span></div><article id="previa-documento" class="advai-folha-documento"></article></aside>
     </div>
+
+    <section id="advai-acesso-modelos" class="advai-bloco"><h2>FOLHA DE ASSINATURAS</h2><p>Escolha o modelo da folha que vai no final do PDF.</p><form id="advai-carregar-modelos" class="advai-campos"><label>TOKEN DA FIRMA<input id="empresa-token" type="password" autocomplete="off" required></label><label>NOME DA FIRMA<input id="perfil-nome" readonly></label><button class="botao botao-primario" type="submit">CARREGAR MODELOS</button><a href="/firma">ENTRAR NA FIRMA ↗</a></form><p id="advai-modelos-aviso" data-firma-mensagem hidden></p></section>
+<section id="editor-templates" class="registro-editor" hidden>
+  <div class="registro-heading"><div><span class="registro-kicker">DOCUMENTOS DO ADVai</span><h2>A folha de assinaturas.</h2><p>Escolha o modelo, ajuste do seu jeito e salve. Essa folha vai no final do PDF com os dados de quem assinou.</p></div><span class="registro-a4">A4<br><small>210 × 297 mm</small></span></div>
+  <div id="modelos-galeria" class="registro-galeria" aria-label="Designs da página de assinaturas"></div>
+  <div class="registro-workspace">
+    <aside class="registro-inspector">
+      <span class="registro-kicker">MODELO DA FIRMA</span>
+      <label>Modelo em edição<select id="template-selecionado"></select></label>
+      <div class="registro-botoes"><button id="template-duplicar" type="button">Criar minha versão</button><button id="template-zero" type="button">Começar do zero</button><button id="template-excluir" type="button">Excluir versão</button></div>
+      <label>Nome da versão<input data-modelo="nome" maxlength="120"></label>
+      <label>Título da folha<input data-modelo="titulo" maxlength="80"></label>
+      <label>Linha de apresentação<input data-modelo="subtitulo" maxlength="120"></label>
+      <label>Assinatura da marca<textarea data-modelo="rodape" maxlength="160" rows="2"></textarea></label>
+      <label>Família tipográfica<select data-modelo="fonte"><option value="sans">Contemporânea · sem serifa</option><option value="serif">Editorial · com serifa</option><option value="mono">Técnica · monoespaçada</option></select></label>
+      <div class="registro-cores"><label>Fundo<input data-cor="fundo" type="color"></label><label>Painéis<input data-cor="papel" type="color"></label><label>Texto<input data-cor="tinta" type="color"></label><label>Destaque<input data-cor="destaque" type="color"></label><label>Ornamentos<input data-cor="secundaria" type="color"></label></div>
+      <div class="registro-numeros"><label>Corpo do texto<input data-modelo="tamanho" type="number" min="8" max="12" step="0.5"></label><label>Arredondamento<input data-modelo="raio" type="number" min="0" max="26"></label></div>
+      <label>Seu logotipo<input id="template-logo" type="file" accept="image/png,image/jpeg"></label><small>PNG ou JPEG, até 500 KB. A marca vai para a folha adicionada.</small>
+      <button id="template-remover-logo" type="button">Remover logotipo</button><label>Imagem de fundo / marca d’água<input id="template-fundo-imagem" type="file" accept="image/png,image/jpeg"></label><label>Opacidade da imagem de fundo<input data-modelo="opacidade" type="number" min="0" max="0.35" step="0.01"></label><button id="template-remover-fundo" type="button">Remover imagem de fundo</button>
+      <details class="registro-posicoes"><summary>Composição livre dos blocos</summary><p>Arraste os blocos sobre a página ou ajuste as medidas. Os campos permanecem completos em todos os designs.</p><label>Bloco<select id="template-area"><option value="cabecalho">Identidade e título</option><option value="documento">Dados do documento</option><option value="signatarios">Dados dos signatários</option><option value="integridade">Integridade e emissão</option></select></label><div class="registro-numeros"><label>X (pt)<input type="number" data-area="x" min="20" max="175"></label><label>Y (pt)<input type="number" data-area="y" min="20" max="800"></label><label>Largura (pt)<input type="number" data-area="w" min="400" max="555"></label><label>Altura (pt)<input type="number" data-area="h" min="60" max="650"></label></div><label class="registro-checkbox"><input id="template-editar-posicoes" type="checkbox">Mostrar alças na página</label></details>
+      <div class="registro-botoes"><button id="template-desfazer" type="button">↶ Desfazer</button><button id="template-refazer" type="button">↷ Refazer</button></div>
+      <div class="registro-botoes"><button id="template-exportar" type="button">Exportar biblioteca</button><label class="registro-importar">Importar<input id="template-importar" type="file" accept="application/json,.json"></label></div>
+    </aside>
+    <div class="registro-preview-col">
+      <div class="registro-toolbar"><span>PRÉVIA DA FOLHA ADICIONADA AO PDF</span><button id="template-atualizar" type="button">Atualizar prévia</button><button id="template-baixar" type="button">Baixar amostra em PDF ↗</button></div>
+      <div class="registro-prancheta"><div id="template-canvas" class="registro-canvas"><img id="template-previa" alt="Prévia real da página de registro de assinaturas"><div id="template-alcas" hidden></div></div></div>
+      <p class="registro-nota">Dados fictícios apenas nesta amostra. Na assinatura, o sistema insere os dados reais e acrescenta folhas de continuação quando necessário.</p>
+      <div class="registro-publicar"><div><strong id="template-ativo"></strong><p id="template-estado" role="status" aria-live="polite" data-firma-mensagem></p></div><div class="registro-botoes"><button id="template-ativar" type="button">Definir como padrão</button><button id="template-salvar" type="button" class="registro-primary">Salvar modelo</button></div></div>
+    </div>
+  </div>
+</section>
   </main>
   <footer><span id="rodape-empresa">SUA EMPRESA</span><span>PROPOSTAS JURÍDICAS.</span></footer>
 </body>

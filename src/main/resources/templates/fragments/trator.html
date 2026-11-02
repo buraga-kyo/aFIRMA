@@ -1,0 +1,9 @@
+<div class="rodape-fixo-trator" th:fragment="acesso(fontes)" xmlns:th="http://www.thymeleaf.org">
+  <section class="acesso-lista acesso-lista-rodape" aria-label="Acesso à lista">
+    <label>CHAVE DA API <input id="lista-chave" type="password" autocomplete="off" placeholder="Chave da API"></label>
+    <label>TOKEN JWT <input id="lista-token" type="password" autocomplete="off" placeholder="Cole seu JWT"></label>
+    <div class="origem-rodape" th:if="${fontes}"><label for="fonte-assinaturas" class="sr-only">Origem dos registros</label><select id="fonte-assinaturas"><option value="legado">Assineai: estrutura de produção</option><option value="firma">Registros anteriores da Firma</option></select></div>
+    <button id="lista-conectar" type="button" class="acao primaria">✓ CONECTAR</button>
+    <button id="usar-credenciais-teste" hidden type="button" class="acao">Credenciais de teste</button>
+  </section>
+</div>

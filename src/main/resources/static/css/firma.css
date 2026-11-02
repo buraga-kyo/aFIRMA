@@ -1,0 +1,12 @@
+.firma-canal-botoes{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:20px 0}
+#firma-canal-campos{margin-bottom:24px}
+#firma-canal-campos .campo-largo{grid-column:1/-1}
+#firma-canal-campos .campo-checkbox{display:flex;flex-direction:row;align-items:center;gap:12px}
+#firma-canal-campos input[type=checkbox]{width:22px;height:22px;flex:none;accent-color:var(--primary)}
+#firma-canal-campos textarea{width:100%;min-height:100px;padding:12px 15px;border:2px solid var(--border);background:var(--background);color:var(--foreground);font:inherit;resize:vertical}
+#firma-canal-campos small{color:var(--muted-foreground);line-height:1.5}
+#firma-canal-qr{display:block;width:280px;max-width:100%;background:white;padding:12px;margin:20px 0}
+#firma-canal-qr[hidden]{display:none}
+#firma-canal-estado{overflow-wrap:anywhere}
+
+#firma-canal-campos [hidden]{display:none}

@@ -43,12 +43,13 @@ public class SegurancaApi {
 				throw new IllegalStateException("SHA-256 indisponível", erro);
 			}
 		}
-		http.csrf(csrf -> csrf.disable())
+		http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                .csrf(csrf -> csrf.disable())
 				.sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(regras -> regras
 					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/assineai/trator", "/preparar-assinaturas",
-							"/convite/**", "/web-panels/**", "/empresa", "/chat", "/chat/canais", "/chat/gestao",
-							"/advai", "/css/**", "/js/**").permitAll()
+							"/convite/**", "/web-panels/**", "/empresa", "/firma", "/zapiou/trator", "/chat", "/chat/canais", "/chat/gestao",
+							"/advai", "/sistema", "/talkative/trator", "/institucional", "/css/**", "/js/**").permitAll()
 					.requestMatchers("/api/convites/**").permitAll()
 					.requestMatchers("/api/advai/**").hasAuthority("SCOPE_pdf.sign")
 					.requestMatchers("/api/envelopes/**").hasAuthority("SCOPE_pdf.sign")

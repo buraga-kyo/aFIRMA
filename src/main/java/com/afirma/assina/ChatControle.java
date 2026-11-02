@@ -44,9 +44,11 @@ public class ChatControle {
 	public record NovoAtendimento(UUID canalId, String telefone, String nome, Long setorId, String texto) {}
 	public record Evento(String tipo, UUID canalId, String estado, String identificador,
 			String telefone, String nome, String texto, String tipoMime,
-			String nomeArquivo, String conteudo) {}
+			String nomeArquivo, String conteudo,Boolean fromMe,JsonNode raw,JsonNode reacao,Integer ack,Boolean deletada,Boolean editada,String respostaId) {}
 
 	private final ChatServico servico;
+    private final EventosAutentica eventosAutentica;
+    private final HistoricoWhatsAppAutentica historico;
 	private final ChatTransporte transporte;
 	private final byte[] chaveInterna;
 	private final byte[] segredoChatwoot;
@@ -57,12 +59,12 @@ public class ChatControle {
 	private final ServicoBots bots;
 
 	public ChatControle(ChatServico servico, ChatTransporte transporte, ObjectMapper json,
-			ServicoArquivosChat arquivos, ServicoBots bots,
+			ServicoArquivosChat arquivos, ServicoBots bots,EventosAutentica eventosAutentica,HistoricoWhatsAppAutentica historico,
 			@Value("${APP_CHAT_BRIDGE_KEY:}") String chaveInterna,
 			@Value("${APP_CHATWOOT_WEBHOOK_SECRET:}") String segredoChatwoot,
 			@Value("${APP_CHATWOOT_CANAL_ID:}") String canalChatwoot,
 			@Value("${APP_CHATWOOT_INBOX_NUMERO:0}") int caixaChatwoot) {
-		this.servico = servico;
+		this.servico = servico;this.eventosAutentica=eventosAutentica;this.historico=historico;
 		this.transporte = transporte;
 		this.json = json;
 		this.arquivos = arquivos;
@@ -262,16 +264,20 @@ public class ChatControle {
 		}
 		if (evento == null || evento.canalId() == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 		switch (evento.tipo()) {
-			case "estado" -> servico.estadoCanal(evento.canalId(), evento.estado());
+			case "historico" -> historico.receber(evento.canalId(),evento.raw());
+            case "atualizacao" -> eventosAutentica.atualizar(evento);
+            case "estado" -> servico.estadoCanal(evento.canalId(), evento.estado());
 			case "mensagem" -> {
+                if(Boolean.TRUE.equals(evento.fromMe())){eventosAutentica.metadados(evento);break;}
 				if (evento.conteudo() == null) {
 					boolean nova = servico.receber(evento.canalId(), evento.identificador(),
 							evento.telefone(), evento.nome(), evento.texto());
-					if (nova) bots.enviarResposta(bots.processarEntrada(
+					eventosAutentica.metadados(evento);
+                    if (nova) bots.enviarResposta(bots.processarEntrada(
 							evento.canalId(), evento.telefone(), evento.texto(), evento.identificador()));
 				}
-				else arquivos.receber(evento.canalId(), evento.identificador(), evento.telefone(),
-						evento.nome(), evento.texto(), evento.nomeArquivo(), evento.tipoMime(), evento.conteudo());
+				else {arquivos.receber(evento.canalId(), evento.identificador(), evento.telefone(),
+						evento.nome(), evento.texto(), evento.nomeArquivo(), evento.tipoMime(), evento.conteudo());eventosAutentica.metadados(evento);}
 			}
 			default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Evento inválido");
 		}

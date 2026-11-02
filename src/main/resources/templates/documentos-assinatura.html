@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
+<head><link rel="stylesheet" href="/css/mensagens-firma.css"><script src="/js/mensagens-firma.js" defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Documentos · AssineAi</title>
   <link rel="stylesheet" href="/css/assinatura.css">
   <link rel="stylesheet" href="/css/tabela-core.css">
   <link rel="stylesheet" href="/css/documentos-assinatura.css">
-  <script src="/js/tabela-core.js" defer></script>
+  <script src="/js/tabela-core.js" defer></script><script src="/js/trator-firma.js" defer></script>
   <script src="/js/documentos-assinatura.js" defer></script>
   <link rel="stylesheet" href="/css/trator-firma.css">
 </head>
@@ -17,9 +17,9 @@
   <div id="tabela-montagem"></div>
   <template id="tabela-comandos">
     <nav class="trator-firma" aria-label="Módulos do Trator da Firma">
-  <a class="trator-aba trator-marca" href="/empresa" aria-label="aFIRMA, perfil da empresa">aFIRMA<span>.</span></a>
+  <a class="trator-aba trator-marca" href="/firma" aria-label="aFIRMA, perfil da empresa">aFIRMA<span>.</span></a>
   <a class="trator-aba" href="/assineai/trator" aria-current="page">AssineAI</a>
-  <a class="trator-aba" href="/chat">T@klATIVE</a>
+  <a class="trator-aba" href="/chat">Zapiou</a>
   <a class="trator-aba" href="/advai">ADVai</a>
 </nav>
     <a class="acao primaria" href="/preparar-assinaturas">+ Assinatura</a>
@@ -30,7 +30,7 @@
     <h1 class="titulo-trator">TRATOR DE <em>ASSINATURA.</em></h1>
     <button id="alternar-largura" type="button" class="acao">▤ TELA INTEIRA</button>
   </template>
-  <div id="lista-toast" class="lista-toast" role="alert" hidden></div>
+  <div id="lista-toast" class="lista-toast" role="alert" hidden data-firma-mensagem></div>
 
   <dialog id="modal-historico-assinatura" class="modal-exportacao modal-historico" aria-labelledby="titulo-historico-assinatura">
     <h2 id="titulo-historico-assinatura">DOCUMENTOS E HISTÓRICO</h2>
@@ -72,14 +72,6 @@
   </dialog>
 </main>
 
-<div class="rodape-fixo-trator">
-  <section class="acesso-lista acesso-lista-rodape" aria-label="Acesso à lista">
-    <label>CHAVE DA API <input id="lista-chave" type="password" autocomplete="off" placeholder="Chave da API"></label>
-    <label>TOKEN JWT <input id="lista-token" type="password" autocomplete="off" placeholder="Cole seu JWT"></label>
-    <div class="origem-rodape"><label for="fonte-assinaturas" class="sr-only">Origem dos registros</label><select id="fonte-assinaturas"><option value="legado">Assineai: estrutura de produção</option><option value="firma">Registros anteriores da Firma</option></select></div>
-    <button id="lista-conectar" type="button" class="acao primaria">✓ CONECTAR</button>
-    <button id="usar-credenciais-teste" type="button" class="acao">Credenciais de teste</button>
-  </section>
-</div>
+<div th:replace="~{fragments/trator :: acesso(true)}"></div>
 </body>
 </html>

@@ -191,11 +191,11 @@ let modelosPagina=[];
 document.getElementById('carregar-modelos-pagina').onclick=async()=>{
   const estado=document.getElementById('estado-modelo-pagina');
   try {
-    const token=localStorage.getItem('assineai-token');if(!token)throw Error('Entre na conta da empresa em /empresa para carregar seus modelos.');
+    const token=localStorage.getItem('assineai-token');if(!token)throw Error('Entre na conta da empresa em /firma para carregar seus modelos.');
     const r=await fetch('/api/assineai/empresa',{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});
     if(!r.ok)throw Error('Entre novamente no perfil da empresa para carregar os modelos.');
     const empresa=await r.json();const biblioteca=empresa.EmpresaTemplates;
-    if(biblioteca?.versao!==2)throw Error('Escolha e salve um modelo da folha de assinaturas no perfil da empresa.');
+    if(biblioteca?.versao!==2)throw Error('Escolha e salve um modelo da folha de assinaturas no ADVai.');
     modelosPagina=biblioteca.modelos;const sel=document.getElementById('modelo-pagina-assinatura');sel.replaceChildren();
     for(const m of modelosPagina){const o=document.createElement('option');o.value=m.id;o.textContent=m.nome;sel.append(o);}sel.value=biblioteca.ativo;
     nomeEmpresa.value=empresa.EmpresaNome||nomeEmpresa.value;nomeEmpresa.dispatchEvent(new Event('input'));

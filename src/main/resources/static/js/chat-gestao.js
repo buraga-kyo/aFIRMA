@@ -757,7 +757,7 @@ elemento('#form-registro').addEventListener('submit', async evento => {
     const edicao = configuracao.singular || registroAtual && configuracao.edita;
     const resultado = await requisitar(edicao && !configuracao.singular ? `${configuracao.caminho}/${registroAtual.id}` : configuracao.caminho,
       edicao ? 'PUT' : 'POST', dados);
-    if (resultado?.chave) alert(`Copie a chave agora. Ela não será exibida novamente:\n${resultado.chave}`);
+    if (resultado?.chave) window.FirmaMensagens.mostrar(`Copie a chave agora. Ela não será exibida novamente:\n${resultado.chave}`,{id:"chave-gerada",duracao:0});
     formulario.reset();
     registroAtual = null;
     elemento('#titulo-formulario').textContent = `NOVO REGISTRO · ${configuracao.titulo.toUpperCase()}`;

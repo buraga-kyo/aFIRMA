@@ -40,7 +40,7 @@
   async function galeria(){const area=$('modelos-galeria');area.replaceChildren();
     for(const m of catalogo){const botao=document.createElement('button');botao.type='button';botao.className='registro-card';botao.dataset.design=m.design;
       const amostra=document.createElement('div');amostra.className='registro-thumb';amostra.style.background=m.cores.secundaria;
-      const img=document.createElement('img');img.alt=`Folha de assinaturas — ${m.nome}`;amostra.append(img);
+      const img=document.createElement('img');img.alt=`Folha de assinaturas: ${m.nome}`;amostra.append(img);
       const nome=document.createElement('strong');nome.textContent=m.nome.split(' / ')[0];const desc=document.createElement('p');desc.textContent=m.descricao;botao.append(amostra,nome,desc);area.append(botao);
       botao.onclick=()=>{let modelo=biblioteca.modelos.find(v=>v.id===m.id);if(!modelo){if(biblioteca.modelos.length>=24)return estado('Limite de 24 versões. Exclua uma versão antes de adicionar outra.');modelo=clonar(m);biblioteca.modelos.push(modelo);}selecionado=modelo.id;historico.length=0;futuro.length=0;preencher();estado('Modelo selecionado para edição. Defina como padrão e salve para usar no PDF.');};
       try{const r=await api('/previa',{modelo:m,empresa:'Sua empresa',formato:'png'});const url=URL.createObjectURL(await r.blob());urls.push(url);img.src=url;}catch(e){img.alt=e.message;}

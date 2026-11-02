@@ -31,3 +31,32 @@
 .af-tabela .af-editavel{cursor:text}.af-tabela .af-editavel input{width:100%}
 .af-detalhes{width:min(650px,calc(100vw - 32px));max-height:85vh;overflow:auto;padding:24px;background:var(--card,#173225);color:var(--foreground,#F2F7EC);border:2px solid var(--border,#2E5A3F)}
 .af-detalhes .af-campo{display:grid;gap:6px;margin:12px 0}.af-detalhes::backdrop{background:#0008}
+
+/* Ações básicas do Trator: mesmos ícones compactos em todas as listagens. */
+.af-tabela td.acoes-padrao{white-space:normal;vertical-align:middle}
+.af-tabela .acoes-padrao .icone{display:inline-flex;align-items:center;justify-content:center;width:32px;min-height:32px;padding:4px;margin:2px;vertical-align:middle;font-size:15px;line-height:1}
+.af-tabela .acoes-padrao .destrutivo{color:var(--accent,#E8792B)}
+.af-tabela .trator-controles{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:4px 0}
+.af-tabela .trator-controles .controle-roca{display:inline-flex;align-items:stretch;gap:0;min-height:36px;padding:0;border:2px solid var(--border,#2E5A3F);border-radius:3px 10px 3px 3px;background:var(--card,#173225);color:var(--foreground,#F2F7EC);box-shadow:3px 3px 0 var(--secondary,#3B2A1A);font:800 10px/1.25 Inter,sans-serif;letter-spacing:.035em;text-align:left;cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s}
+.af-tabela .controle-roca>span:last-child{display:flex;align-items:center;padding:8px 10px}
+.af-tabela .controle-roca .controle-roca-icone{display:flex;align-items:center;justify-content:center;min-width:32px;border-right:2px solid var(--border,#2E5A3F);background:var(--secondary,#3B2A1A);color:var(--primary,#C9FF3D);font-size:17px}
+.af-tabela .trator-controles .controle-roca:hover{border-color:var(--primary,#C9FF3D);color:var(--primary,#C9FF3D);box-shadow:5px 5px 0 var(--accent,#E8792B);transform:translate(-2px,-2px)}
+.af-tabela .trator-controles .controle-roca:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--accent,#E8792B)}
+.af-tabela .trator-controles .controle-roca:disabled{opacity:.55;transform:none;cursor:wait}
+@media(prefers-reduced-motion:reduce){.af-tabela .trator-controles .controle-roca{transition:none}}
+
+.af-confirmacao-exclusao{width:min(480px,calc(100vw - 32px));padding:28px;border:2px solid var(--primary,#C9FF3D);background:var(--card,#173225);color:var(--foreground,#F2F7EC);box-shadow:8px 8px 0 var(--secondary,#3B2A1A);font:14px/1.5 Inter,sans-serif}
+.af-confirmacao-exclusao::backdrop{background:#061109cc;backdrop-filter:blur(3px)}
+.af-confirmacao-exclusao h2{margin:0 0 18px;font:24px/1.2 'Archivo Black',sans-serif;color:var(--primary,#C9FF3D)}
+.af-confirmacao-exclusao p{overflow-wrap:anywhere}.af-confirmacao-exclusao p+p{color:var(--muted-foreground,#A9C2AC)}
+.af-confirmacao-acoes{display:flex;justify-content:flex-end;gap:12px;margin-top:26px}
+.af-confirmacao-acoes button{padding:10px 14px;border:2px solid var(--border,#2E5A3F);background:var(--background,#0E2117);color:var(--foreground,#F2F7EC);font:800 12px Inter,sans-serif;cursor:pointer;box-shadow:3px 3px 0 var(--background,#0E2117)}
+.af-confirmacao-acoes .destrutivo{border-color:var(--accent,#E8792B);background:var(--accent,#E8792B);color:var(--background,#0E2117)}
+.af-confirmacao-acoes button:focus-visible{outline:3px solid var(--primary,#C9FF3D);outline-offset:3px}
+
+/* Fechar fica sempre à vista, inclusive em formulários longos. */
+dialog.af-detalhes .af-detalhes-topo{position:sticky;top:-24px;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:16px;margin:-24px -24px 16px;padding:16px 24px;border-bottom:2px solid var(--border,#2E5A3F);background:var(--card,#173225)}
+dialog.af-detalhes .af-detalhes-topo h2{margin:0;min-width:0;font-size:clamp(20px,3vw,28px)}
+dialog.af-detalhes .af-detalhes-fechar{display:flex;flex:0 0 42px;align-items:center;justify-content:center;width:42px;height:42px;min-height:42px;padding:0;border:2px solid var(--primary,#C9FF3D);background:var(--background,#0E2117);color:var(--primary,#C9FF3D);font:28px/1 sans-serif;cursor:pointer}
+dialog.af-detalhes .af-detalhes-acoes{position:sticky;bottom:-24px;z-index:2;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;max-width:none;margin:16px -24px -24px;padding:12px 24px;border-top:2px solid var(--border,#2E5A3F);background:var(--card,#173225)}
+dialog.af-detalhes .af-detalhes-fechar:focus-visible{outline:3px solid var(--primary,#C9FF3D);outline-offset:3px}

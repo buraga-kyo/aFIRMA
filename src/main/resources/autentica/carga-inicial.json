@@ -1,0 +1,805 @@
+{
+  "perfis": [
+    {
+      "Nome": "Administrador"
+    },
+    {
+      "Nome": "Gestor"
+    },
+    {
+      "Nome": "Atendente"
+    }
+  ],
+  "permissoes": [
+    {
+      "Nome": "all",
+      "Acao": "manage"
+    },
+    {
+      "Nome": "login",
+      "Acao": "read"
+    },
+    {
+      "Nome": "acesso-nao-autorizado",
+      "Acao": "read"
+    },
+    {
+      "Nome": "pagina-nao-encontrada",
+      "Acao": "read"
+    },
+    {
+      "Nome": "home",
+      "Acao": "read"
+    },
+    {
+      "Nome": "clienteww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "clientedetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "clientedetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "clientedetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "clientedetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "canalww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "canaldetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "canaldetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "canaldetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "canaldetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "atendenteww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "atendentedetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "atendentedetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "atendentedetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "atendentedetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "mensagemrapidaww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "mensagemrapidadetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "mensagemrapidadetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "mensagemrapidadetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "mensagemrapidadetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "tagww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "tagdetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "tagdetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "tagdetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "tagdetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "webhook",
+      "Acao": "read"
+    },
+    {
+      "Nome": "webhook",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "webhook",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "contatoww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "contatodetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "contatodetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "contatodetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "contatodetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "setorww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "setordetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "setordetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "setordetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "setordetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "atendentesetorww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "atendentesetordetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "atendentesetordetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "atendentesetordetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "atendentesetordetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "mensagemww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "mensagemdetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "mensagemdetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "mensagemdetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "mensagemdetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "usuarioww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "usuariodetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "usuariodetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "usuariodetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "usuariodetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "atribuirsenha",
+      "Acao": "read"
+    },
+    {
+      "Nome": "perfilww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "perfildetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "perfildetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "perfildetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "perfildetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "permissaoww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "permissaodetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "permissaodetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "permissaodetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "permissaodetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "perfilpermissaoww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "chat",
+      "Acao": "read"
+    },
+    {
+      "Nome": "configuracoes",
+      "Acao": "update"
+    },
+    {
+      "Nome": "chatbotww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "chatbotdetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "chatbotdetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "chatbotdetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "chatbotdetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "mensagemtemplateww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "mensagemtemplatedetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "mensagemtemplatedetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "mensagemtemplatedetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "mensagemtemplatedetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "chatinteligenteww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "chatinteligentedetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "chatinteligentedetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "chatinteligentedetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "chatinteligentedetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "listacontatoww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "listacontatodetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "listacontatodetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "listacontatodetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "listacontatodetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "disparomassaww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "disparomassadetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "disparomassadetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "disparomassadetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "disparomassadetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "integracaoww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "integracaodetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "integracaodetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "integracaodetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "integracaodetail",
+      "Acao": "delete"
+    },
+    {
+      "Nome": "planoww",
+      "Acao": "read"
+    },
+    {
+      "Nome": "planodetail",
+      "Acao": "read"
+    },
+    {
+      "Nome": "planodetail",
+      "Acao": "insert"
+    },
+    {
+      "Nome": "planodetail",
+      "Acao": "update"
+    },
+    {
+      "Nome": "planodetail",
+      "Acao": "delete"
+    }
+  ],
+  "vinculos": [
+    {
+      "PerfilNome": "Administrador",
+      "PermissaoNome": "all",
+      "PermissaoAcao": "manage"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "login",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "acesso-nao-autorizado",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "home",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "pagina-nao-encontrada",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "chat",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "atendenteww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "atendentedetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "atendentedetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "atendentedetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "canalww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "canaldetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "canaldetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "canaldetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemrapidaww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemrapidadetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemrapidadetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemrapidadetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemrapidadetail",
+      "PermissaoAcao": "delete"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "contatoww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "contatodetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "contatodetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "contatodetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "contatodetail",
+      "PermissaoAcao": "delete"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "setorww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "setordetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "setordetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "setordetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "setordetail",
+      "PermissaoAcao": "delete"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "configuracoes",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "tagww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "tagdetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "tagdetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "tagdetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "tagdetail",
+      "PermissaoAcao": "delete"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "webhook",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "webhook",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "webhook",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "webhook",
+      "PermissaoAcao": "delete"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemtemplateww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemtemplatedetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemtemplatedetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemtemplatedetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemtemplatedetail",
+      "PermissaoAcao": "delete"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "chatinteligenteww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "chatinteligentedetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "chatinteligentedetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "chatinteligentedetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "chatinteligentedetail",
+      "PermissaoAcao": "delete"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "listacontatoww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "listacontatodetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "listacontatodetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "listacontatodetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "listacontatodetail",
+      "PermissaoAcao": "delete"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "disparomassaww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "disparomassadetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "disparomassadetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "disparomassadetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "disparomassadetail",
+      "PermissaoAcao": "delete"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "integracaoww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "integracaodetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "integracaodetail",
+      "PermissaoAcao": "insert"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "integracaodetail",
+      "PermissaoAcao": "update"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "integracaodetail",
+      "PermissaoAcao": "delete"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemww",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Gestor",
+      "PermissaoNome": "mensagemdetail",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Atendente",
+      "PermissaoNome": "login",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Atendente",
+      "PermissaoNome": "acesso-nao-autorizado",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Atendente",
+      "PermissaoNome": "home",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Atendente",
+      "PermissaoNome": "pagina-nao-encontrada",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Atendente",
+      "PermissaoNome": "chat",
+      "PermissaoAcao": "read"
+    },
+    {
+      "PerfilNome": "Atendente",
+      "PermissaoNome": "configuracoes",
+      "PermissaoAcao": "update"
+    }
+  ]
+}

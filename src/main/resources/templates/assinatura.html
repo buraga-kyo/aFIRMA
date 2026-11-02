@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head>
+<head><link rel="stylesheet" href="/css/mensagens-firma.css"><script src="/js/mensagens-firma.js" defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Assinar PDF</title>
@@ -17,7 +17,7 @@
   <main>
     <section class="apresentacao" aria-labelledby="titulo">
       <div class="apresentacao-texto">
-        <span class="sobretitulo"><span class="indicador"></span> PDF ASSINADO, PRONTO PARA USAR</span>
+        <span class="sobretitulo"><span class="indicador"></span> ASSINOU? O PDF FICA AQUI</span>
         <h1 id="titulo">ASSINE SEU<br><span>DOCUMENTO.</span></h1>
         <p>Envie seu PDF e certificado digital. A gente prepara o arquivo assinado para baixar aqui mesmo.</p>
       </div>
@@ -37,7 +37,7 @@
         <label class="escolha-pagina" for="pagina-personalizada"><input id="pagina-personalizada" type="checkbox"><span>Adicionar página personalizada ao PDF assinado</span></label>
         <div id="campos-personalizacao" class="campos" hidden>
           <div class="campo campo-largo"><label for="imagem-empresa">IMAGEM DA EMPRESA (PNG OU JPEG, ATÉ 500 KB)</label><input id="imagem-empresa" type="file" accept="image/png,image/jpeg"></div>
-          <div class="campo campo-largo"><label for="modelo-pagina-assinatura">MODELO DA FOLHA DE ASSINATURAS</label><select id="modelo-pagina-assinatura"><option value="">Atlas · padrão</option></select><button id="carregar-modelos-pagina" class="botao-carteira" type="button">CARREGAR MODELOS DO MEU PERFIL</button><a href="/empresa" target="_blank" rel="noopener">Escolher e personalizar os designs no perfil da empresa ↗</a><span id="estado-modelo-pagina" role="status"></span></div>
+          <div class="campo campo-largo"><label for="modelo-pagina-assinatura">MODELO DA FOLHA DE ASSINATURAS</label><select id="modelo-pagina-assinatura"><option value="">Atlas · padrão</option></select><button id="carregar-modelos-pagina" class="botao-carteira" type="button">CARREGAR MODELOS DO MEU PERFIL</button><a href="/firma" target="_blank" rel="noopener">Escolher e personalizar os designs no perfil da empresa ↗</a><span id="estado-modelo-pagina" role="status" data-firma-mensagem></span></div>
         </div>
       </section>
       <form id="formulario-assinatura" class="formulario" th:action="@{/api/pdfs/assinar}" action="/api/pdfs/assinar" method="post" enctype="multipart/form-data">
@@ -49,7 +49,7 @@
             <span>Ou arraste o arquivo para cá</span>
             <input id="pdf" name="pdf" type="file" accept=".pdf,application/pdf" required>
           </label>
-          <div class="arquivo-acoes"><button id="remover-pdf" class="botao-remover" type="button" hidden>REMOVER PDF</button><span id="estado-pdf" role="status" aria-live="polite"></span></div>
+          <div class="arquivo-acoes"><button id="remover-pdf" class="botao-remover" type="button" hidden>REMOVER PDF</button><span id="estado-pdf" role="status" aria-live="polite" data-firma-mensagem></span></div>
         </div>
 
         <div class="etapa">
@@ -58,7 +58,7 @@
             <label class="campo campo-largo" for="certificado">ARQUIVO DO CERTIFICADO
               <input id="certificado" name="certificado" type="file" accept=".p12,.pfx,application/x-pkcs12" required>
             </label>
-            <div class="arquivo-acoes campo-largo"><button id="remover-certificado" class="botao-remover" type="button" hidden>REMOVER CERTIFICADO</button><span id="estado-certificado" role="status" aria-live="polite"></span></div>
+            <div class="arquivo-acoes campo-largo"><button id="remover-certificado" class="botao-remover" type="button" hidden>REMOVER CERTIFICADO</button><span id="estado-certificado" role="status" aria-live="polite" data-firma-mensagem></span></div>
             <div class="campo"><label for="senha">SENHA DO CERTIFICADO</label><div class="entrada-senha"><input id="senha" name="senha" type="password" maxlength="256" autocomplete="off" required placeholder="Digite sua senha"><button type="button" class="botao-olho" data-alvo="senha" aria-label="Mostrar senha do certificado" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="olho-risco" d="M3 21 21 3"/></svg></button></div></div>
           </div>
         </div>
@@ -87,7 +87,7 @@
             <span>Ou arraste o arquivo para cá</span>
             <input id="pdf-blockchain" type="file" accept=".pdf,application/pdf">
           </label>
-          <div class="arquivo-acoes"><button id="remover-pdf-blockchain" class="botao-remover" type="button" hidden>REMOVER PDF</button><span id="estado-pdf-blockchain" role="status" aria-live="polite"></span></div>
+          <div class="arquivo-acoes"><button id="remover-pdf-blockchain" class="botao-remover" type="button" hidden>REMOVER PDF</button><span id="estado-pdf-blockchain" role="status" aria-live="polite" data-firma-mensagem></span></div>
         </div>
         <div class="etapa">
           <div class="etapa-titulo"><span class="numero">02</span><div><h2>SUA CARTEIRA</h2><p>Conecte MetaMask na rede Ethereum Sepolia.</p></div></div>
@@ -98,13 +98,13 @@
           <p>web3 web3 WEB333333333</p>
           <button id="assinar-blockchain" type="button">ASSINAR COM CARTEIRA ↗</button>
         </div>
-        <p id="andamento-blockchain" class="andamento-blockchain" role="status" aria-live="polite"></p>
+        <p id="andamento-blockchain" class="andamento-blockchain" role="status" aria-live="polite" data-firma-mensagem></p>
         <div id="resultado-blockchain" class="resultado" hidden>
           <div class="resultado-icone" aria-hidden="true">✓</div>
           <div><h2>DOCUMENTO PRONTO</h2><p>Prova da carteira incluída no PDF.</p></div>
           <a id="baixar-blockchain" class="botao-baixar" download="documento-blockchain.pdf">BAIXAR PDF ↗</a>
         </div>
-        <div id="erro-blockchain" class="erro" hidden role="alert"></div>
+        <div id="erro-blockchain" class="erro" hidden role="alert" data-firma-mensagem></div>
       </section>
 
       <div id="resultado" class="resultado" hidden aria-live="polite" role="status">
@@ -112,7 +112,7 @@
         <div><h2>DOCUMENTO PRONTO</h2><p>Seu PDF assinado está disponível para download.</p></div>
         <a id="baixar" class="botao-baixar" href="#" download="documento-assinado.pdf">BAIXAR PDF ↗</a>
       </div>
-      <div id="erro" class="erro" hidden role="alert"></div>
+      <div id="erro" class="erro" hidden role="alert" data-firma-mensagem></div>
     </section>
   </main>
 

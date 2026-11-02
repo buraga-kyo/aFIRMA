@@ -8,7 +8,7 @@
     assert(window.tabelaTeste instanceof window.FirmaTabelaOriginal, 'Instância não criada');
     const raiz = document.getElementById('tabela-montagem');
     assert(raiz.querySelectorAll('.lista-toolbar').length === 1, 'Barras duplicadas');
-    assert([...raiz.querySelectorAll('.trator-aba')].map(a => a.getAttribute('href')).join() === '/empresa,/assineai/trator,/chat,/advai', 'Links das abas incorretos');
+    assert([...raiz.querySelectorAll('.trator-aba')].map(a => a.getAttribute('href')).join() === '/firma,/assineai/trator,/chat,/advai', 'Links das abas incorretos');
     assert(raiz.querySelector('.trator-firma').closest('.toolbar-grupo').contains(document.getElementById('importar-dados')), 'Abas separadas dos comandos');
     assert(getComputedStyle(raiz.querySelector('.trator-marca')).fontFamily.includes('Archivo Black'), 'Fonte da marca perdida');
     assert(raiz.querySelector('.af-busca input').placeholder === 'FALAR COM O BURRO DE CARGA...', 'Busca incorreta');
@@ -38,6 +38,13 @@
     assert(document.documentElement.scrollWidth <= innerWidth, 'Rolagem horizontal na página');
     document.getElementById('exportar-dados').click(); assert(document.getElementById('modal-exportacao').open, 'Exportação perdeu o evento');
     document.getElementById('modal-exportacao').close();
+  });
+  await testar('Assinaturas: recursos comuns e avisos daFIRMA com X fora do eixo',async()=>{
+    for(const [recurso,ativo]of Object.entries(FirmaTrator.recursos))assert(window.tabelaTeste.recursos[recurso]===ativo,'Recurso divergente: '+recurso);
+    document.getElementById('lista-token').value='';document.getElementById('lista-conectar').click();await esperar();
+    const card=document.querySelector('#firma-mensagens .firma-mensagem');assert(card?.dataset.tipo==='erro'&&card.textContent.includes('Informe o token'),'Aviso de assinatura não usa mensagens comuns');
+    assert(getComputedStyle(document.getElementById('lista-toast')).display==='none','Aviso antigo continua sobre os controles');const rect=document.getElementById('firma-mensagens').getBoundingClientRect();assert(Math.abs(rect.left+rect.width/2-innerWidth/2)>4,'Aviso sem deslocamento');card.querySelector('.firma-mensagem-fechar').click();assert(!document.querySelector('#firma-mensagens .firma-mensagem'),'X não fechou aviso de assinatura');
+    document.getElementById('lista-token').value='teste';
   });
   localStorage.removeItem('assineai-chave'); localStorage.removeItem('assineai-token');
   const saida = document.createElement('pre'); saida.id = 'resultado-testes'; saida.textContent = JSON.stringify(resultados); document.body.append(saida);

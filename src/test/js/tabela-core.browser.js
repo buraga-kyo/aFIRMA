@@ -111,12 +111,32 @@
       [...t.no('plano-busca').querySelectorAll('button')].find(b => b.textContent === 'Aplicar').click(); assert(t.dados().length === 1, 'Plano não aplicado');
     } finally { window.fetch = fetchOriginal; t.destruir(); }
   });
+  await testar('Limpar dados em desconexão cancela respostas pendentes e apaga seleção e filtros',async()=>{
+    let resolver,sinal;const t=new FirmaTabela(config({modo:'servidor',recursos:{selecao:true},carregarDados:q=>{sinal=q.signal;return new Promise(r=>resolver=r);}}));
+    const carregamento=t.carregar();t.estado.selecionados.add(1);t.estado.filtros.nome='Antigo';t.limparDados();
+    assert(sinal.aborted&&!t.estado.carregando&&!t.estado.total&&!t.estado.todos.length&&!t.obterSelecionados().length&&!Object.keys(t.estado.filtros).length,'Desconexão não limpou estado');
+    resolver({itens:[{id:1,nome:'Resposta antiga'}],total:1});await carregamento;assert(!t.dados().length,'Resposta antiga reapareceu após desconexão');t.destruir();
+  });
+  await testar('Edição longa: X fixo visível e Fechar descartam sem salvar',async()=>{
+    let gravacoes=0;const item=Object.fromEntries(Array.from({length:24},(_,i)=>['campo'+i,'Valor '+i]));const t=new FirmaTabela(config({colunas:Object.keys(item).map(id=>({id,nome:id})),dados:[item],recursos:{edicao:true,detalhes:true},salvar:()=>{gravacoes++;}}));
+    t.detalhes(item,true);let d=t.dialogo;const input=d.querySelector('input');input.value='Alteração não salva';d.scrollTop=d.scrollHeight;await new Promise(r=>setTimeout(r,20));const x=d.querySelector('.af-detalhes-fechar'),rect=x.getBoundingClientRect(),caixa=d.getBoundingClientRect();assert(rect.top>=caixa.top&&rect.bottom<=caixa.bottom,'X saiu da área visível ao rolar');assert(document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2)===x,'X encoberto');x.click();await new Promise(r=>setTimeout(r,20));assert(!d.open&&!gravacoes&&item.campo0==='Valor 0','X salvou ou não fechou');
+    t.detalhes(item,true);d=t.dialogo;[...d.querySelectorAll('button')].find(b=>b.textContent==='Fechar').click();await new Promise(r=>setTimeout(r,20));assert(!d.open&&!gravacoes,'Fechar salvou ou não fechou: '+JSON.stringify({aberto:d.open,gravacoes,referencia:!!t.dialogo}));t.destruir();
+  });
   await testar('Destruição: requisição cancelada, overlays removidos e remontagem', async () => {
     const raiz = destino(); let sinal;
     const t = new FirmaTabela(config({ elemento: raiz, carregarDados: q => { sinal = q.signal; return new Promise(() => {}); } }));
     t.raiz.querySelector('thead button').click(); const menu = t.menuHeader.menu;
     t.carregar(); t.destruir(); assert(sinal.aborted && !menu.isConnected && !raiz.children.length, 'Recursos não liberados');
     const nova = new FirmaTabela(config({ elemento: raiz })); assert(nova.raiz.querySelector('table'), 'Remontagem falhou'); nova.destruir();
+  });
+  await testar('Exclusão centralizada: só executa após confirmar; cancelar e Escape preservam registro',async()=>{
+    let exclusoes=0;const t=new FirmaTabela(config({dados:[{id:1,nome:'Registro de teste'}],renderAcoes:(_r,td)=>td.append(FirmaTabela.botaoAcao('remover','Excluir registro de teste',()=>exclusoes++))}));
+    const b=t.raiz.querySelector('button.destrutivo'),esperar=()=>new Promise(r=>setTimeout(r,100));
+    b.click();assert(exclusoes===0&&t.confirmacaoExclusao?.open,'Excluiu antes da confirmação');
+    t.confirmacaoExclusao.querySelector('[value=cancelar]').click();await esperar();assert(exclusoes===0&&!t.confirmacaoExclusao,'Cancelar executou exclusão');
+    b.click();t.confirmacaoExclusao.dispatchEvent(new Event('cancel',{cancelable:true}));await esperar();assert(exclusoes===0,'Escape executou exclusão');
+    b.click();const d=t.confirmacaoExclusao;d.querySelector('[value=excluir]').click();await esperar();assert(exclusoes===1,'Confirmação não executou exatamente uma vez: '+JSON.stringify({exclusoes,conectado:b.isConnected,desabilitado:b.disabled,aberto:!!t.confirmacaoExclusao,retorno:d.returnValue}));
+    b.click();t.destruir();await esperar();assert(exclusoes===1&&!document.querySelector('.af-confirmacao-exclusao'),'Destruição deixou confirmação pendente');
   });
   const saida = document.createElement('pre'); saida.id = 'resultado-testes'; saida.textContent = JSON.stringify(resultados); document.body.append(saida);
 })();

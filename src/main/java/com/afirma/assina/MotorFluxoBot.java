@@ -30,10 +30,13 @@ public class MotorFluxoBot {
 	private static final Pattern FUNCAO = Pattern.compile("(somenteNumero|somenteAlphaNumerico|formatarData)\\(([^()]*)\\)");
 	private final NamedParameterJdbcTemplate banco;
 	private final ObjectMapper json;
+    private IntegracoesAutentica integracoes;
 	private final HttpClient cliente = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5))
 			.followRedirects(HttpClient.Redirect.NEVER).build();
 
-	public MotorFluxoBot(NamedParameterJdbcTemplate banco, ObjectMapper json) {
+	@org.springframework.beans.factory.annotation.Autowired
+    public MotorFluxoBot(NamedParameterJdbcTemplate banco,ObjectMapper json,IntegracoesAutentica integracoes){this(banco,json);this.integracoes=integracoes;}
+    public MotorFluxoBot(NamedParameterJdbcTemplate banco, ObjectMapper json) {
 		this.banco = banco;
 		this.json = json;
 	}
@@ -51,12 +54,12 @@ public class MotorFluxoBot {
 			String id = no.path("id").asText("");
 			String tipo = no.path("type").asText("");
 			if (!id.matches("[A-Za-z0-9_-]{1,100}") || nomes.putIfAbsent(id, true) != null
-					|| !tipo.matches("tarefa|script|integracao"))
+					|| !(tipo.matches("tarefa|script|integracao")||tipo.equals("start")&&id.equals("start")||tipo.equals("end")&&id.equals("end")))
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Etapa inválida ou repetida");
 			String subtipo = no.path("data").path("tipo").asText("");
 			if ("script".equals(tipo) && !subtipo.matches("gerar_atendimento|transferir_setor"))
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Script de bot desconhecido");
-			if ("integracao".equals(tipo) && !"rest".equals(subtipo))
+			if ("integracao".equals(tipo) && !"rest".equals(subtipo)&&!"hControl".equals(subtipo))
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Integração do bot fora do escopo");
 		}
 		int inicios = 0;
@@ -222,7 +225,7 @@ public class MotorFluxoBot {
 	private Object resolver(Map<String, Object> dados, String caminho) {
 		Object atual = dados;
 		for (String parte : caminho.replace('[', '.').replace("]", "").split("\\.")) {
-			if (atual instanceof Map<?, ?> mapa) atual = mapa.get(parte);
+			if (atual instanceof Map<?, ?> mapa) atual = mapa.containsKey(parte)?mapa.get(parte):mapa.get(parte.toUpperCase(java.util.Locale.ROOT));
 			else if (atual instanceof java.util.List<?> lista && parte.matches("[0-9]+")) {
 				int indice = Integer.parseInt(parte);
 				atual = indice < lista.size() ? lista.get(indice) : null;
@@ -287,6 +290,12 @@ public class MotorFluxoBot {
 	}
 
 	private void executarIntegracao(JsonNode configuracao, Map<String, Object> dados, String mensagem) {
+        if("hControl".equals(configuracao.path("tipo").asText())) {
+            if(integracoes==null)throw new IllegalStateException("Integração hControl indisponível");
+            var h=configuracao.path("hControlData");String cpf=String.valueOf(dados.getOrDefault("CPFCNPJ",dados.getOrDefault("CPF","")));
+            var retorno=integracoes.boletosBot(((Number)dados.get("ClienteId")).longValue(),cpf,h.path("clientId").asText(),h.path("secretId").asText());
+            String nome=configuracao.path("variavel").asText("Boletos").toUpperCase(java.util.Locale.ROOT);dados.put(nome,retorno);dados.put("SucessoRest",true);return;
+        }
 		JsonNode remoto = configuracao.path("restData");
 		try {
 			String endereco = substituir(remoto.path("url").asText(""), dados, mensagem);

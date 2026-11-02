@@ -77,18 +77,6 @@ public class ServicoWebhooks {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Eventos inválidos");
 		if (!todosCanais && (canais == null || canais.isEmpty()))
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Escolha os canais do webhook");
-		Integer permitido = banco.queryForObject("""
-			SELECT count(*) FROM chat_assinatura_plano assinatura JOIN chat_plano plano
-			ON plano.id=assinatura.plano_id WHERE assinatura.empresa_id=:empresa
-			AND assinatura.estado='ATIVA' AND plano.permite_webhook
-			""", dados("empresa", empresa), Integer.class);
-		if (permitido != null && permitido == 0) {
-			Integer assinaturas = banco.queryForObject("""
-				SELECT count(*) FROM chat_assinatura_plano WHERE empresa_id=:empresa
-				""", dados("empresa", empresa), Integer.class);
-			if (assinaturas != null && assinaturas > 0)
-					throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Plano não permite webhooks");
-		}
 		UUID id = UUID.randomUUID();
 		Map<String, Object> webhook = banco.queryForMap("""
 			INSERT INTO chat_webhook(id,empresa_id,nome,destino,referencia_segredo,eventos,todos_canais)
@@ -203,7 +191,7 @@ public class ServicoWebhooks {
 		}
 	}
 
-	private static void verificarDestino(String destino) {
+	static void verificarDestino(String destino) {
 		try {
 			URI endereco = URI.create(destino);
 			if (!"https".equalsIgnoreCase(endereco.getScheme()) || endereco.getHost() == null

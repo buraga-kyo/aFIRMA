@@ -13,13 +13,14 @@ function documentoOriginal(){
   const page=await browser.newPage({viewport:{width:1440,height:1100}});page.setDefaultTimeout(20000);const erros=[];page.on('pageerror',e=>erros.push(e.message));
   await page.goto(base+'/empresa');await page.locator('details').first().locator('summary').click();
   const email='registro-'+Date.now()+'@example.test';await page.fill('#registro-usuario','Horizonte');await page.fill('#registro-email',email);await page.fill('#registro-senha','SenhaTeste2026!');await page.locator('#registro-empresa button').click();await page.waitForFunction(()=>document.querySelector('#mensagem-empresa').textContent.includes('Conta criada'));
-  await page.fill('#login-email',email);await page.fill('#login-senha','SenhaTeste2026!');await page.locator('#login-empresa button').click();await page.waitForSelector('#editor-templates:not([hidden])');
-  await page.fill('#perfil-nome','Horizonte & Co.');await page.waitForFunction(()=>[...document.querySelectorAll('.registro-thumb img')].length===6&&[...document.querySelectorAll('.registro-thumb img')].every(i=>i.naturalWidth>0));
+  await page.fill('#login-email',email);await page.fill('#login-senha','SenhaTeste2026!');await page.locator('#login-empresa button').click();await page.waitForSelector('#perfil-empresa:not([hidden])');
+  await page.fill('#perfil-nome','Horizonte & Co.');await page.locator('#dados-empresa [type=submit]').click();await page.waitForFunction(()=>document.querySelector('#mensagem-empresa').textContent.includes('Dados daFIRMA salvos'));
+  await page.goto(base+'/advai');await page.waitForSelector('#editor-templates:not([hidden])');await page.waitForFunction(()=>[...document.querySelectorAll('.registro-thumb img')].length===6&&[...document.querySelectorAll('.registro-thumb img')].every(i=>i.naturalWidth>0));
   await page.locator('.registro-card[data-design=noir]').click();await page.locator('#template-duplicar').click();await page.locator('[data-modelo=nome]').fill('Noir · Horizonte');
-  await page.locator('[data-modelo=rodape]').fill('Horizonte & Co. — Compromissos com identidade.');
+  await page.locator('[data-modelo=rodape]').fill('Horizonte & Co.: documento assinado.');
   await page.locator('.registro-posicoes summary').click();await page.check('#template-editar-posicoes');
   const alca=page.locator('.registro-alca[data-bloco=documento]');const caixa=await alca.boundingBox();await page.mouse.move(caixa.x+caixa.width/2,caixa.y+10);await page.mouse.down();await page.mouse.move(caixa.x+caixa.width/2+7,caixa.y+10);await page.mouse.up();
-  await page.locator('#template-ativar').click();await page.locator('#template-salvar').click();await page.waitForFunction(()=>document.querySelector('#mensagem-empresa').textContent.includes('página de assinaturas salvos'));
+  await page.locator('#template-ativar').click();await page.locator('#template-salvar').click();await page.waitForFunction(()=>document.querySelector('#advai-modelos-aviso').textContent.includes('Modelo salvo'));
   const esperado=await page.evaluate(()=>EditorTemplates.dados());assert.equal(esperado.versao,2);assert.equal(esperado.modelos.find(m=>m.id===esperado.ativo).design,'noir');
   await page.reload();await page.waitForSelector('#editor-templates:not([hidden])');assert.deepEqual(await page.evaluate(()=>EditorTemplates.dados()),esperado);
   await page.waitForFunction(()=>document.querySelector('#template-previa').naturalWidth>0);

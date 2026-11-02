@@ -1,0 +1,380 @@
+{
+  "sha256": "e3ba77618e91d32192648607c614bbe1a27f3ac7c317bade4bbd2b2e3c8096f0",
+  "casos": [
+    {
+      "fluxo": {
+        "nodes": [
+          {
+            "id": "start",
+            "type": "start",
+            "data": null
+          },
+          {
+            "id": "pergunta",
+            "type": "tarefa",
+            "data": {
+              "pergunta": "Seu nome?",
+              "variavel": "nome",
+              "resposta": "Olá, &NOME!",
+              "acoes": [
+                {
+                  "nome": "transferir_tarefa",
+                  "valor": "end",
+                  "condicao": ""
+                }
+              ]
+            }
+          },
+          {
+            "id": "end",
+            "type": "end",
+            "data": null
+          }
+        ],
+        "edges": [
+          {
+            "source": "start",
+            "target": "pergunta"
+          },
+          {
+            "source": "pergunta",
+            "target": "end"
+          }
+        ]
+      },
+      "esperado": {
+        "Definicao": {
+          "tarefa": [
+            {
+              "nome": "pergunta",
+              "pergunta": [
+                {
+                  "tipo": "texto",
+                  "conteudo": "Seu nome?"
+                }
+              ],
+              "respostas": [
+                {
+                  "tipo": "texto",
+                  "conteudo": "Olá, &NOME!"
+                }
+              ],
+              "acoes": [
+                {
+                  "nome": "finalizar_chatbot",
+                  "valor": "",
+                  "condicao": ""
+                }
+              ],
+              "variavel": "&NOME",
+              "tarefaInicial": true
+            }
+          ],
+          "falha": {
+            "respostas": [
+              {
+                "tipo": "texto",
+                "conteudo": "Ops, não entendi o que você falou, verifique a pergunta e tente *responder novamente*."
+              }
+            ]
+          }
+        },
+        "Metadata": {
+          "BotIniciado": false,
+          "TarefaAtual": "",
+          "BotFinalizado": false,
+          "Variaveis": {},
+          "pergunta_Executado": false,
+          "pergunta_Resposta": ""
+        }
+      }
+    },
+    {
+      "fluxo": {
+        "nodes": [
+          {
+            "id": "transferir",
+            "type": "script",
+            "data": {
+              "tipo": "transferir_setor",
+              "setor": {
+                "id": 4
+              },
+              "destino_transferir": "gerar"
+            }
+          },
+          {
+            "id": "gerar",
+            "type": "script",
+            "data": {
+              "tipo": "gerar_atendimento"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "start",
+            "target": "transferir"
+          },
+          {
+            "source": "gerar",
+            "target": "end"
+          }
+        ]
+      },
+      "esperado": {
+        "Definicao": {
+          "tarefa": [
+            {
+              "nome": "transferir",
+              "tarefaAutomatica": true,
+              "pergunta": [],
+              "respostas": [],
+              "scripts": [],
+              "acoes": [
+                {
+                  "nome": "transferir_tarefa",
+                  "valor": "gerar",
+                  "condicao": ""
+                }
+              ],
+              "constante": {
+                "nome": "SetorId",
+                "valor": 4
+              },
+              "tarefaInicial": true
+            },
+            {
+              "nome": "gerar",
+              "tarefaAutomatica": true,
+              "pergunta": [],
+              "respostas": [],
+              "scripts": [
+                {
+                  "nome": "GerarAtendimento",
+                  "caminho": "/ScriptsChatbot/GerarAtendimento",
+                  "parametros": {
+                    "ContatoId": "",
+                    "CanalId": "",
+                    "ClienteId": "",
+                    "SetorId": ""
+                  }
+                }
+              ],
+              "acoes": [
+                {
+                  "nome": "finalizar_chatbot",
+                  "valor": "",
+                  "condicao": ""
+                }
+              ]
+            }
+          ],
+          "falha": {
+            "respostas": [
+              {
+                "tipo": "texto",
+                "conteudo": "Ops, não entendi o que você falou, verifique a pergunta e tente *responder novamente*."
+              }
+            ]
+          }
+        },
+        "Metadata": {
+          "BotIniciado": false,
+          "TarefaAtual": "",
+          "BotFinalizado": false,
+          "Variaveis": {},
+          "transferir_Executado": false,
+          "transferir_Resposta": "",
+          "gerar_Executado": false,
+          "gerar_Resposta": ""
+        }
+      }
+    },
+    {
+      "fluxo": {
+        "nodes": [
+          {
+            "id": "rest",
+            "type": "integracao",
+            "data": {
+              "tipo": "rest",
+              "variavel": "retorno",
+              "restData": {
+                "url": "https://example.test/clientes",
+                "metodo": "POST",
+                "enviarHeaders": true,
+                "headers": [
+                  {
+                    "chave": "Authorization",
+                    "valor": "Bearer teste"
+                  }
+                ],
+                "enviarQueryParameters": true,
+                "queryParameters": [
+                  {
+                    "nome": "nome",
+                    "valor": "Maria da Silva"
+                  }
+                ],
+                "body": "{}"
+              },
+              "acoes": [
+                {
+                  "nome": "transferir_tarefa",
+                  "valor": "end",
+                  "condicao": ""
+                }
+              ]
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "start",
+            "target": "rest"
+          },
+          {
+            "source": "rest",
+            "target": "end"
+          }
+        ]
+      },
+      "esperado": {
+        "Definicao": {
+          "tarefa": [
+            {
+              "nome": "rest",
+              "tarefaAutomatica": true,
+              "pergunta": [],
+              "respostas": [],
+              "scripts": [
+                {
+                  "nome": "ExecutarAPI",
+                  "caminho": "/ScriptsChatbot/ExecutarAPI",
+                  "API_Externa": true,
+                  "Url_API": "https://example.test/clientes",
+                  "Metodo_API": "POST",
+                  "Headers_API": {
+                    "Authorization": "Bearer teste"
+                  },
+                  "QueryParams_API": "nome=Maria+da+Silva",
+                  "Body_API": "{}"
+                }
+              ],
+              "acoes": [
+                {
+                  "nome": "finalizar_chatbot",
+                  "valor": "",
+                  "condicao": ""
+                }
+              ],
+              "variavel": "&RETORNO",
+              "tarefaInicial": true
+            }
+          ],
+          "falha": {
+            "respostas": [
+              {
+                "tipo": "texto",
+                "conteudo": "Ops, não entendi o que você falou, verifique a pergunta e tente *responder novamente*."
+              }
+            ]
+          }
+        },
+        "Metadata": {
+          "BotIniciado": false,
+          "TarefaAtual": "",
+          "BotFinalizado": false,
+          "Variaveis": {},
+          "rest_Executado": false,
+          "rest_Resposta": ""
+        }
+      }
+    },
+    {
+      "fluxo": {
+        "nodes": [
+          {
+            "id": "hcontrol",
+            "type": "integracao",
+            "data": {
+              "tipo": "hControl",
+              "hControlData": {
+                "clientId": "cliente-de-teste",
+                "secretId": "segredo-falso"
+              },
+              "variavel": "boletos"
+            }
+          }
+        ],
+        "edges": [
+          {
+            "source": "start",
+            "target": "hcontrol"
+          },
+          {
+            "source": "hcontrol",
+            "target": "end"
+          }
+        ]
+      },
+      "esperado": {
+        "Definicao": {
+          "tarefa": [
+            {
+              "nome": "hcontrol",
+              "tarefaAutomatica": true,
+              "pergunta": [],
+              "respostas": [],
+              "scripts": [
+                {
+                  "nome": "hControl",
+                  "caminho": "/ScriptsChatbot/BuscarBoletos_hControl",
+                  "CPFCNPJ": "",
+                  "clientId": "",
+                  "secretId": ""
+                }
+              ],
+              "acoes": [
+                {
+                  "nome": "finalizar_chatbot",
+                  "valor": "",
+                  "condicao": ""
+                }
+              ],
+              "constante": [
+                {
+                  "nome": "clientId",
+                  "valor": "cliente-de-teste"
+                },
+                {
+                  "nome": "secretId",
+                  "valor": "segredo-falso"
+                }
+              ],
+              "variavel": "&BOLETOS",
+              "tarefaInicial": true
+            }
+          ],
+          "falha": {
+            "respostas": [
+              {
+                "tipo": "texto",
+                "conteudo": "Ops, não entendi o que você falou, verifique a pergunta e tente *responder novamente*."
+              }
+            ]
+          }
+        },
+        "Metadata": {
+          "BotIniciado": false,
+          "TarefaAtual": "",
+          "BotFinalizado": false,
+          "Variaveis": {},
+          "hcontrol_Executado": false,
+          "hcontrol_Resposta": ""
+        }
+      }
+    }
+  ]
+}

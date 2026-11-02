@@ -78,6 +78,10 @@ public class RotinasRelacionamento {
 			AND NOT EXISTS (SELECT 1 FROM chat_mensagem_rapida WHERE arquivo_id=arquivo.id)
 			AND NOT EXISTS (SELECT 1 FROM chat_modelo_mensagem WHERE arquivo_id=arquivo.id)
 			AND NOT EXISTS (SELECT 1 FROM chat_campanha WHERE arquivo_id=arquivo.id)
+            AND NOT EXISTS (SELECT 1 FROM firma_autentica_vinculo v WHERE v.destino='Arquivo' AND v.origem_id=arquivo.id::text AND (
+                EXISTS(SELECT 1 FROM autentica."Mensagem" WHERE "ArquivoId"=v.destino_id) OR
+                EXISTS(SELECT 1 FROM firma_autentica_envio WHERE arquivo_id=v.destino_id)))
+            AND NOT EXISTS (SELECT 1 FROM autentica."MensagemTemplate" WHERE "MensagemTemplateMediaChave"=arquivo.chave_armazenamento)
 			LIMIT 200
 			""", dados());
 		for (Map<String, Object> arquivo : arquivos) {
@@ -88,6 +92,10 @@ public class RotinasRelacionamento {
 				AND NOT EXISTS (SELECT 1 FROM chat_mensagem_rapida WHERE arquivo_id=:id)
 				AND NOT EXISTS (SELECT 1 FROM chat_modelo_mensagem WHERE arquivo_id=:id)
 				AND NOT EXISTS (SELECT 1 FROM chat_campanha WHERE arquivo_id=:id)
+                AND NOT EXISTS (SELECT 1 FROM firma_autentica_vinculo v WHERE v.destino='Arquivo' AND v.origem_id=CAST(:id AS text) AND (
+                    EXISTS(SELECT 1 FROM autentica."Mensagem" WHERE "ArquivoId"=v.destino_id) OR
+                    EXISTS(SELECT 1 FROM firma_autentica_envio WHERE arquivo_id=v.destino_id)))
+                AND NOT EXISTS (SELECT 1 FROM autentica."MensagemTemplate" WHERE "MensagemTemplateMediaChave"=CAST(:id AS text))
 				""", dados("id", id));
 			if (removidos != 1) continue;
 			String chave = (String) arquivo.get("chave_armazenamento");

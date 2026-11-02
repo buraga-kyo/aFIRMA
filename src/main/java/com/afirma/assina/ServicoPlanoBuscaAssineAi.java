@@ -23,17 +23,21 @@ public class ServicoPlanoBuscaAssineAi {
 		this.chatClient = chatClientBuilder.build();
 	}
 
-	public Plano interpretar(String consulta) {
+	public Plano interpretar(String consulta) { return interpretar(consulta, false); }
+
+	public Plano interpretarConversas(String consulta) { return interpretar(consulta, true); }
+
+	private Plano interpretar(String consulta, boolean conversas) {
 		if (consulta == null || consulta.isBlank() || consulta.length() > 500)
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Consulta inválida");
 
-		String instrucao = "Você é um assistente de conversão de filtros. Converta a busca do usuário em operações para uma tabela de documentos. "
+		String instrucao = "Você é um assistente de conversão de filtros. Converta a busca do usuário em operações para uma tabela. "
 				+ "Responda EXCLUSIVAMENTE em formato JSON puro, sem blocos markdown (```json). "
 				+ "Formato exigido: {\"steps\":[{\"op\":\"column-filter\",\"column\":\"status\",\"type\":\"equals\",\"value\":\"Assinado\"}],\"summary\":\"...\"}. "
-				+ "Colunas aceitas: id, titulo, data, responsavel, status, quantidadeAssinaturas, signatarios. "
+				+ (conversas ? "Colunas aceitas: contato, telefone, email, ultima, status, canal, naoLidas, updatedAt. " : "Colunas aceitas: id, titulo, data, responsavel, status, quantidadeAssinaturas, signatarios. ")
 				+ "Operações suportadas: 'column-filter' com type 'equals' ou 'contains' e 'value'; ou type 'range' com 'from' e 'to'. "
 				+ "Ordenação: op 'sort' com 'column' e 'dir' ('asc' ou 'desc'). "
-				+ "Mapeamento obrigatório: 'assinados' ou 'concluídos' -> status equals 'Assinado'. 'pendentes' -> status equals 'Pendente'. 'andamento' ou 'progresso' -> status equals 'Em Processo'. "
+				+ (conversas ? "Mapeamento obrigatório: pendentes -> status equals Pendente; em andamento -> status equals Em andamento; bots -> status equals Bots; finalizados ou concluídos -> status equals Finalizados. Última mensagem é a coluna ultima. Não lidas é a coluna numérica naoLidas. Atualização é a data updatedAt. " : "Mapeamento obrigatório: 'assinados' ou 'concluídos' -> status equals 'Assinado'. 'pendentes' -> status equals 'Pendente'. 'andamento' ou 'progresso' -> status equals 'Em Processo'. ")
 				+ "Retorne no máximo 5 etapas. Não invente campos. Se não entender, retorne steps vazio.";
 		
 		try {
@@ -54,15 +58,14 @@ public class ServicoPlanoBuscaAssineAi {
 				throw new IllegalArgumentException("Plano inválido");
 				
 			List<Etapa> etapas = new ArrayList<>();
-			List<String> campos = List.of("id", "titulo", "data", "responsavel", "status",
-					"quantidadeAssinaturas", "signatarios");
+			List<String> campos = conversas ? List.of("contato", "telefone", "email", "ultima", "status", "canal", "naoLidas", "updatedAt") : List.of("id", "titulo", "data", "responsavel", "status", "quantidadeAssinaturas", "signatarios");
 					
 			for (JsonNode item : resultado.path("steps")) {
 				Etapa etapa = new Etapa(item.path("op").asText(""), item.path("column").asText(""),
 						item.path("type").asText(""), item.path("value").asText(""),
 						item.path("from").asText(""), item.path("to").asText(""),
 						item.path("dir").asText(""));
-				if (!campos.contains(etapa.column()) || !validar(etapa))
+				if (!campos.contains(etapa.column()) || !validar(etapa, conversas))
 					throw new IllegalArgumentException("Operação fora da interface");
 				etapas.add(etapa);
 			}
@@ -78,11 +81,11 @@ public class ServicoPlanoBuscaAssineAi {
 		}
 	}
 
-	private boolean validar(Etapa e) {
+	private boolean validar(Etapa e, boolean conversas) {
 		if (e.op().equals("sort")) return List.of("asc", "desc").contains(e.dir());
 		if (!e.op().equals("column-filter")) return false;
 		if (List.of("equals", "contains").contains(e.type())) return !e.value().isBlank() && e.value().length() <= 120;
-		return e.type().equals("range") && (e.column().equals("data") || e.column().equals("quantidadeAssinaturas"))
+		return e.type().equals("range") && (conversas ? List.of("updatedAt", "naoLidas").contains(e.column()) : List.of("data", "quantidadeAssinaturas").contains(e.column()))
 				&& (!e.from().isBlank() || !e.to().isBlank());
 	}
 }

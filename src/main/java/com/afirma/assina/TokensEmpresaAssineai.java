@@ -30,6 +30,7 @@ public final class TokensEmpresaAssineai {
       new JWSHeader(JWSAlgorithm.HS256),
       new JWTClaimsSet.Builder()
         .claim("id", email)
+        .jwtID(UUID.randomUUID().toString())
         .issueTime(new Date())
         .expirationTime(Date.from(Instant.now().plusSeconds(3600)))
         .build()
