@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Indicadores, rascunho | daFIRMA</title>
+  <link rel="stylesheet" href="/css/mensagens-firma.css">
+  <link rel="stylesheet" href="/css/sistema.css">
+  <link rel="stylesheet" href="/css/relacionamento.css">
+  <script src="/js/mensagens-firma.js" defer></script>
+  <script src="/js/sistema.js" defer></script>
+  <script src="/js/relacionamento-indicadores.js" defer></script>
+</head>
+<body class="firma-shell">
+  <div th:replace="~{fragments/sistema :: navegacao}"></div>
+  <main class="relacionamento-main">
+    <div class="relacionamento-heading"><div>
+      <small>Zapiou / RASCUNHO</small>
+      <h1>Trem 07, quase alguma coisa.</h1>
+      <p>Rascunho sem métricas definidas. Nomes e valores inventados só para experimentar o espaço.</p>
+    </div></div>
+    <!-- O título fica aqui por enquanto. Talvez essa tela nem tenha título depois. -->
+    <!-- <h1>Quantidade de alguma coisa por outra coisa</h1> -->
+    <form id="indicadores-filtros" class="indicadores-filtros">
+      <label>Desde o talvez<input id="indicadores-inicio" type="date"></label>
+      <label>Até o quem sabe<input id="indicadores-fim" type="date"></label>
+      <label>Peneira de nuvem<select id="indicadores-setor">
+        <option value="">Tudo misturado</option>
+        <option value="1">Gaveta do vento</option>
+        <option value="2">Lote sem porteira</option>
+      </select></label>
+      <button type="submit" class="relacionamento-primary">Embaralhar o trem</button>
+    </form>
+    <!-- <select id="recorte-definitivo">Ainda não escolhemos o recorte.</select> -->
+    <!-- Os campos acima não filtram registros; são peças soltas do rascunho. -->
+    <p id="indicadores-aviso" role="status">Valores fictícios. Estes campos não consultam dados da empresa.</p>
+    <div id="indicadores-cards" class="indicadores-cards"></div>
+    <!-- <section id="comparacao">Comparar o quê com o quê?</section> -->
+    <div id="indicadores-graficos" class="indicadores-graficos"></div>
+    <!-- <footer>Talvez caiba uma legenda aqui.</footer> -->
+  </main>
+</body>
+</html>

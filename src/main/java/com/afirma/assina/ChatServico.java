@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 @Service
 public class ChatServico {
-	private static final Logger log = LoggerFactory.getLogger(ChatServico.class);
+	private static final Logger registroLog = LoggerFactory.getLogger(ChatServico.class);
 	private final NamedParameterJdbcTemplate banco;
 	private final ChatTransporte transporte;
 	private final ServicoInteligenciaConversacional inteligencia;
@@ -244,7 +244,7 @@ public class ChatServico {
 			String externo = transporte.enviar(aviso.canal(), aviso.telefone(), aviso.texto());
 			registrarAvisoEncerramento(aviso, externo);
 		} catch (RuntimeException erro) {
-			log.warn("Aviso de encerramento não enviado para atendimento {}", aviso.atendimento());
+			registroLog.warn("Aviso de encerramento não enviado para atendimento {}", aviso.atendimento());
 		}
 	}
 
@@ -291,7 +291,7 @@ public class ChatServico {
 		Map<String, Object> contato = um("""
 				INSERT INTO chat_contato(empresa_id, telefone, nome)
 				VALUES (:empresa, :telefone, :nome)
-				ON CONFLICT (empresa_id, telefone) DO UPDATE SET nome = COALESCE(NULLIF(EXCLUDED.nome, ''), chat_contato.nome)
+				ON CONFLICT (empresa_id, telefone) DO UPDATE SET nome = COALESCE(NULLIF(chat_contato.nome, ''), EXCLUDED.nome)
 				RETURNING id
 				""", parametros("empresa", empresa, "telefone", telefone, "nome", nome));
 		UUID id = UUID.randomUUID();
@@ -347,7 +347,7 @@ public class ChatServico {
 		if (repetida != null && repetida > 0) return false;
 		Map<String, Object> contato = um("""
 			INSERT INTO chat_contato(empresa_id, telefone, nome) VALUES (:empresa, :telefone, :nome)
-				ON CONFLICT (empresa_id, telefone) DO UPDATE SET nome = COALESCE(NULLIF(EXCLUDED.nome, ''), chat_contato.nome)
+				ON CONFLICT (empresa_id, telefone) DO UPDATE SET nome = COALESCE(NULLIF(chat_contato.nome, ''), EXCLUDED.nome)
 				RETURNING id
 			""", parametros("empresa", empresa, "telefone", telefone, "nome", nome));
 		long contatoId = ((Number) contato.get("id")).longValue();

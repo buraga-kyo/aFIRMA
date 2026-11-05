@@ -64,9 +64,9 @@ public class ServicoLoteAssinatura {
         for (boolean usado : usados) if (!usado) throw erro("Cada documento precisa de ao menos um campo de assinatura");
         byte[] conjunto;
         try (PDDocument destino = new PDDocument(); ByteArrayOutputStream saida = new ByteArrayOutputStream()) {
-            PDFMergerUtility merger = new PDFMergerUtility();
+            PDFMergerUtility juntadorPdfs = new PDFMergerUtility();
             for (byte[] pdf : originais) {
-                try (PDDocument origem = Loader.loadPDF(pdf)) { merger.appendDocument(destino, origem); }
+                try (PDDocument origem = Loader.loadPDF(pdf)) { juntadorPdfs.appendDocument(destino, origem); }
             }
             destino.save(saida); conjunto = saida.toByteArray();
         }

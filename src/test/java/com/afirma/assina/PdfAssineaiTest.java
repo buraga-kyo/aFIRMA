@@ -83,7 +83,7 @@ class PdfAssineaiTest {
     p.put("SignatarioId", 1);
     p.put("SignatarioNome", "Ana");
     p.put("SignatarioDataAssinatura", "2026-10-29T00:00:00Z");
-    p.put("SignatarioAutenticadoVia", "email");
+    p.put("SignatarioFirmadoVia", "email");
     byte[] marcado = servico.aplicar(
       documento,
       List.of(p),

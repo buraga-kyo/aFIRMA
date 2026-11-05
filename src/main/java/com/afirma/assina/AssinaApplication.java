@@ -8,8 +8,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class AssinaApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AssinaApplication.class, args);
+	public static void main(String[] argumentos) {
+		SpringApplication.run(AssinaApplication.class, argumentos);
 	}
 
 }

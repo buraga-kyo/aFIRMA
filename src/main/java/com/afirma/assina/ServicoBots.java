@@ -32,7 +32,7 @@ import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class ServicoBots {
-	private static final Logger log = LoggerFactory.getLogger(ServicoBots.class);
+	private static final Logger registroLog = LoggerFactory.getLogger(ServicoBots.class);
 	private final NamedParameterJdbcTemplate banco;
 	private final EmpresaAtual empresas;
 	private final ObjectMapper json;
@@ -211,7 +211,7 @@ public class ServicoBots {
 						: Map.of("sessao", sessao, "mensagem", mensagem);
 					var corpo=new HashMap<String,Object>(formato);
                     corpo.put("Mensagem",Map.of("message",Map.of("conversation",mensagem),"key",Map.of("remoteJid",telefone+"@s.whatsapp.net")));
-                    if(inicio){corpo.put("Canal",canal);corpo.put("Numero",telefone);var metadata=banco.queryForList("SELECT destino_id FROM firma_autentica_vinculo WHERE origem='chat_bot_sessao' AND origem_id=:id",dados("id",sessao.toString()));corpo.put("ChatbotMetadataId",metadata.isEmpty()?sessao:metadata.getFirst().get("destino_id"));}
+                    if(inicio){corpo.put("Canal",canal);corpo.put("Numero",telefone);var metadados=banco.queryForList("SELECT destino_id FROM firma_relacionamento_vinculo WHERE origem='chat_bot_sessao' AND origem_id=:id",dados("id",sessao.toString()));corpo.put("ChatbotMetadataId",metadados.isEmpty()?sessao:metadados.getFirst().get("destino_id"));}
                     HttpRequest pedido = HttpRequest.newBuilder(URI.create(endereco))
 						.timeout(Duration.ofSeconds(15)).header("Content-Type", "application/json")
 						.POST(HttpRequest.BodyPublishers.ofString(serializar(corpo))).build();
@@ -221,7 +221,7 @@ public class ServicoBots {
 						throw new IllegalStateException("HTTP " + resposta.statusCode());
 				} catch (Exception erro) {
 					if (erro instanceof InterruptedException) Thread.currentThread().interrupt();
-					log.warn("Fluxo externo da sessão {} indisponível: {}", sessao, erro.getMessage());
+					registroLog.warn("Fluxo externo da sessão {} indisponível: {}", sessao, erro.getMessage());
 				}
 			}
 		});
@@ -443,7 +443,7 @@ public class ServicoBots {
 		} catch (RuntimeException erro) {
 			banco.update("UPDATE chat_mensagem SET estado='FALHOU' WHERE id=:id",
 				dados("id", mensagem));
-			log.warn("Resposta automática não enviada para atendimento {}", resposta.atendimento());
+			registroLog.warn("Resposta automática não enviada para atendimento {}", resposta.atendimento());
 		}
 	}
 }

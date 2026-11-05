@@ -2,11 +2,11 @@
 """Verifica os avisos compartilhados em desktop e celular, sem rede ou dados reais."""
 from pathlib import Path
 import subprocess,tempfile,re,json,html
-root=Path(__file__).resolve().parents[1]
-static=root/'src/main/resources/static'
+raiz=Path(__file__).resolve().parents[1]
+static=raiz/'src/main/resources/static'
 css=(static/'css/mensagens-firma.css').read_text()
 js=(static/'js/mensagens-firma.js').read_text()
-testes=(root/'src/test/js/mensagens-firma.browser.js').read_text()
+testes=(raiz/'src/test/js/mensagens-firma.browser.js').read_text()
 pagina='<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#0E2117;color:#F2F7EC}'+css+'</style><body><script>window.errosMensagens=[];addEventListener("error",e=>errosMensagens.push(e.message));</script><script>'+js+'</script><script>'+testes+'</script></body>'
 falhas=0
 with tempfile.TemporaryDirectory(prefix='firma-mensagens-') as temp:

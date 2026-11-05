@@ -1,0 +1,51 @@
+/* O trator de assinaturas fornece a estrutura, as abas e os controles da tabela. */
+body.firma-chat-trator{padding:24px 24px 140px;--shell-side:0px}
+.firma-chat-trator .firma-sidebar,.firma-chat-trator .firma-appbar{display:none}
+.firma-chat-trator main.trator-relacionamento.lista-documentos{display:block;height:auto;overflow:visible;margin:0 auto;padding:0;max-width:100%}
+.firma-chat-trator main[data-largura="total"]{width:100%}
+.firma-chat-trator .lista-toolbar{flex-wrap:wrap}.firma-chat-trator .lista-toolbar .toolbar-faixa{flex-wrap:wrap;width:100%}
+.firma-chat-trator .lista-toolbar .toolbar-grupo{flex-wrap:wrap;align-items:flex-end}
+.firma-chat-trator .firma-chat-busca{display:flex;align-items:center;gap:8px;flex:1 1 230px;padding:8px 12px;min-width:180px;margin-left:20px}
+.firma-chat-busca input{width:100%;min-height:38px;padding:8px 12px;font-size:12px}
+.firma-chat-trator #chat-aviso{flex-basis:100%;margin:0;font-size:12px;color:var(--muted-foreground)}.firma-chat-trator #chat-aviso:empty{display:none}
+.firma-chat-trator .relacionamento-inbox{display:none}#chat-tabela{min-width:0}#chat-lista{display:none}
+#chat-painel{display:grid;grid-template-columns:minmax(0,1fr) 260px;min-width:0;background:var(--background);border-top:3px solid var(--primary);white-space:normal}
+#chat-painel .relacionamento-chat-body{min-height:520px;overflow:hidden}#chat-painel #chat-conversa{display:flex;flex-direction:column;height:650px;min-height:0}#chat-painel .relacionamento-mensagens{flex:1;min-height:180px;overflow:auto;max-height:none}#chat-painel .relacionamento-chat-detalhes{display:block;max-height:650px}#chat-painel .relacionamento-conversa-topo{flex-wrap:wrap;gap:15px}#chat-painel .relacionamento-chat-acoes{flex-wrap:wrap}#chat-painel .relacionamento-composer{flex-shrink:0}
+.firma-chat-linha-chat>td{padding:0!important}#chat-tabela tbody tr[data-conversa-id]{cursor:pointer}#chat-tabela tbody td:first-child{white-space:normal}#chat-tabela .trator-controles{margin-top:5px}
+.firma-chat-trator .lista-rodape .titulo-trator{margin:0 auto;font-size:clamp(14px,1.5vw,22px)}
+.firma-chat-integral #chat-tabela{grid-column:1/-1}.firma-chat-integral #chat-tabela .tabela-scroll,.firma-chat-integral #chat-tabela .tabela-estado,.firma-chat-integral #chat-tabela .chips-filtros{display:none}
+.firma-chat-integral main.trator-relacionamento.lista-documentos{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px}
+.firma-chat-integral .relacionamento-inbox{display:block;max-height:calc(100dvh - 290px);overflow:auto;padding:0;border:2px solid var(--border)}
+.firma-chat-integral .relacionamento-inbox-title{display:none}.firma-chat-integral #chat-lista{display:grid}.firma-chat-integral #chat-lista button{display:grid;text-align:left;gap:5px;width:100%}.firma-chat-integral #chat-lista small{white-space:nowrap;text-overflow:ellipsis;overflow:hidden;max-width:235px}
+@media(max-width:1000px){#chat-painel{grid-template-columns:minmax(0,1fr)}#chat-painel .relacionamento-chat-detalhes{max-height:250px;border-top:2px solid var(--border)}.firma-chat-integral main.trator-relacionamento.lista-documentos{grid-template-columns:240px minmax(0,1fr)}}
+@media(max-width:900px){body.firma-chat-trator{padding:12px}.firma-chat-trator>.rodape-fixo-trator{margin-top:30px}}
+@media(max-width:700px){.firma-chat-integral main.trator-relacionamento.lista-documentos{display:flex;flex-direction:column}.firma-chat-integral .relacionamento-inbox{max-height:260px}#chat-painel #chat-conversa{height:700px}.firma-chat-trator .firma-chat-busca{margin-left:0}}
+
+.firma-chat-trator select,.firma-chat-trator textarea{background:var(--background);color:var(--foreground);border:1px solid var(--border);font:inherit}.firma-chat-trator .relacionamento-dialog{background:var(--card);color:var(--foreground)}
+
+/* Contato é uma célula especializada; os filtros continuam no cabeçalho comum. */
+.firma-chat-contato{display:flex;align-items:center;gap:12px;min-width:0}
+.firma-chat-contato-avatar{position:relative;display:inline-flex;flex:0 0 46px;align-items:center;justify-content:center;width:46px;height:46px;overflow:hidden;border-radius:50%;border:2px solid var(--border);background:var(--secondary);color:var(--primary);font-weight:800;font-size:15px}
+.firma-chat-contato-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.firma-chat-contato-identidade{display:grid;gap:4px;min-width:0}.firma-chat-contato-identidade strong{font-size:13px;overflow-wrap:anywhere}.firma-chat-contato-identidade small{font-size:11px;color:var(--muted-foreground)}
+.firma-chat-integral #chat-lista button{display:flex;align-items:center;gap:10px}.firma-chat-integral #chat-lista button>span:last-child{display:grid;gap:4px;min-width:0}
+#chat-avatar:has(.firma-chat-contato-avatar){background:transparent;border:0}
+
+@media(max-width:760px){.firma-chat-trator main.trator-relacionamento[data-largura]{width:100%}}
+
+.firma-chat-impressao{display:none}
+@media print{body.firma-chat-trator>*{display:none!important}body.firma-chat-trator>.firma-chat-impressao{display:block!important;color:#111;background:#fff}.firma-chat-impressao table{width:100%;border-collapse:collapse;font:10px sans-serif}.firma-chat-impressao th,.firma-chat-impressao td{padding:6px;border:1px solid #777;text-align:left}}
+
+/* O chat ocupa a largura visível do trator, mesmo com muitas colunas. */
+.firma-chat-linha-chat #chat-painel{position:sticky;left:0;width:var(--firma-chat-chat-largura,100%);max-width:100%}
+#chat-painel .relacionamento-conversa-topo{display:grid;grid-template-columns:minmax(0,1fr) 44px;align-items:center;position:sticky;top:0;z-index:3;background:var(--card);flex-shrink:0}
+#chat-painel .relacionamento-contact-name{min-width:0;overflow-wrap:anywhere}
+#chat-painel .relacionamento-chat-acoes{grid-column:1/-1;min-width:0}
+#chat-painel #chat-recolher{display:flex;align-items:center;justify-content:center;justify-self:end;width:44px;height:44px;min-height:44px;padding:0;border:2px solid var(--primary);background:var(--background);color:var(--primary);font:28px/1 sans-serif;box-shadow:none;cursor:pointer}
+#chat-painel #chat-recolher:hover{background:var(--primary);color:var(--background)}
+#chat-painel #chat-recolher:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+
+/* A busca aparece somente na lista lateral do chat expandido. */
+.firma-chat-trator .firma-chat-busca input{width:100%;min-width:0;min-height:32px;padding:5px 8px;border:1px solid var(--border);background:var(--background);color:var(--foreground);font-size:11px}
+.firma-chat-integral .relacionamento-inbox>.firma-chat-busca{position:sticky;top:0;z-index:2;display:flex;gap:8px;margin:0;padding:10px;background:var(--card)}
+.firma-chat-menu-popover h3{margin:14px 10px 5px;font:800 11px/1.3 Inter,sans-serif;color:var(--muted-foreground);text-transform:uppercase;letter-spacing:.05em}

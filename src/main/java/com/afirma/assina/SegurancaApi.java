@@ -32,7 +32,7 @@ public class SegurancaApi {
 	private static final String PUBLICO_TESTE = "afirma.local-test";
 
 	@Bean
-	SecurityFilterChain configurar(HttpSecurity http,
+	SecurityFilterChain configurar(HttpSecurity segurancaHttp,
 			@Value("${APP_API_KEY_SHA256:}") String resumoChaveApi, Environment ambiente) throws Exception {
 		if (ambiente.matchesProfiles("local-test")) {
 			try {
@@ -43,12 +43,12 @@ public class SegurancaApi {
 				throw new IllegalStateException("SHA-256 indisponível", erro);
 			}
 		}
-		http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+		segurancaHttp.headers(cabecalhos -> cabecalhos.frameOptions(frame -> frame.sameOrigin()))
                 .csrf(csrf -> csrf.disable())
 				.sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(regras -> regras
 					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/assineai/trator", "/preparar-assinaturas",
-							"/convite/**", "/web-panels/**", "/empresa", "/firma", "/zapiou/trator", "/chat", "/chat/canais", "/chat/gestao",
+							"/convite/**", "/web-panels/**", "/empresa", "/firma", "/firma-chat/trator", "/chat", "/chat/canais", "/chat/gestao",
 							"/advai", "/sistema", "/talkative/trator", "/institucional", "/css/**", "/js/**").permitAll()
 					.requestMatchers("/api/convites/**").permitAll()
 					.requestMatchers("/api/advai/**").hasAuthority("SCOPE_pdf.sign")
@@ -67,7 +67,7 @@ public class SegurancaApi {
 						.anyRequest().denyAll())
 				.oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
 				.addFilterAfter(new FiltroChaveApi(resumoChaveApi), BearerTokenAuthenticationFilter.class);
-		return http.build();
+		return segurancaHttp.build();
 	}
 
 	@Bean

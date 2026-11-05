@@ -16,28 +16,28 @@ public class ServicoAutenticacaoAssinatura {
     private final RepositorioDesafioAssinatura desafios;
     private final ServicoEntregaAssinatura entrega;
     private final RepositorioSignatarioHistorico historicos;
-    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final SecureRandom SORTEADOR = new SecureRandom();
     public ServicoAutenticacaoAssinatura(RepositorioSignatarioEnvelope pessoas, RepositorioEnvelopeAssinatura envelopes,
             RepositorioDesafioAssinatura desafios, ServicoEntregaAssinatura entrega, RepositorioSignatarioHistorico historicos) {
         this.pessoas = pessoas; this.envelopes = envelopes; this.desafios = desafios; this.entrega = entrega; this.historicos = historicos;
     }
     public void configurar(SignatarioEnvelope pessoa, List<String> autenticacao, List<String> notificacao) {
-        List<String> auth = autenticacao == null ? List.of() : autenticacao;
+        List<String> autenticacaoAtual = autenticacao == null ? List.of() : autenticacao;
         List<String> avisos = notificacao == null ? List.of() : notificacao;
-        if (auth.stream().anyMatch(a -> a == null || !Set.of("tela", "email", "whatsapp", "selfie").contains(a))
+        if (autenticacaoAtual.stream().anyMatch(a -> a == null || !Set.of("tela", "email", "whatsapp", "selfie").contains(a))
                 || avisos.stream().anyMatch(a -> a == null || !Set.of("email", "whatsapp").contains(a))) throw erro("Método inválido");
-        if ((auth.contains("email") || avisos.contains("email")) && pessoa.getEmail().isBlank()) throw erro("Informe e-mail para o canal selecionado");
-        if ((auth.contains("whatsapp") || avisos.contains("whatsapp")) && (pessoa.getWhatsapp() == null
+        if ((autenticacaoAtual.contains("email") || avisos.contains("email")) && pessoa.getEmail().isBlank()) throw erro("Informe e-mail para o canal selecionado");
+        if ((autenticacaoAtual.contains("whatsapp") || avisos.contains("whatsapp")) && (pessoa.getWhatsapp() == null
                 || !pessoa.getWhatsapp().replaceAll("[^0-9]", "").matches("[0-9]{10,15}"))) throw erro("Informe WhatsApp válido para o canal selecionado");
-        if ((!avisos.isEmpty() || auth.contains("email") || auth.contains("whatsapp")) && !entrega.disponivel())
+        if ((!avisos.isEmpty() || autenticacaoAtual.contains("email") || autenticacaoAtual.contains("whatsapp")) && !entrega.disponivel())
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Configure o serviço de entrega antes de selecionar códigos ou notificações");
-        pessoa.setFormaDeAutenticacao(List.copyOf(auth)); pessoa.setFormaDeNotificacao(List.copyOf(avisos));
+        pessoa.setFormaDeAutenticacao(List.copyOf(autenticacaoAtual)); pessoa.setFormaDeNotificacao(List.copyOf(avisos));
     }
     private SignatarioEnvelope convite(String token) {
         if (token == null || !token.matches("[A-Za-z0-9_-]{43}")) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         var pessoa = pessoas.findByResumoConvite(hash(token)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        var env = envelopes.findById(pessoa.getEnvelopeId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (env.getExcluidoEm() != null || env.getFinalizadoEm() != null || pessoa.getAssinadoEm() != null || Instant.now().isAfter(env.getExpiraEm()))
+        var ambiente = envelopes.findById(pessoa.getEnvelopeId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (ambiente.getExcluidoEm() != null || ambiente.getFinalizadoEm() != null || pessoa.getAssinadoEm() != null || Instant.now().isAfter(ambiente.getExpiraEm()))
             throw new ResponseStatusException(HttpStatus.GONE, "Convite encerrado");
         return pessoa;
     }
@@ -56,7 +56,7 @@ public class ServicoAutenticacaoAssinatura {
         var anterior = desafios.bloquear(id);
         if (anterior.isPresent() && anterior.get().getEnviadoEm().plusSeconds(60).isAfter(Instant.now()))
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Aguarde um minuto antes de reenviar");
-        String codigo = String.format("%06d", RANDOM.nextInt(1_000_000));
+        String codigo = String.format("%06d", SORTEADOR.nextInt(1_000_000));
         entrega.enviar(canal, canal.equals("email") ? pessoa.getEmail() : pessoa.getWhatsapp(), "codigo", codigo);
         desafios.save(new DesafioAssinatura(pessoa.getId(), canal, hash(id + ":" + codigo)));
         historicos.save(new SignatarioHistorico(pessoa.getId(), "aguardando_codigo", "codigo_enviado_" + canal, ip, dispositivo));

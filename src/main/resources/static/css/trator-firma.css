@@ -1,5 +1,112 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap');
 
+/* Uma única faixa: módulos e comandos são as abas do próprio trator. */
+.lista-toolbar .toolbar-faixa{display:flex;align-items:flex-end;flex:1;min-width:0;flex-wrap:wrap;overflow:visible;padding-top:4px}
+.lista-toolbar .toolbar-faixa>.toolbar-grupo{flex:0 1 auto;flex-wrap:wrap;max-width:100%;overflow:visible}
+.lista-toolbar .toolbar-faixa>.toolbar-grupo:last-child{flex:1 1 300px}
+.lista-toolbar .toolbar-faixa .trator-firma{display:contents}
+.lista-toolbar .trator-firma .trator-aba{position:relative;min-height:48px;margin:0 -2px -2px 0;padding:10px 12px;border:2px solid var(--border);border-radius:16px 16px 0 0;background:color-mix(in srgb,var(--border) 52%,var(--card));color:var(--foreground);font:800 12px/1.2 Inter,sans-serif;letter-spacing:.04em;box-shadow:none}
+.lista-toolbar .trator-firma .trator-marca{font-family:'Archivo Black',sans-serif;font-size:22px;font-weight:400;letter-spacing:-.075em}
+.lista-toolbar .trator-firma .trator-aba[aria-current=page]{z-index:2;background:var(--card);color:var(--primary);border-color:var(--primary);border-bottom-color:var(--card)}
+.lista-toolbar .trator-firma .trator-aba:hover{z-index:3;transform:translateY(-4px);border-color:var(--primary);color:var(--primary)}
+.lista-toolbar .trator-firma .trator-aba:focus-visible{outline:2px solid var(--primary);outline-offset:-5px}
+.lista-toolbar .toolbar-faixa .af-busca{min-width:0;width:100%}
+
+/* Contorno de pasta da referência tabs_tabela.png: ombro curvo e abas sobrepostas. */
+.lista-toolbar .toolbar-faixa{
+  --cor-aba-ativa:var(--primary);
+  overflow-x:clip;
+  overflow-y:visible;
+  align-items:flex-end;
+  padding-top:6px;
+  border-bottom:8px solid var(--cor-aba-ativa);
+  isolation:isolate;
+}
+.lista-toolbar .toolbar-faixa>.toolbar-grupo{align-items:flex-end;row-gap:6px}
+.lista-toolbar .toolbar-faixa>.toolbar-grupo:first-child{isolation:isolate}
+.lista-toolbar .trator-firma .trator-aba,
+.lista-toolbar .toolbar-grupo>.acao,
+.lista-toolbar .toolbar-grupo>button{
+  --cor-aba:var(--border);
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  min-height:50px;
+  margin:0;
+  padding:12px 20px 10px 26px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--foreground);
+  box-shadow:none;
+  font:800 11px/1.2 Inter,sans-serif;
+  letter-spacing:.035em;
+  text-shadow:0 1px 2px #0006;
+  white-space:nowrap;
+  isolation:isolate;
+  transition:filter 140ms;
+}
+.lista-toolbar .trator-firma .trator-aba::before,
+.lista-toolbar .toolbar-grupo>.acao::before,
+.lista-toolbar .toolbar-grupo>button::before{
+  content:"";
+  position:absolute;
+  inset:0 -26px 0 0;
+  z-index:-1;
+  background:var(--cor-aba);
+  /* A curva encontra a base sem cantos retos. */
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 50' preserveAspectRatio='none'%3E%3Cpath d='M0 50V23Q0 0 24 0H116C149 0 141 50 180 50Z'/%3E%3C/svg%3E") center/100% 100% no-repeat;
+}
+.lista-toolbar .trator-firma .trator-aba:nth-child(1){--cor-aba:var(--card);z-index:12}
+.lista-toolbar .trator-firma .trator-aba:nth-child(2){--cor-aba:color-mix(in srgb,var(--border) 75%,var(--card));z-index:11}
+.lista-toolbar .trator-firma .trator-aba:nth-child(3){--cor-aba:color-mix(in srgb,var(--border) 75%,var(--card));z-index:10}
+.lista-toolbar .trator-firma .trator-aba:nth-child(4){--cor-aba:var(--border);z-index:9}
+.lista-toolbar .toolbar-grupo>.acao{--cor-aba:var(--secondary);z-index:8}
+.lista-toolbar .toolbar-grupo>#exportar-dados{--cor-aba:color-mix(in srgb,var(--border) 85%,var(--background));z-index:7}
+.lista-toolbar .toolbar-grupo>#importar-dados{--cor-aba:color-mix(in srgb,var(--border) 65%,var(--card));z-index:6}
+.lista-toolbar .toolbar-grupo>#tabela-colunas-botao{--cor-aba:var(--secondary);z-index:5}
+.lista-toolbar .trator-firma .trator-marca{
+  padding-left:20px;
+  font-family:'Archivo Black',sans-serif;
+  font-size:22px;
+  font-weight:400;
+  letter-spacing:-.075em;
+}
+.lista-toolbar .trator-marca span{color:inherit}
+.lista-toolbar .trator-firma .trator-aba[aria-current=page],
+.lista-toolbar .toolbar-grupo>.acao.primaria,
+.lista-toolbar .toolbar-grupo>button[aria-expanded=true]{border:0;background:transparent;color:var(--foreground);box-shadow:none}
+.lista-toolbar .trator-firma .trator-aba[aria-current=page]{min-height:56px;padding-bottom:16px;color:var(--background);text-shadow:none}
+.lista-toolbar .trator-firma .trator-aba[aria-current=page]::after{
+  content:"";position:absolute;left:28px;right:20px;bottom:10px;height:3px;border-radius:2px;background:var(--background);
+}
+.lista-toolbar .trator-firma .trator-aba:hover,
+.lista-toolbar .toolbar-grupo>.acao:hover,
+.lista-toolbar .toolbar-grupo>button:hover,
+.lista-toolbar .toolbar-grupo>.acao:active,
+.lista-toolbar .toolbar-grupo>button:active{
+  transform:none;background:transparent;border:0;box-shadow:none;filter:brightness(1.16);
+}
+.lista-toolbar .toolbar-faixa>.toolbar-grupo:last-child{position:relative;z-index:0;flex:1 1 290px}
+.lista-toolbar .toolbar-faixa .af-busca{
+  min-height:50px;margin:0;padding-left:22px;border:0;border-radius:22px 22px 0 0;background:var(--card);box-shadow:inset 0 0 0 1px var(--border);
+}
+.lista-toolbar .toolbar-faixa .af-busca:focus-within{box-shadow:inset 0 0 0 2px var(--primary)}
+.lista-toolbar .af-busca input{padding-left:10px;font-size:11px}
+.lista-toolbar .af-busca input::placeholder{color:var(--muted-foreground);opacity:1;font-size:10px;letter-spacing:.015em}
+.lista-toolbar .toolbar-faixa .af-busca button{border:0;background:transparent}
+.lista-toolbar+.tabela-painel{border-top:0;border-radius:0 0 12px 12px}
+@media(max-width:600px){
+  .lista-toolbar .trator-firma .trator-aba,
+  .lista-toolbar .toolbar-grupo>.acao,
+  .lista-toolbar .toolbar-grupo>button{padding-left:19px;padding-right:13px;font-size:10px}
+  .lista-toolbar .trator-firma .trator-marca{font-size:21px}
+  .lista-toolbar .toolbar-faixa>.toolbar-grupo:last-child{flex-basis:100%}
+}
+
+
 /* As abas pertencem ao painel de trabalho, dentro do pasto. */
 .sistema-trator .trator-firma{display:flex;align-items:stretch;gap:6px;margin:0;padding:0;border:0;border-bottom:2px solid var(--border,#375441);background:transparent;overflow-x:auto;flex-shrink:0;max-width:100%;box-sizing:border-box}
 .trator-firma .trator-aba{display:flex;align-items:center;justify-content:center;flex:0 0 auto;min-height:48px;padding:10px 24px;box-sizing:border-box;border:2px solid var(--border,#375441);border-bottom:0;border-radius:14px 14px 0 0;background:var(--card,#182018);color:var(--foreground,#fff);font:800 15px/1.2 sans-serif;text-decoration:none;white-space:nowrap}
@@ -19,3 +126,27 @@ body.pagina-chatwoot #chatwoot{position:static;flex:1;min-height:0;width:100%;he
 .lista-toolbar .trator-firma .trator-aba[aria-current=page]{--cor-aba:var(--primary)}
 
 .lista-rodape .trator-selecao{color:var(--primary);font:800 11px Inter,sans-serif}
+
+/* A marca usa o mesmo marrom do comando de criar assinaturas. */
+.lista-toolbar .trator-firma .trator-aba.trator-marca{--cor-aba:var(--secondary)}
+
+/* Só Colunas recebe o papel marcado de terra; os módulos mantêm seus verdes. */
+.lista-toolbar .toolbar-grupo>:is(#tabela-colunas-botao,#firma-chat-colunas-botao,button[id$="colunas-botao"]){--cor-aba:#d2bc8e;color:#35291d;text-shadow:none}
+.lista-toolbar .toolbar-grupo>:is(#tabela-colunas-botao,#firma-chat-colunas-botao,button[id$="colunas-botao"])::before{background:radial-gradient(ellipse at 12% 100%,#78451e59,transparent 48%),radial-gradient(ellipse at 85% 0,#fff0ba66,transparent 55%),repeating-linear-gradient(3deg,transparent 0 7px,#5e48200a 8px 9px),var(--cor-aba)}
+
+/* O filtro fica à frente da pasta, deixando os topos das fichas à mostra. */
+.trator-compartilhado .lista-toolbar{flex-wrap:nowrap;padding:0;border-bottom:0;overflow:visible}
+.trator-compartilhado .lista-toolbar .toolbar-faixa{position:relative;display:block;flex:none;width:100%;min-width:0;padding-top:0;border-bottom:8px solid var(--primary);--trator-burro-largura:clamp(190px,28vw,340px)}
+.trator-compartilhado .lista-toolbar .toolbar-faixa>.trator-faixa-abas{position:relative;z-index:0;display:flex;flex-wrap:nowrap;align-items:flex-end;gap:0;width:100%;max-width:100%;min-height:64px;padding:8px calc(var(--trator-burro-largura) + 36px) 0 0;box-sizing:border-box;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;cursor:grab;overscroll-behavior-x:contain}
+.trator-compartilhado .trator-faixa-abas::-webkit-scrollbar{display:none;width:0;height:0}
+.trator-compartilhado .trator-faixa-abas.arrastando,.trator-compartilhado .trator-faixa-abas.arrastando *{cursor:grabbing!important;user-select:none}
+.trator-compartilhado .trator-faixa-abas:focus-visible{outline:2px solid #d6b777;outline-offset:-2px}
+.trator-compartilhado .lista-toolbar .toolbar-faixa>.trator-burro-fixo{position:absolute;z-index:2;right:0;bottom:0;display:flex;flex:none;flex-wrap:nowrap;width:var(--trator-burro-largura);max-width:100%;overflow:visible;background:transparent;box-shadow:none}
+.trator-compartilhado .trator-burro-fixo .af-busca{width:100%;min-width:0;min-height:40px;box-sizing:border-box;background:var(--card);box-shadow:-4px 0 8px #0003}
+.trator-compartilhado .trator-burro-fixo .af-busca input{width:0;min-width:0;min-height:36px}
+
+
+.trator-compartilhado .trator-abas-finais>div{display:contents}
+@media(max-width:600px){.trator-compartilhado .lista-toolbar .toolbar-faixa{--trator-burro-largura:min(240px,70vw)}}
+
+.trator-compartilhado:not(:has(.trator-burro-fixo)) .toolbar-faixa{--trator-burro-largura:0px}

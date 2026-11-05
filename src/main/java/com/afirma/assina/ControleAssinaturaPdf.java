@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 @RestController
 @RequestMapping("/api/pdfs")
 public class ControleAssinaturaPdf {
-	private static final Logger log = LoggerFactory.getLogger(ControleAssinaturaPdf.class);
+	private static final Logger registroLog = LoggerFactory.getLogger(ControleAssinaturaPdf.class);
 	private static final Set<String> MOTIVOS_SEGUROS = Set.of(
 			"PDF e certificado são obrigatórios", "Certificado sem chave privada",
 			"Certificado sem chave privada ou cadeia de certificados", "Certificado X.509 inválido",
@@ -69,27 +69,27 @@ public class ControleAssinaturaPdf {
 					.contentType(MediaType.APPLICATION_PDF)
 					.body(assinado);
 		} catch (CertificateExpiredException erro) {
-			log.warn("Assinatura recusada: certificado vencido");
+			registroLog.warn("Assinatura recusada: certificado vencido");
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificado vencido", erro);
 		} catch (CertificateNotYetValidException erro) {
-			log.warn("Assinatura recusada: certificado ainda não válido");
+			registroLog.warn("Assinatura recusada: certificado ainda não válido");
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificado ainda não é válido", erro);
 		} catch (UnrecoverableKeyException erro) {
-			log.warn("Assinatura recusada: senha do certificado incorreta");
+			registroLog.warn("Assinatura recusada: senha do certificado incorreta");
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Senha do certificado incorreta", erro);
 		} catch (IllegalArgumentException erro) {
 			String motivo = erro.getMessage() != null && MOTIVOS_SEGUROS.contains(erro.getMessage())
 					? erro.getMessage() : "PDF ou certificado inválido";
-			log.warn("Assinatura recusada: {}", motivo, erro);
+			registroLog.warn("Assinatura recusada: {}", motivo, erro);
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, motivo, erro);
 		} catch (GeneralSecurityException | IOException erro) {
-			log.warn("Assinatura recusada: falha ao processar PDF ou certificado", erro);
+			registroLog.warn("Assinatura recusada: falha ao processar PDF ou certificado", erro);
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não foi possível processar o PDF ou certificado", erro);
         } catch (ResponseStatusException erro) {
             throw erro;
 		} catch (Exception erro) {
 			String referencia = UUID.randomUUID().toString();
-			log.error("Falha interna ao assinar PDF. Referência {}", referencia, erro);
+			registroLog.error("Falha interna ao assinar PDF. Referência {}", referencia, erro);
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
 					"Falha interna ao assinar. Referência: " + referencia, erro);
 		} finally {

@@ -16,11 +16,11 @@ public class ServicoPlanoBuscaAssineAi {
 	public record Plano(List<Etapa> steps, String summary) { }
 	
 	private final ObjectMapper json;
-	private final ChatClient chatClient;
+	private final ChatClient clienteConversa;
 
-	public ServicoPlanoBuscaAssineAi(ObjectMapper json, ChatClient.Builder chatClientBuilder) {
+	public ServicoPlanoBuscaAssineAi(ObjectMapper json, ChatClient.Builder preparoClienteConversa) {
 		this.json = json;
-		this.chatClient = chatClientBuilder.build();
+		this.clienteConversa = preparoClienteConversa.build();
 	}
 
 	public Plano interpretar(String consulta) { return interpretar(consulta, false); }
@@ -41,7 +41,7 @@ public class ServicoPlanoBuscaAssineAi {
 				+ "Retorne no máximo 5 etapas. Não invente campos. Se não entender, retorne steps vazio.";
 		
 		try {
-			String jsonResponse = this.chatClient.prompt()
+			String jsonResponse = this.clienteConversa.prompt()
 					.system(instrucao)
 					.user(consulta)
 					.call()

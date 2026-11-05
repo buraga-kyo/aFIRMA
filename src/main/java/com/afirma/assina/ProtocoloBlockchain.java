@@ -43,7 +43,7 @@ public class ProtocoloBlockchain {
 
 	public String recuperarCarteira(String resumoPdf, String carteira, UUID identificador,
 			long prazo, String assinatura, String nomeEmpresa) {
-		byte[] digest = resumoAssinatura(resumoPdf, carteira, identificador, prazo, nomeEmpresa);
+		byte[] resumoCriptografico = resumoAssinatura(resumoPdf, carteira, identificador, prazo, nomeEmpresa);
 		byte[] dadosAssinatura = bytesHex(assinatura, 65);
 		BigInteger r = new BigInteger(1, Arrays.copyOfRange(dadosAssinatura, 0, 32));
 		BigInteger s = new BigInteger(1, Arrays.copyOfRange(dadosAssinatura, 32, 64));
@@ -69,7 +69,7 @@ public class ProtocoloBlockchain {
 		}
 		BigInteger inverso = r.modInverse(ordem);
 		ECPoint publica = ECAlgorithms.sumOfTwoMultiplies(CURVA.getG(),
-				new BigInteger(1, digest).negate().multiply(inverso).mod(ordem), ponto,
+				new BigInteger(1, resumoCriptografico).negate().multiply(inverso).mod(ordem), ponto,
 				s.multiply(inverso).mod(ordem)).normalize();
 		if (publica.isInfinity()) throw new IllegalArgumentException("Assinatura da carteira inválida");
 		byte[] chave = publica.getEncoded(false);

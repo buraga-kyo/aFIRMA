@@ -78,9 +78,9 @@ As respostas esperadas são "accepting connections" e "PONG".
 ### Conferir o .env
 Confira os dados do Postgres e Redis no `.env`. `SPRING_DATASOURCE_PASSWORD` precisa ser igual a `POSTGRES_PASSWORD`. Em banco já criado, mantenha a senha atual até alterar a senha do usuário no Postgres.
 
-### Tela inicial e estrutura do Autentica
+### Relacionamento daFIRMA
 
-A página `/` abre os módulos AssineAi, Zapiou e ADVai. O Trator de Assinaturas fica em `/assineai/trator` e o Trator de Relacionamento em `/chat`. Os dois usam a mesma `FirmaTabela`. As abas do Zapiou ficam dentro do trator e abrem os menus de cada grupo. Um duplo clique no registro abre a conversa; também dá para expandir o chat. Os dados daFIRMA ficam em `/firma`. As telas usam HTML, CSS e JavaScript no servidor Java. O modelo de dados vem do Autentica. As migrações V25 a V27 mantêm as tabelas anteriores e registram os vínculos dos IDs. Veja [o contrato de dados, o mapa de migração e os testes](docs/autentica.md) e [as regras, filas e integrações](docs/regras-autentica.md). Não há bloqueio por plano.
+A página `/` abre AssineAi, Zapiou e ADVai. O Trator de Relacionamento fica em `/chat`, com o mesmo componente de tabela das assinaturas. Cadastros, permissões, atendimentos, campanhas e automações são controlados pela aplicação Java. O motor de chat funciona como serviço integrado. As APIs de negócio usam `/api/firma` e exigem autenticação e autorização por empresa. Veja [o contrato de dados](docs/relacionamento.md), [as regras operacionais](docs/regras-relacionamento.md) e [a cobertura verificada](docs/auditoria-relacionamento-firma.md).
 
 ### Iniciar a aplicação (e agora que a gente começa a orar também)
 ```sh

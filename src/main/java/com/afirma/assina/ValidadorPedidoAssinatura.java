@@ -64,9 +64,9 @@ public class ValidadorPedidoAssinatura {
 		return dadosPdf;
 	}
 
-	private void verificarMimePdf(String mime) {
+	private void verificarMimePdf(String tipoArquivo) {
 		try {
-			MediaType tipo = MediaType.parseMediaType(mime);
+			MediaType tipo = MediaType.parseMediaType(tipoArquivo);
 			if ("application".equalsIgnoreCase(tipo.getType())
 					&& "pdf".equalsIgnoreCase(tipo.getSubtype())) {
 				return;

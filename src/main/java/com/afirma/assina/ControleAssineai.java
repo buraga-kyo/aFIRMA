@@ -174,7 +174,7 @@ public class ControleAssineai {
   )
   public Object criarLegado(MultipartHttpServletRequest r) throws Exception {
     var arquivos = new ArrayList<MultipartFile>();
-    var docs = new ArrayList<Map<String, Object>>();
+    var documentosAtual = new ArrayList<Map<String, Object>>();
     if (r.getFileMap().size() > 10) throw new IllegalArgumentException(
       "Limite de 10 documentos"
     );
@@ -185,13 +185,13 @@ public class ControleAssineai {
       );
       arquivos.add(pdf);
       var bruto = json.readValue(r.getParameter("documento" + i), Map.class);
-      docs.add((Map<String, Object>) bruto.get("Documento"));
+      documentosAtual.add((Map<String, Object>) bruto.get("Documento"));
     }
     var signatarios = json.readValue(r.getParameter("signatarios"), Map.class);
     var assinatura = json.readValue(r.getParameter("assinatura"), Map.class);
     return servico.criar(
       arquivos,
-      docs,
+      documentosAtual,
       (List<Map<String, Object>>) signatarios.get("dadosDoSignatario"),
       Objects.toString(assinatura.get("assinaturaNome"), ""),
       usuario(r),
@@ -281,7 +281,7 @@ public class ControleAssineai {
       f.get("ItemsPorPagina") instanceof Number n
         ? Math.max(1, Math.min(100, n.intValue()))
         : 10;
-    var rows = filtrados
+    var registros = filtrados
       .stream()
       .skip(inicio)
       .limit(limite)
@@ -311,7 +311,7 @@ public class ControleAssineai {
       "count",
       filtrados.size(),
       "rows",
-      rows,
+      registros,
       "totalDeAssinaturas",
       todos.size()
     );
@@ -340,7 +340,7 @@ public class ControleAssineai {
       !texto(a, "AssinaturaId").equals(filtros.get("AssinaturaId").toString())
     ) return false;
     long id = id(a, "AssinaturaId");
-    String doc = Objects.toString(
+    String documentoAtual = Objects.toString(
       filtros.get("AssinaturaDocumentos"),
       ""
     ).toLowerCase(Locale.ROOT);
@@ -349,12 +349,12 @@ public class ControleAssineai {
       ""
     ).toLowerCase(Locale.ROOT);
     if (
-      !doc.isBlank() &&
+      !documentoAtual.isBlank() &&
       servico
         .documentos(id)
         .stream()
         .noneMatch(d ->
-          texto(d, "DocumentoTitulo").toLowerCase(Locale.ROOT).contains(doc)
+          texto(d, "DocumentoTitulo").toLowerCase(Locale.ROOT).contains(documentoAtual)
         )
     ) return false;
     if (
@@ -436,16 +436,16 @@ public class ControleAssineai {
     var c = new LinkedHashMap<>(
       servico.convite(token, r.getRemoteAddr(), r.getHeader("User-Agent"))
     );
-    var docs = new ArrayList<Map<String, Object>>();
+    var documentosAtual = new ArrayList<Map<String, Object>>();
     for (var d : servico.documentos(
       id(servico.pessoa(token), "AssinaturaId")
     )) {
       var m = new LinkedHashMap<String, Object>();
       m.put("DocumentoTitulo", d.get("DocumentoTitulo"));
       m.put("DocumentoBuffer", buffer((byte[]) d.get("DocumentoBuffer")));
-      docs.add(m);
+      documentosAtual.add(m);
     }
-    c.put("Documentos", docs);
+    c.put("Documentos", documentosAtual);
     return c;
   }
 
@@ -611,14 +611,14 @@ public class ControleAssineai {
     );
     var entrada = new LinkedHashMap<>(dados);
     entrada.put("aceite", true);
-    var docs = servico.assinar(
+    var documentosAtual = servico.assinar(
       token,
       entrada,
       r.getRemoteAddr(),
       r.getHeader("User-Agent")
     );
     return ResponseEntity.ok(
-      docs
+      documentosAtual
         .stream()
         .map(d -> {
           var c = new LinkedHashMap<>(d);
@@ -706,7 +706,7 @@ public class ControleAssineai {
             p.get("SignatarioQuantidadeDeAcessosNoLinkDeAssinatura")
           );
           pessoa.put("assinadoEm", p.get("SignatarioDataAssinatura"));
-          pessoa.put("autenticadoVia", p.get("SignatarioAutenticadoVia"));
+          pessoa.put("autenticadoVia", p.get("SignatarioFirmadoVia"));
           pessoa.put(
             "historicos",
             ((List<Map<String, Object>>) p.get("historicos"))

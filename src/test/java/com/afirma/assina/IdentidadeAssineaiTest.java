@@ -14,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 class IdentidadeAssineaiTest {
 
   @Test
-  void autenticaJwtDoNodeEHashBcrypt2b() throws Exception {
+  void relacionamentoJwtDoNodeEHashBcrypt2b() throws Exception {
     var banco = mock(BancoAssineai.class);
     var decoder = mock(JwtDecoder.class);
     when(decoder.decode(anyString())).thenThrow(

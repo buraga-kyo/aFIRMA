@@ -25,7 +25,7 @@ public class FiltroSegurancaImportacao extends OncePerRequestFilter {
 	private final Set<String> ipsBloqueados = Collections.newSetFromMap(new ConcurrentHashMap<>());
 	private final ConcurrentHashMap<String, List<Instant>> tentativasPorIp = new ConcurrentHashMap<>();
 
-	private static final Pattern USER_AGENT_ATAQUE = Pattern.compile(
+	private static final Pattern AGENTE_DE_NAVEGADOR_SUSPEITO = Pattern.compile(
 			".*(curl|wget|nmap|nikto|sqlmap|dirb|kali|python|postman|insomnia).*", Pattern.CASE_INSENSITIVE);
 
 	public FiltroSegurancaImportacao(@Value("${afirma.importacao.tamanho-maximo:10485760}") long limiteTamanhoBytes) {
@@ -49,7 +49,7 @@ public class FiltroSegurancaImportacao extends OncePerRequestFilter {
 		}
 
 		String userAgent = requisicao.getHeader("User-Agent");
-		if (userAgent != null && USER_AGENT_ATAQUE.matcher(userAgent).matches()) {
+		if (userAgent != null && AGENTE_DE_NAVEGADOR_SUSPEITO.matcher(userAgent).matches()) {
 			ipsBloqueados.add(ip);
 			resposta.sendError(HttpStatus.FORBIDDEN.value(), "Acesso negado");
 			return;
@@ -75,8 +75,8 @@ public class FiltroSegurancaImportacao extends OncePerRequestFilter {
 			tentativas.add(agora);
 		}
 
-		String contentType = requisicao.getContentType();
-		if (contentType != null && contentType.startsWith("multipart/form-data")) {
+		String tipoConteudo = requisicao.getContentType();
+		if (tipoConteudo != null && tipoConteudo.startsWith("multipart/form-data")) {
 			long tamanho = requisicao.getContentLengthLong();
 			if (tamanho > limiteTamanhoBytes) {
 				resposta.sendError(HttpStatus.PAYLOAD_TOO_LARGE.value(), "Arquivo excede o tamanho limite");

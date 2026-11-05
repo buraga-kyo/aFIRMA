@@ -18,7 +18,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
 public class RotinasRelacionamento {
-	private static final Logger log = LoggerFactory.getLogger(RotinasRelacionamento.class);
+	private static final Logger registroLog = LoggerFactory.getLogger(RotinasRelacionamento.class);
 	private static final String AVISO_BOT = "Olá, percebi que você não pode responder agora.\n\nQuando quiser, mande Oi para começarmos um novo atendimento.";
 	private final NamedParameterJdbcTemplate banco;
 	private final TransactionTemplate transacoes;
@@ -55,7 +55,7 @@ public class RotinasRelacionamento {
 			try {
 				transporte.enviar((UUID) sessao.get("canal_id"), (String) sessao.get("telefone"), AVISO_BOT);
 			} catch (RuntimeException erro) {
-				log.warn("Aviso de inatividade não enviado para sessão {}", sessao.get("id"));
+				registroLog.warn("Aviso de inatividade não enviado para sessão {}", sessao.get("id"));
 			}
 		}
 	}
@@ -78,10 +78,10 @@ public class RotinasRelacionamento {
 			AND NOT EXISTS (SELECT 1 FROM chat_mensagem_rapida WHERE arquivo_id=arquivo.id)
 			AND NOT EXISTS (SELECT 1 FROM chat_modelo_mensagem WHERE arquivo_id=arquivo.id)
 			AND NOT EXISTS (SELECT 1 FROM chat_campanha WHERE arquivo_id=arquivo.id)
-            AND NOT EXISTS (SELECT 1 FROM firma_autentica_vinculo v WHERE v.destino='Arquivo' AND v.origem_id=arquivo.id::text AND (
-                EXISTS(SELECT 1 FROM autentica."Mensagem" WHERE "ArquivoId"=v.destino_id) OR
-                EXISTS(SELECT 1 FROM firma_autentica_envio WHERE arquivo_id=v.destino_id)))
-            AND NOT EXISTS (SELECT 1 FROM autentica."MensagemTemplate" WHERE "MensagemTemplateMediaChave"=arquivo.chave_armazenamento)
+            AND NOT EXISTS (SELECT 1 FROM firma_relacionamento_vinculo v WHERE v.destino='Arquivo' AND v.origem_id=arquivo.id::text AND (
+                EXISTS(SELECT 1 FROM firma."Mensagem" WHERE "ArquivoId"=v.destino_id) OR
+                EXISTS(SELECT 1 FROM firma_relacionamento_envio WHERE arquivo_id=v.destino_id)))
+            AND NOT EXISTS (SELECT 1 FROM firma."MensagemTemplate" WHERE "MensagemTemplateMediaChave"=arquivo.chave_armazenamento)
 			LIMIT 200
 			""", dados());
 		for (Map<String, Object> arquivo : arquivos) {
@@ -92,16 +92,16 @@ public class RotinasRelacionamento {
 				AND NOT EXISTS (SELECT 1 FROM chat_mensagem_rapida WHERE arquivo_id=:id)
 				AND NOT EXISTS (SELECT 1 FROM chat_modelo_mensagem WHERE arquivo_id=:id)
 				AND NOT EXISTS (SELECT 1 FROM chat_campanha WHERE arquivo_id=:id)
-                AND NOT EXISTS (SELECT 1 FROM firma_autentica_vinculo v WHERE v.destino='Arquivo' AND v.origem_id=CAST(:id AS text) AND (
-                    EXISTS(SELECT 1 FROM autentica."Mensagem" WHERE "ArquivoId"=v.destino_id) OR
-                    EXISTS(SELECT 1 FROM firma_autentica_envio WHERE arquivo_id=v.destino_id)))
-                AND NOT EXISTS (SELECT 1 FROM autentica."MensagemTemplate" WHERE "MensagemTemplateMediaChave"=CAST(:id AS text))
+                AND NOT EXISTS (SELECT 1 FROM firma_relacionamento_vinculo v WHERE v.destino='Arquivo' AND v.origem_id=CAST(:id AS text) AND (
+                    EXISTS(SELECT 1 FROM firma."Mensagem" WHERE "ArquivoId"=v.destino_id) OR
+                    EXISTS(SELECT 1 FROM firma_relacionamento_envio WHERE arquivo_id=v.destino_id)))
+                AND NOT EXISTS (SELECT 1 FROM firma."MensagemTemplate" WHERE "MensagemTemplateMediaChave"=CAST(:id AS text))
 				""", dados("id", id));
 			if (removidos != 1) continue;
 			String chave = (String) arquivo.get("chave_armazenamento");
 			if (!id.toString().equals(chave)) continue;
 			try { Files.deleteIfExists(diretorio.resolve(chave)); }
-			catch (IOException erro) { log.warn("Arquivo local não removido: {}", id); }
+			catch (IOException erro) { registroLog.warn("Arquivo local não removido: {}", id); }
 		}
 	}
 
