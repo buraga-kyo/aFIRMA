@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 @RestControllerAdvice
 public class TratamentoErrosApi {
-	private static final Logger log = LoggerFactory.getLogger(TratamentoErrosApi.class);
+	private static final Logger registroLog = LoggerFactory.getLogger(TratamentoErrosApi.class);
 
 	@ExceptionHandler(MaxUploadSizeExceededException.class)
 	ResponseEntity<ErroApi> tamanhoExcedido() {
@@ -33,12 +33,12 @@ public class TratamentoErrosApi {
 
 	@ExceptionHandler(ResponseStatusException.class)
 	ResponseEntity<ErroApi> erroConhecido(ResponseStatusException erro) {
-		HttpStatus status = HttpStatus.resolve(erro.getStatusCode().value());
-		if (status == null) {
-			status = HttpStatus.INTERNAL_SERVER_ERROR;
+		HttpStatus situacao = HttpStatus.resolve(erro.getStatusCode().value());
+		if (situacao == null) {
+			situacao = HttpStatus.INTERNAL_SERVER_ERROR;
 		}
-		log.warn("Pedido recusado. Status: {}. Motivo: {}", status.value(), erro.getReason());
-		return resposta(status, erro.getReason() == null ? status.getReasonPhrase() : erro.getReason());
+		registroLog.warn("Pedido recusado. Status: {}. Motivo: {}", situacao.value(), erro.getReason());
+		return resposta(situacao, erro.getReason() == null ? situacao.getReasonPhrase() : erro.getReason());
 	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
@@ -74,13 +74,13 @@ public class TratamentoErrosApi {
 
 	@ExceptionHandler(Exception.class)
 	ResponseEntity<ErroApi> falhaInterna(Exception erro) {
-		log.error("Falha interna na API", erro);
+		registroLog.error("Falha interna na API", erro);
 		return resposta(HttpStatus.INTERNAL_SERVER_ERROR, "Falha interna ao processar pedido");
 	}
 
-	private ResponseEntity<ErroApi> resposta(HttpStatus status, String mensagem) {
-		return ResponseEntity.status(status)
+	private ResponseEntity<ErroApi> resposta(HttpStatus situacao, String mensagem) {
+		return ResponseEntity.status(situacao)
 				.header("Cache-Control", "no-store")
-				.body(new ErroApi(status.name(), mensagem));
+				.body(new ErroApi(situacao.name(), mensagem));
 	}
 }

@@ -12,19 +12,18 @@ let enderecoFinal = null;
 let selfieCapturada = null;
 let transmissao = null;
 const desenhos = new Map();
-
 function erro(mensagem) {
   mensagemErro.textContent = mensagem;
   mensagemErro.hidden = false;
-  mensagemErro.scrollIntoView({ block: 'nearest' });
+  mensagemErro.scrollIntoView({
+    block: 'nearest'
+  });
 }
-
 async function verificar(resposta) {
   if (resposta.ok) return resposta;
   const dados = await resposta.json().catch(() => null);
   throw new Error(dados?.mensagem || `Operação recusada (${resposta.status}).`);
 }
-
 function prepararDesenho(id) {
   const tela = document.getElementById(id);
   const contexto = tela.getContext('2d');
@@ -38,8 +37,10 @@ function prepararDesenho(id) {
   let desenhando = false;
   function ponto(evento) {
     const caixa = tela.getBoundingClientRect();
-    return { x: (evento.clientX - caixa.left) * tela.width / caixa.width,
-      y: (evento.clientY - caixa.top) * tela.height / caixa.height };
+    return {
+      x: (evento.clientX - caixa.left) * tela.width / caixa.width,
+      y: (evento.clientY - caixa.top) * tela.height / caixa.height
+    };
   }
   tela.addEventListener('pointerdown', evento => {
     evento.preventDefault();
@@ -58,10 +59,13 @@ function prepararDesenho(id) {
     contexto.lineTo(atual.x, atual.y);
     contexto.stroke();
   });
-  tela.addEventListener('pointerup', () => { desenhando = false; });
-  tela.addEventListener('pointercancel', () => { desenhando = false; });
+  tela.addEventListener('pointerup', () => {
+    desenhando = false;
+  });
+  tela.addEventListener('pointercancel', () => {
+    desenhando = false;
+  });
 }
-
 for (const id of ['desenho-assinatura', 'desenho-rubrica']) prepararDesenho(id);
 for (const botao of document.querySelectorAll('[data-limpar]')) {
   botao.addEventListener('click', () => {
@@ -73,11 +77,9 @@ for (const botao of document.querySelectorAll('[data-limpar]')) {
     desenhos.set(id, false);
   });
 }
-
 function blobDesenho(id) {
   return new Promise(resolver => document.getElementById(id).toBlob(resolver, 'image/png'));
 }
-
 async function mostrarPagina() {
   const resposta = await verificar(await fetch(`/api/convites/${conviteToken}/paginas/${paginaAtual}`, {
     cache: 'no-store'
@@ -105,31 +107,43 @@ async function mostrarPagina() {
     camadaCampos.append(caixa);
   }
 }
-
 async function atualizarDocumento() {
-  const resposta = await verificar(await fetch(`/api/convites/${conviteToken}/pdf`, { cache: 'no-store' }));
+  const resposta = await verificar(await fetch(`/api/convites/${conviteToken}/pdf`, {
+    cache: 'no-store'
+  }));
   const novoEndereco = URL.createObjectURL(await resposta.blob());
   if (enderecoDocumento) URL.revokeObjectURL(enderecoDocumento);
   enderecoDocumento = novoEndereco;
   document.getElementById('baixar-original').href = enderecoDocumento;
   document.getElementById('baixar-original').download = dadosConvite.nomeDocumento;
 }
-
 document.getElementById('pagina-anterior').addEventListener('click', () => {
-  if (paginaAtual > 1) { paginaAtual--; mostrarPagina().catch(falha => erro(falha.message)); }
+  if (paginaAtual > 1) {
+    paginaAtual--;
+    mostrarPagina().catch(falha => erro(falha.message));
+  }
 });
 document.getElementById('pagina-seguinte').addEventListener('click', () => {
-  if (paginaAtual < totalPaginas) { paginaAtual++; mostrarPagina().catch(falha => erro(falha.message)); }
+  if (paginaAtual < totalPaginas) {
+    paginaAtual++;
+    mostrarPagina().catch(falha => erro(falha.message));
+  }
 });
-
 document.getElementById('abrir-camera').addEventListener('click', async () => {
   try {
-    transmissao = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    transmissao = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: 'user'
+      },
+      audio: false
+    });
     const video = document.getElementById('video-selfie');
     video.srcObject = transmissao;
     video.hidden = false;
     document.getElementById('capturar-selfie').hidden = false;
-  } catch { erro('Câmera indisponível. Escolha arquivo de imagem.'); }
+  } catch {
+    erro('Câmera indisponível. Escolha arquivo de imagem.');
+  }
 });
 document.getElementById('capturar-selfie').addEventListener('click', async () => {
   const video = document.getElementById('video-selfie');
@@ -152,10 +166,11 @@ document.getElementById('arquivo-selfie').addEventListener('change', () => {
   selfieCapturada = null;
   const imagem = document.getElementById('arquivo-selfie').files[0];
   const previa = document.getElementById('previa-selfie');
-  if (imagem) { previa.src = URL.createObjectURL(imagem); previa.hidden = false; }
-  else previa.hidden = true;
+  if (imagem) {
+    previa.src = URL.createObjectURL(imagem);
+    previa.hidden = false;
+  } else previa.hidden = true;
 });
-
 document.getElementById('enviar-assinatura').addEventListener('click', async () => {
   mensagemErro.hidden = true;
   const botao = document.getElementById('enviar-assinatura');
@@ -173,69 +188,105 @@ document.getElementById('enviar-assinatura').addEventListener('click', async () 
     if (tipos.has('SELFIE')) dados.append('selfie', selfie, selfie.name || 'selfie.jpg');
     botao.disabled = true;
     await verificar(await fetch(`/api/convites/${conviteToken}/assinar`, {
-      method: 'POST', body: dados, cache: 'no-store'
+      method: 'POST',
+      body: dados,
+      cache: 'no-store'
     }));
     document.getElementById('area-assinatura').hidden = true;
     document.getElementById('resultado').hidden = false;
-    document.getElementById('resultado').scrollIntoView({ block: 'nearest' });
+    document.getElementById('resultado').scrollIntoView({
+      block: 'nearest'
+    });
     await Promise.all([mostrarPagina(), atualizarDocumento()]);
-  } catch (falha) { erro(falha.message); botao.disabled = false; }
+  } catch (falha) {
+    erro(falha.message);
+    botao.disabled = false;
+  }
 });
-
 function tiposSolicitados() {
   const tipos = new Set(dadosConvite.campos.map(campo => campo.tipo));
   if (dadosConvite.formaDeAutenticacao?.includes('tela')) tipos.add('ASSINATURA');
   if (dadosConvite.formaDeAutenticacao?.includes('selfie')) tipos.add('SELFIE');
   return tipos;
 }
-
 function prepararAutenticacao() {
   const painel = document.getElementById('codigos-autenticacao');
   painel.replaceChildren();
   for (const canal of dadosConvite.formaDeAutenticacao || []) {
     if (!['email', 'whatsapp'].includes(canal)) continue;
-    const grupo = document.createElement('div'); grupo.className = 'codigo-convite';
-    const label = document.createElement('label'); label.textContent = `CÓDIGO POR ${canal === 'email' ? 'E-MAIL' : 'WHATSAPP'}`;
-    const entrada = document.createElement('input'); entrada.inputMode = 'numeric'; entrada.maxLength = 6;
-    entrada.autocomplete = 'one-time-code'; entrada.id = `codigo-${canal}`; label.htmlFor = entrada.id;
-    const enviar = document.createElement('button'); enviar.type = 'button'; enviar.textContent = 'ENVIAR CÓDIGO';
-    const validar = document.createElement('button'); validar.type = 'button'; validar.textContent = 'VALIDAR CÓDIGO';
-    const estado = document.createElement('p'); estado.setAttribute('role', 'status');
+    const grupo = document.createElement('div');
+    grupo.className = 'codigo-convite';
+    const rotulo = document.createElement('label');
+    rotulo.textContent = `CÓDIGO POR ${canal === 'email' ? 'E-MAIL' : 'WHATSAPP'}`;
+    const entrada = document.createElement('input');
+    entrada.inputMode = 'numeric';
+    entrada.maxLength = 6;
+    entrada.autocomplete = 'one-time-code';
+    entrada.id = `codigo-${canal}`;
+    rotulo.htmlFor = entrada.id;
+    const enviar = document.createElement('button');
+    enviar.type = 'button';
+    enviar.textContent = 'ENVIAR CÓDIGO';
+    const validar = document.createElement('button');
+    validar.type = 'button';
+    validar.textContent = 'VALIDAR CÓDIGO';
+    const estado = document.createElement('p');
+    estado.setAttribute('role', 'status');
     enviar.addEventListener('click', async () => {
       enviar.disabled = true;
       try {
-        await verificar(await fetch(`/api/convites/${conviteToken}/codigos/${canal}`, { method: 'POST' }));
+        await verificar(await fetch(`/api/convites/${conviteToken}/codigos/${canal}`, {
+          method: 'POST'
+        }));
         estado.textContent = 'Código enviado. Validade de 10 minutos; aguarde um minuto antes de reenviar.';
-      } catch (falha) { erro(falha.message); }
-      finally { enviar.disabled = false; }
+      } catch (falha) {
+        erro(falha.message);
+      } finally {
+        enviar.disabled = false;
+      }
     });
     validar.addEventListener('click', async () => {
       if (!/^\d{6}$/.test(entrada.value)) return erro('Digite o código de seis números.');
       validar.disabled = true;
       try {
         await verificar(await fetch(`/api/convites/${conviteToken}/codigos/${canal}/verificar`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ codigo: entrada.value })
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            codigo: entrada.value
+          })
         }));
         estado.textContent = 'Código validado. Conclua a assinatura antes de expirar.';
         entrada.disabled = true;
-      } catch { erro('Código inválido, expirado ou limite de tentativas atingido. Solicite um novo código.'); validar.disabled = false; }
+      } catch {
+        erro('Código inválido, expirado ou limite de tentativas atingido. Solicite um novo código.');
+        validar.disabled = false;
+      }
     });
-    grupo.append(label, enviar, entrada, validar, estado); painel.append(grupo);
+    grupo.append(rotulo, enviar, entrada, validar, estado);
+    painel.append(grupo);
   }
 }
-
 function prepararDocumentos() {
   const painel = document.getElementById('documentos-convite');
   for (const documento of dadosConvite.documentos || []) {
-    const botao = document.createElement('button'); botao.type = 'button'; botao.className = 'botao-carteira';
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'botao-carteira';
     botao.textContent = `${documento.nome} · ${documento.paginaInicio === documento.paginaFim ? `página ${documento.paginaInicio}` : `páginas ${documento.paginaInicio} a ${documento.paginaFim}`}`;
-    botao.addEventListener('click', () => { paginaAtual = documento.paginaInicio; mostrarPagina().catch(falha => erro(falha.message)); });
+    botao.addEventListener('click', () => {
+      paginaAtual = documento.paginaInicio;
+      mostrarPagina().catch(falha => erro(falha.message));
+    });
     painel.append(botao);
   }
 }
-
 async function carregar() {
-  const resposta = await verificar(await fetch(`/api/convites/${conviteToken}`, { cache: 'no-store' }));
+  const resposta = await verificar(await fetch(`/api/convites/${conviteToken}`, {
+    cache: 'no-store'
+  }));
   dadosConvite = await resposta.json();
   document.getElementById('marca-empresa').firstChild.textContent = dadosConvite.nomeEmpresa;
   document.getElementById('rodape-empresa').textContent = dadosConvite.nomeEmpresa;
@@ -256,20 +307,22 @@ async function carregar() {
   await mostrarPagina();
   await atualizarDocumento();
 }
-
 document.getElementById('baixar-final').addEventListener('click', async evento => {
   evento.preventDefault();
   try {
-    const resposta = await verificar(await fetch(`/api/convites/${conviteToken}/final`, { cache: 'no-store' }));
+    const resposta = await verificar(await fetch(`/api/convites/${conviteToken}/final`, {
+      cache: 'no-store'
+    }));
     if (enderecoFinal) URL.revokeObjectURL(enderecoFinal);
     enderecoFinal = URL.createObjectURL(await resposta.blob());
     const link = document.createElement('a');
     link.href = enderecoFinal;
     link.download = 'documento-assinado.pdf';
     link.click();
-  } catch (falha) { erro(falha.message); }
+  } catch (falha) {
+    erro(falha.message);
+  }
 });
-
 carregar().catch(falha => erro(falha.message));
 window.addEventListener('pagehide', () => {
   if (enderecoImagem) URL.revokeObjectURL(enderecoImagem);

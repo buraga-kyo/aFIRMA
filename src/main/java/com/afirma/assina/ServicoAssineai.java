@@ -27,7 +27,7 @@ public class ServicoAssineai {
   private final ServicoAssinaturaPdf certificado;
   private final ServicoEntregaAssinatura entrega;
   private final String caminhoCertificado, senhaCertificado;
-  private static final SecureRandom RANDOM = new SecureRandom();
+  private static final SecureRandom SORTEADOR = new SecureRandom();
 
   public ServicoAssineai(
     BancoAssineai banco,
@@ -90,13 +90,13 @@ public class ServicoAssineai {
       "Quantidade de documentos inválida"
     );
     var pessoas = new ArrayList<Map<String, Object>>();
-    var guids = new ArrayList<String>();
+    var identificadoresUnicos = new ArrayList<String>();
     for (var p : pedido.signatarios()) {
       if (p == null) throw erro("Signatário inválido");
-      String guid = UUID.randomUUID().toString();
-      guids.add(guid);
+      String identificadorUnico = UUID.randomUUID().toString();
+      identificadoresUnicos.add(identificadorUnico);
       var pessoa = new LinkedHashMap<String, Object>();
-      pessoa.put("GUID", guid);
+      pessoa.put("GUID", identificadorUnico);
       pessoa.put("Nome", p.nome());
       pessoa.put("Email", p.email());
       pessoa.put("WhatsApp", p.whatsapp());
@@ -107,7 +107,7 @@ public class ServicoAssineai {
       pessoa.put("FormaDeNotificacao", p.formaDeNotificacao());
       pessoas.add(pessoa);
     }
-    var docs = new ArrayList<Map<String, Object>>();
+    var documentosAtual = new ArrayList<Map<String, Object>>();
     for (int i = 0; i < arquivos.size(); i++) {
       var campos = new ArrayList<Map<String, Object>>();
       for (int s = 0; s < pedido.signatarios().size(); s++) {
@@ -126,7 +126,7 @@ public class ServicoAssineai {
             new LinkedHashMap<>(
               Map.of(
                 "GUID",
-                guids.get(s),
+                identificadoresUnicos.get(s),
                 "tipo",
                 c.tipo().name(),
                 "pagina",
@@ -144,7 +144,7 @@ public class ServicoAssineai {
           );
         }
       }
-      docs.add(
+      documentosAtual.add(
         new LinkedHashMap<>(
           Map.of(
             "Nome",
@@ -163,7 +163,7 @@ public class ServicoAssineai {
     );
     long id = criar(
       arquivos,
-      docs,
+      documentosAtual,
       pessoas,
       pedido.nomeAssinatura(),
       identidade,
@@ -221,20 +221,20 @@ public class ServicoAssineai {
     ) throw erro(
       "Informe nome da assinatura, de 1 a 10 PDFs e de 1 a 20 signatários"
     );
-    var guids = new HashSet<String>();
+    var identificadoresUnicos = new HashSet<String>();
     for (var p : pessoas) {
       validarPessoa(p);
-      String guid = Objects.toString(p.get("GUID"), "");
-      if (!guid.matches("[A-Za-z0-9_-]{1,200}") || !guids.add(guid)) throw erro(
+      String identificadorUnico = Objects.toString(p.get("GUID"), "");
+      if (!identificadorUnico.matches("[A-Za-z0-9_-]{1,200}") || !identificadoresUnicos.add(identificadorUnico)) throw erro(
         "Identificador do signatário inválido ou duplicado"
       );
     }
-    for (String guid : guids.stream().sorted().toList()) {
-      banco.um("SELECT pg_advisory_xact_lock(hashtext(:g))", Map.of("g", guid));
+    for (String identificadorUnico : identificadoresUnicos.stream().sorted().toList()) {
+      banco.um("SELECT pg_advisory_xact_lock(hashtext(:g))", Map.of("g", identificadorUnico));
       if (
         banco.um(
           "SELECT \"SignatarioId\" FROM \"AssinaturaSignatarios\" WHERE \"SignatarioTokenLinkAssinatura\"=:g LIMIT 1",
-          Map.of("g", guid)
+          Map.of("g", identificadorUnico)
         ) != null
       ) throw new ResponseStatusException(
         HttpStatus.CONFLICT,
@@ -259,7 +259,7 @@ public class ServicoAssineai {
       );
       var campos = lista(d.get("ColecaoDeDivArrastavel"));
       for (var c : campos) {
-        if (!guids.contains(Objects.toString(c.get("GUID"), ""))) throw erro(
+        if (!identificadoresUnicos.contains(Objects.toString(c.get("GUID"), ""))) throw erro(
           "Campo de um signatário desconhecido"
         );
         pdfs.normalizar(c, pdf);
@@ -363,17 +363,17 @@ public class ServicoAssineai {
       email.length() > 254 ||
       (!email.isEmpty() && !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"))
     ) throw erro("Nome ou e-mail inválido");
-    var auth = metodos(p.get("FormaDeAutenticacao"));
+    var autenticacao = metodos(p.get("FormaDeAutenticacao"));
     var avisos = metodos(p.get("FormaDeNotificacao"));
     if (
-      !Set.of("tela", "email", "whatsapp", "selfie").containsAll(auth) ||
+      !Set.of("tela", "email", "whatsapp", "selfie").containsAll(autenticacao) ||
       !Set.of("email", "whatsapp").containsAll(avisos)
     ) throw erro("Método inválido");
     if (
-      (auth.contains("email") || avisos.contains("email")) && email.isEmpty()
+      (autenticacao.contains("email") || avisos.contains("email")) && email.isEmpty()
     ) throw erro("Informe e-mail para o canal escolhido");
     if (
-      (auth.contains("whatsapp") || avisos.contains("whatsapp")) &&
+      (autenticacao.contains("whatsapp") || avisos.contains("whatsapp")) &&
       !whats.matches("[0-9]{10,15}")
     ) throw erro("Informe WhatsApp com DDD");
     for (String campo : List.of("CPF", "RG", "WhatsApp", "Qualificacao"))
@@ -536,7 +536,7 @@ public class ServicoAssineai {
       "SELECT a.*,e.\"EmpresaNome\",e.\"EmpresaTemaTelaAssinatura\" FROM \"Assinaturas\" a LEFT JOIN firma_assineai_controle c ON c.assinatura_id=a.\"AssinaturaId\" LEFT JOIN \"Empresas\" e ON e.\"EmpresaId\"=c.empresa_id WHERE a.\"AssinaturaId\"=:id",
       Map.of("id", assinatura)
     );
-    var docs = new ArrayList<Map<String, Object>>();
+    var documentosAtual = new ArrayList<Map<String, Object>>();
     for (var d : documentos(assinatura)) {
       var meta = metadados(d);
       meta.put("paginas", quantidadePaginas(d));
@@ -554,7 +554,7 @@ public class ServicoAssineai {
           })
           .toList()
       );
-      docs.add(meta);
+      documentosAtual.add(meta);
     }
     var pessoaPublica = new LinkedHashMap<String, Object>();
     for (String chave : List.of(
@@ -571,7 +571,7 @@ public class ServicoAssineai {
       "Signatario",
       pessoaPublica,
       "Documentos",
-      docs,
+      documentosAtual,
       "empresa",
       Objects.toString(a.get("EmpresaNome"), "aFIRMA"),
       "tema",
@@ -665,7 +665,7 @@ public class ServicoAssineai {
       HttpStatus.TOO_MANY_REQUESTS,
       "Aguarde um minuto para reenviar"
     );
-    String codigo = String.format("%06d", RANDOM.nextInt(1_000_000));
+    String codigo = String.format("%06d", SORTEADOR.nextInt(1_000_000));
     entrega.enviar(
       canal,
       texto(
@@ -785,10 +785,10 @@ public class ServicoAssineai {
       HttpStatus.CONFLICT,
       "Assinatura já registrada"
     );
-    var auth = metodos(p.get("SignatarioFormaDeAutenticacao"));
+    var autenticacao = metodos(p.get("SignatarioFormaDeAutenticacao"));
     var canais = canaisValidados(p);
     if (
-      auth.stream().anyMatch(c -> Set.of("email", "whatsapp").contains(c)) &&
+      autenticacao.stream().anyMatch(c -> Set.of("email", "whatsapp").contains(c)) &&
       canais.isEmpty()
     ) throw new ResponseStatusException(
       HttpStatus.FORBIDDEN,
@@ -805,11 +805,11 @@ public class ServicoAssineai {
         );
     byte[] desenho = pdfs.imagem(
       dados.get("SignatarioAssinaturaEscritaBase64"),
-      auth.contains("tela") || tipos.contains("ASSINATURA")
+      autenticacao.contains("tela") || tipos.contains("ASSINATURA")
     );
     byte[] selfie = pdfs.imagem(
       dados.get("selfie"),
-      auth.contains("selfie") || tipos.contains("SELFIE")
+      autenticacao.contains("selfie") || tipos.contains("SELFIE")
     );
     byte[] rubrica = pdfs.imagem(
       dados.get("rubrica"),
@@ -826,7 +826,7 @@ public class ServicoAssineai {
     if (selfie != null) usados.add("selfie");
     if (rubrica != null) usados.add("rubrica");
     if (usados.isEmpty()) usados.add("aceite");
-    valores.put("SignatarioAutenticadoVia", String.join(",", usados));
+    valores.put("SignatarioFirmadoVia", String.join(",", usados));
     valores.put(
       "SignatarioAssinaturaEscritaBase64",
       desenho == null ? null : Base64.getEncoder().encodeToString(desenho)
@@ -1110,22 +1110,22 @@ public class ServicoAssineai {
 
   private void evento(
     long signatario,
-    String status,
+    String situacao,
     String acao,
     String ip,
     String dispositivo
   ) {
     var d = new LinkedHashMap<String, Object>();
     d.put("SignatarioId", signatario);
-    d.put("SignatarioHistoricoStatus", status);
+    d.put("SignatarioHistoricoStatus", situacao);
     d.put("SignatarioHistoricoAcao", acao);
     d.put("SignatarioHistoricoIp", limitar(ip, 64));
     d.put("SignatarioHistoricoDispositivo", limitar(dispositivo, 1024));
     banco.inserir("SignatarioHistoricos", "SignatarioHistoricoId", d);
   }
 
-  private String limitar(String v, int max) {
-    return v == null ? null : v.substring(0, Math.min(v.length(), max));
+  private String limitar(String v, int maiorValor) {
+    return v == null ? null : v.substring(0, Math.min(v.length(), maiorValor));
   }
 
   private String hash(String valor) {

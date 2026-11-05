@@ -81,14 +81,14 @@ body.firma-shell {
 }
 
 /* Os grupos são abas da mesma navegação usada pelo trator de assinaturas. */
-.zapiou-navegacao #zapiou-grupos{display:contents}
-.lista-toolbar .zapiou-navegacao .zapiou-grupo-aba{--cor-aba:var(--border);z-index:4;cursor:pointer}
-.lista-toolbar .zapiou-navegacao .zapiou-grupo-aba[aria-expanded=true]{--cor-aba:var(--primary);color:var(--background);text-shadow:none}
-.zapiou-menu-popover{position:fixed;inset:auto;margin:0;width:260px;max-width:calc(100vw - 16px);overflow:auto;padding:8px;border:2px solid var(--primary);background:var(--card);color:var(--foreground);box-shadow:5px 5px 0 var(--secondary);font:12px/1.5 Inter,sans-serif}
-.zapiou-menu-popover a{display:flex;gap:10px;padding:10px;text-decoration:none;color:inherit}.zapiou-menu-popover a:hover,.zapiou-menu-popover a:focus-visible{background:var(--background);color:var(--primary)}
-.firma-shell:not(.zapiou-trator){padding:0}.firma-shell .firma-sidebar,.firma-shell .firma-appbar{display:none}
+.firma-chat-navegacao #firma-chat-grupos{display:contents}
+.lista-toolbar .firma-chat-navegacao .firma-chat-grupo-aba{--cor-aba:var(--border);z-index:4;cursor:pointer}
+.lista-toolbar .firma-chat-navegacao .firma-chat-grupo-aba[aria-expanded=true]{--cor-aba:var(--primary);color:var(--background);text-shadow:none}
+.firma-chat-menu-popover{position:fixed;inset:auto;margin:0;width:260px;max-width:calc(100vw - 16px);overflow:auto;padding:8px;border:2px solid var(--primary);background:var(--card);color:var(--foreground);box-shadow:5px 5px 0 var(--secondary);font:12px/1.5 Inter,sans-serif}
+.firma-chat-menu-popover a{display:flex;gap:10px;padding:10px;text-decoration:none;color:inherit}.firma-chat-menu-popover a:hover,.firma-chat-menu-popover a:focus-visible{background:var(--background);color:var(--primary)}
+.firma-shell:not(.firma-chat-trator){padding:0}.firma-shell .firma-sidebar,.firma-shell .firma-appbar{display:none}
 
 /* Popovers herdam a cor padrão do navegador; fixamos o contraste em todos os estados. */
-.zapiou-menu-popover:popover-open{color:var(--foreground,#F2F7EC);background:var(--card,#173225)}
-.zapiou-menu-popover a:link,.zapiou-menu-popover a:visited{color:var(--foreground,#F2F7EC);background:transparent}
-.zapiou-menu-popover a:hover,.zapiou-menu-popover a:focus-visible,.zapiou-menu-popover a:active,.zapiou-menu-popover a[aria-current="page"]{color:var(--background,#0E2117);background:var(--primary,#C9FF3D);outline-color:var(--foreground,#F2F7EC)}
+.firma-chat-menu-popover:popover-open{color:var(--foreground,#F2F7EC);background:var(--card,#173225)}
+.firma-chat-menu-popover a:link,.firma-chat-menu-popover a:visited{color:var(--foreground,#F2F7EC);background:transparent}
+.firma-chat-menu-popover a:hover,.firma-chat-menu-popover a:focus-visible,.firma-chat-menu-popover a:active,.firma-chat-menu-popover a[aria-current="page"]{color:var(--background,#0E2117);background:var(--primary,#C9FF3D);outline-color:var(--foreground,#F2F7EC)}

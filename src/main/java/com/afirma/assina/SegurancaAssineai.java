@@ -11,11 +11,11 @@ public class SegurancaAssineai {
 
   @Bean
   @Order(0)
-  SecurityFilterChain rotasCompativeis(HttpSecurity http) throws Exception {
-    return http
+  SecurityFilterChain rotasCompativeis(HttpSecurity segurancaHttp, IdentidadeAssineai identidade,ChavesIntegracaoFirma chaves) throws Exception {
+    return segurancaHttp
       .securityMatcher(
         "/api/assineai/**",
-        "/api/autentica/**",
+        "/api/firma/**",
         "/API/v1/**",
         "/n8n/**",
         "/CriarAssinaturaViaAPI",
@@ -31,6 +31,7 @@ public class SegurancaAssineai {
         "/JLv3HEzbcO2uKlg0rsELA66dou",
         "/q9zePu74UYPUaDqUyay4fIjwNV"
       )
+      .addFilterBefore(new FiltroAcessoFirma(identidade,chaves), org.springframework.security.web.authentication.AnonymousAuthenticationFilter.class)
       .csrf(c -> c.disable())
       .sessionManagement(s ->
         s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

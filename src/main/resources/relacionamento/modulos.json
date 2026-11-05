@@ -1,0 +1,285 @@
+[
+  {
+    "slug": "atendimentos",
+    "tabela": "Atendimento",
+    "titulo": "Conversas",
+    "grupo": "Operação",
+    "editavel": false,
+    "colunas": [
+      "AtendimentoProtocolo",
+      "AtendimentoStatus",
+      "ContatoId",
+      "CanalId",
+      "SetorId",
+      "AtendenteId"
+    ]
+  },
+  {
+    "slug": "contatos",
+    "tabela": "Contato",
+    "titulo": "Contatos",
+    "grupo": "Cadastros",
+    "editavel": true,
+    "colunas": [
+      "ContatoNome",
+      "ContatoNumero",
+      "ContatoEmail"
+    ]
+  },
+  {
+    "slug": "canais",
+    "tabela": "Canal",
+    "titulo": "Canais",
+    "grupo": "Cadastros",
+    "editavel": true,
+    "colunas": [
+      "CanalNome",
+      "CanalNumeroCelular",
+      "CanalStatus",
+      "CanalProvedorAPI"
+    ]
+  },
+  {
+    "slug": "atendentes",
+    "tabela": "Atendente",
+    "titulo": "Atendentes",
+    "grupo": "Cadastros",
+    "editavel": true,
+    "colunas": [
+      "AtendenteNome",
+      "AtendenteStatus",
+      "AtendenteStatusChat",
+      "AtendenteUsuarioId"
+    ]
+  },
+  {
+    "slug": "setores",
+    "tabela": "Setor",
+    "titulo": "Setores",
+    "grupo": "Cadastros",
+    "editavel": true,
+    "colunas": [
+      "SetorNome",
+      "SetorStatus",
+      "CanalId"
+    ]
+  },
+  {
+    "slug": "atendentes-setores",
+    "tabela": "AtendenteSetor",
+    "titulo": "Atendentes por setor",
+    "grupo": "Cadastros",
+    "editavel": true,
+    "colunas": [
+      "AtendenteId",
+      "SetorId"
+    ]
+  },
+  {
+    "slug": "tags",
+    "tabela": "Tag",
+    "titulo": "Tags",
+    "grupo": "Cadastros",
+    "editavel": true,
+    "colunas": [
+      "TagNome",
+      "TagStatus",
+      "SetorId"
+    ]
+  },
+  {
+    "slug": "respostas",
+    "tabela": "MensagemRapida",
+    "titulo": "Mensagens rápidas",
+    "grupo": "Comunicação",
+    "editavel": true,
+    "colunas": [
+      "MensagemRapidaTexto",
+      "SetorId"
+    ]
+  },
+  {
+    "slug": "templates",
+    "tabela": "MensagemTemplate",
+    "titulo": "Templates de mensagem",
+    "grupo": "Comunicação",
+    "editavel": true,
+    "colunas": [
+      "MensagemTemplateNome",
+      "MensagemTemplateCategoria",
+      "MensagemTemplateStatusMeta",
+      "CanalId",
+      "SetorId"
+    ]
+  },
+  {
+    "slug": "listas",
+    "tabela": "ListaContato",
+    "titulo": "Listas de contatos",
+    "grupo": "Comunicação",
+    "editavel": true,
+    "colunas": [
+      "ListaContatoNome",
+      "ListaContatoQuantidadeContatos",
+      "ListaContatoStatus"
+    ]
+  },
+  {
+    "slug": "disparos",
+    "tabela": "DisparoMassa",
+    "titulo": "Disparos em massa",
+    "grupo": "Comunicação",
+    "editavel": true,
+    "colunas": [
+      "DisparoMassaDataHoraInicio",
+      "DisparoMassaStatus",
+      "DisparoMassaQuantidadeEnviado",
+      "CanalId",
+      "ListaContatoId"
+    ]
+  },
+  {
+    "slug": "bots",
+    "tabela": "ChatbotDefinicao",
+    "titulo": "Chatbot",
+    "grupo": "Automação",
+    "editavel": true,
+    "colunas": [
+      "ChatbotDefinicaoNome",
+      "ChatbotDefinicaoProvedor",
+      "ChatbotDefinicaoStatus",
+      "CanalId"
+    ]
+  },
+  {
+    "slug": "ia",
+    "tabela": "InteligenciaArtificial",
+    "titulo": "Inteligência artificial",
+    "grupo": "Automação",
+    "editavel": true,
+    "colunas": [
+      "InteligenciaArtificialNome",
+      "InteligenciaArtificialProvedor",
+      "InteligenciaArtificialModelo",
+      "CanalId",
+      "SetorId"
+    ]
+  },
+  {
+    "slug": "integracoes",
+    "tabela": "Integracao",
+    "titulo": "Integrações",
+    "grupo": "Administração",
+    "editavel": true,
+    "colunas": [
+      "IntegracaoNome",
+      "IntegracaoStatus"
+    ]
+  },
+  {
+    "slug": "webhooks",
+    "tabela": "Webhook",
+    "titulo": "Webhooks",
+    "grupo": "Administração",
+    "editavel": true,
+    "colunas": [
+      "WebhookURL",
+      "WebhookEvento",
+      "WebhookTodosCanais",
+      "CanalId"
+    ]
+  },
+  {
+    "slug": "chaves",
+    "tabela": "ChaveAPI",
+    "titulo": "Chaves de API",
+    "grupo": "Administração",
+    "editavel": true,
+    "colunas": [
+      "ChaveAPIDescricao",
+      "ChaveAPIStatus"
+    ]
+  },
+  {
+    "slug": "usuarios",
+    "tabela": "Usuario",
+    "titulo": "Usuários",
+    "grupo": "Administração",
+    "editavel": true,
+    "colunas": [
+      "UsuarioNomeCompleto",
+      "UsuarioEmail",
+      "UsuarioBloqueado",
+      "PerfilId"
+    ]
+  },
+  {
+    "slug": "perfis",
+    "tabela": "Perfil",
+    "titulo": "Perfis",
+    "grupo": "Administração",
+    "editavel": true,
+    "colunas": [
+      "PerfilNome"
+    ]
+  },
+  {
+    "slug": "permissoes",
+    "tabela": "Permissao",
+    "titulo": "Permissões",
+    "grupo": "Administração",
+    "editavel": true,
+    "colunas": [
+      "PermissaoNome",
+      "PermissaoAcao"
+    ]
+  },
+  {
+    "slug": "perfil-permissoes",
+    "tabela": "PerfilPermissao",
+    "titulo": "Permissões por perfil",
+    "grupo": "Administração",
+    "editavel": true,
+    "colunas": [
+      "PerfilId",
+      "PermissaoId"
+    ]
+  },
+  {
+    "slug": "usuario-permissoes",
+    "tabela": "UsuarioPermissao",
+    "titulo": "Permissões por usuário",
+    "grupo": "Administração",
+    "editavel": true,
+    "colunas": [
+      "UsuarioId",
+      "PermissaoId"
+    ]
+  },
+  {
+    "slug": "sessoes",
+    "tabela": "Sessao",
+    "titulo": "Sessões",
+    "grupo": "Administração",
+    "editavel": false,
+    "colunas": [
+      "UsuarioId",
+      "SessaoStatus",
+      "SessaoUltimoAcesso",
+      "SessaoIP"
+    ]
+  },
+  {
+    "slug": "cliente",
+    "tabela": "Cliente",
+    "titulo": "Empresa",
+    "grupo": "Conta",
+    "editavel": true,
+    "colunas": [
+      "ClienteNome",
+      "ClienteRazaoSocial",
+      "ClienteCpfCnpj",
+      "ClienteEmail"
+    ]
+  }
+]

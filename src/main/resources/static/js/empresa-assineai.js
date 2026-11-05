@@ -1,19 +1,21 @@
-const $ = (id) => document.getElementById(id);
+const porId = id => document.getElementById(id);
 function mensagem(texto) {
-  $("mensagem-empresa").textContent = texto;
-  $("mensagem-empresa").hidden = false;
+  porId("mensagem-empresa").textContent = texto;
+  porId("mensagem-empresa").hidden = false;
 }
-async function pedido(url, dados, metodo = "POST") {
-  const resposta = await fetch(url, {
+async function pedido(endereco, dados, metodo = "POST") {
+  const resposta = await fetch(endereco, {
     method: metodo,
     headers: {
       "Content-Type": "application/json",
-      ...($("empresa-token").value
-        ? { Authorization: `Bearer ${$("empresa-token").value.trim()}` }
-        : {}),
+      ...(porId("empresa-token").value ? {
+        Authorization: `Bearer ${porId("empresa-token").value.trim()}`
+      } : {})
     },
-    ...(dados ? { body: JSON.stringify(dados) } : {}),
-    cache: "no-store",
+    ...(dados ? {
+      body: JSON.stringify(dados)
+    } : {}),
+    cache: "no-store"
   });
   if (!resposta.ok) {
     const erro = await resposta.json().catch(() => ({}));
@@ -23,72 +25,57 @@ async function pedido(url, dados, metodo = "POST") {
 }
 async function carregar() {
   const dados = await pedido("/api/assineai/empresa", null, "GET");
-  $("perfil-nome").value = dados.EmpresaNome || "";
-  $("perfil-cnpj").value = dados.EmpresaCNPJ || "";
-  $("perfil-email").value = dados.EmpresaEmail || "";
-  $("perfil-tema").value = String(dados.EmpresaTemaTelaAssinatura || "firma")
-    .toLowerCase()
-    .includes("caderno")
-    ? "Caderno"
-    : /solida|sólida/i.test(dados.EmpresaTemaTelaAssinatura || "")
-      ? "Cor Solida"
-      : "firma";
-  $("perfil-empresa").hidden = false;
+  porId("perfil-nome").value = dados.EmpresaNome || "";
+  porId("perfil-cnpj").value = dados.EmpresaCNPJ || "";
+  porId("perfil-email").value = dados.EmpresaEmail || "";
+  porId("perfil-tema").value = String(dados.EmpresaTemaTelaAssinatura || "firma").toLowerCase().includes("caderno") ? "Caderno" : /solida|sólida/i.test(dados.EmpresaTemaTelaAssinatura || "") ? "Cor Solida" : "firma";
+  porId("perfil-empresa").hidden = false;
   await window.FirmaCanais.carregar();
-  localStorage.setItem("assineai-token", $("empresa-token").value.trim());
+  localStorage.setItem("assineai-token", porId("empresa-token").value.trim());
 }
-$("login-empresa").addEventListener("submit", async (evento) => {
+porId("login-empresa").addEventListener("submit", async evento => {
   evento.preventDefault();
   try {
     const dados = await pedido("/JLv3HEzbcO2uKlg0rsELA66dou", {
-      email: $("login-email").value,
-      password: $("login-senha").value,
+      email: porId("login-email").value,
+      password: porId("login-senha").value
     });
-    $("empresa-token").value = dados.token;
+    porId("empresa-token").value = dados.token;
     await carregar();
     mensagem("Acesso confirmado.");
   } catch (erro) {
     mensagem(erro.message);
   }
 });
-$("registro-empresa").addEventListener("submit", async (evento) => {
+porId("registro-empresa").addEventListener("submit", async evento => {
   evento.preventDefault();
   try {
     await pedido("/q9zePu74UYPUaDqUyay4fIjwNV", {
-      username: $("registro-usuario").value,
-      email: $("registro-email").value,
-      password: $("registro-senha").value,
+      username: porId("registro-usuario").value,
+      email: porId("registro-email").value,
+      password: porId("registro-senha").value
     });
     mensagem("Conta criada. Entre com e-mail e senha.");
-    $("registro-senha").value = "";
+    porId("registro-senha").value = "";
   } catch (erro) {
     mensagem(erro.message);
   }
 });
-$("carregar-empresa").addEventListener("click", () =>
-  carregar().catch((erro) => mensagem(erro.message)),
-);
-$("dados-empresa").addEventListener("submit", async (evento) => {
+porId("carregar-empresa").addEventListener("click", () => carregar().catch(erro => mensagem(erro.message)));
+porId("dados-empresa").addEventListener("submit", async evento => {
   evento.preventDefault();
   try {
-    await pedido(
-      "/api/assineai/empresa",
-      {
-        EmpresaTemplates: EditorTemplates.dados(),
-        EmpresaNome: $("perfil-nome").value,
-        EmpresaCNPJ: $("perfil-cnpj").value,
-        EmpresaEmail: $("perfil-email").value,
-        EmpresaTemaTelaAssinatura: $("perfil-tema").value,
-      },
-      "PUT",
-    );
+    await pedido("/api/assineai/empresa", {
+      EmpresaTemplates: EditorTemplates.dados(),
+      EmpresaNome: porId("perfil-nome").value,
+      EmpresaCNPJ: porId("perfil-cnpj").value,
+      EmpresaEmail: porId("perfil-email").value,
+      EmpresaTemaTelaAssinatura: porId("perfil-tema").value
+    }, "PUT");
     mensagem("Dados daFIRMA salvos.");
   } catch (erro) {
     mensagem(erro.message);
   }
 });
-$("empresa-token").value = localStorage.getItem("assineai-token") || "";
-if ($("empresa-token").value)
-  carregar().catch((erro) => mensagem(erro.message));
-
-$("template-salvar").onclick = () => $("dados-empresa").requestSubmit();
+porId("empresa-token").value = localStorage.getItem("assineai-token") || "";
+if (porId("empresa-token").value) carregar().catch(erro => mensagem(erro.message));

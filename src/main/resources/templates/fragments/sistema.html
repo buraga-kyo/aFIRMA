@@ -1,8 +1,8 @@
 <div th:fragment="navegacao" xmlns:th="http://www.thymeleaf.org">
-  <aside id="firma-sidebar" class="firma-sidebar" aria-label="Navegação do Zapiou">
+  <aside id="firma-sidebar" class="firma-sidebar" aria-label="Navegação daFIRMA">
     <a class="firma-workspace" href="/"><span class="firma-logo">aF<span>.</span></span><span><strong>Zapiou</strong><small id="firma-empresa">Seu espaço de trabalho</small></span><span class="firma-chevron">⌄</span></a>
     <button class="firma-sidebar-search" type="button" data-firma-buscar><span>⌕</span> Ir para… <kbd>Ctrl K</kbd></button>
-    <nav class="firma-menu" aria-label="Menus do Zapiou">
+    <nav class="firma-menu" aria-label="Menus daFIRMA">
       <th:block th:each="item,stat : ${menuFirma}">
         <small class="firma-menu-grupo" th:if="${stat.first or item.grupo != menuFirma[stat.index - 1].grupo}" th:text="${item.grupo}"></small>
         <a th:href="${item.href}" th:attr="aria-current=${item.href == rotaFirma} ? 'page' : null"><span class="firma-menu-icon" th:text="${item.icone}"></span><span th:text="${item.titulo}"></span></a>
@@ -10,8 +10,8 @@
     </nav>
     <div class="firma-sidebar-bottom"><button id="firma-conta" type="button"><span class="firma-avatar">F</span><span><strong id="firma-usuario">Credenciais</strong><small id="firma-sessao">Acesse seu espaço</small></span><span>⌄</span></button></div>
   </aside>
-  <header class="firma-appbar"><div><button id="firma-menu-toggle" type="button" aria-controls="firma-sidebar" aria-expanded="false" aria-label="Abrir ou recolher menu">☰</button><span id="firma-pagina">Espaço de trabalho</span></div><div class="firma-appbar-acoes"><button type="button" data-firma-buscar aria-label="Buscar módulo">⌕</button><a href="/zapiou/trator" class="firma-novo">TRATOR ↗</a><a href="/" class="firma-novo">MÓDULOS ↗</a><button id="firma-entrar" type="button">Conectar acesso</button></div></header>
-  <nav class="trator-firma zapiou-navegacao" aria-label="Navegação do Zapiou"><a class="trator-aba trator-marca" href="/firma">aFIRMA.</a><a class="trator-aba" href="/assineai/trator">AssineAI</a><a class="trator-aba" href="/chat" aria-current="page">Zapiou</a><a class="trator-aba" href="/advai">ADVai</a><div id="zapiou-grupos"></div></nav>
+  <header class="firma-appbar"><div><button id="firma-menu-toggle" type="button" aria-controls="firma-sidebar" aria-expanded="false" aria-label="Abrir ou recolher menu">☰</button><span id="firma-pagina">Espaço de trabalho</span></div><div class="firma-appbar-acoes"><button type="button" data-firma-buscar aria-label="Buscar módulo">⌕</button><a href="/firma-chat/trator" class="firma-novo">TRATOR ↗</a><a href="/" class="firma-novo">MÓDULOS ↗</a><button id="firma-entrar" type="button">Conectar acesso</button></div></header>
+  <nav class="trator-firma firma-chat-navegacao" aria-label="Navegação daFIRMA"><a class="trator-aba trator-marca" href="/firma">aFIRMA.</a><a class="trator-aba" href="/assineai/trator">AssineAI</a><a class="trator-aba" href="/chat" aria-current="page">Zapiou</a><a class="trator-aba" href="/advai">ADVai</a><div id="firma-chat-grupos"></div></nav>
   <dialog id="firma-login" class="firma-dialog"><form id="firma-login-form"><div class="firma-dialog-heading"><span class="firma-logo">aF<span>.</span></span><button type="button" data-firma-fechar aria-label="Fechar">×</button></div><h2>Conectar acesso</h2><label>CHAVE DA API<input id="firma-chave" type="password" autocomplete="off" placeholder="Chave da API"></label><label>TOKEN JWT<input id="firma-token" type="password" autocomplete="off" placeholder="Cole seu JWT" required></label><p id="firma-login-erro" role="alert" data-firma-mensagem></p><button type="submit" class="firma-submit">Conectar</button><button id="firma-sair" type="button" hidden>Desconectar acesso</button></form></dialog>
   <dialog id="firma-busca" class="firma-dialog"><div class="firma-dialog-heading"><h2>Ir para…</h2><button type="button" data-firma-fechar aria-label="Fechar">×</button></div><input id="firma-busca-input" type="search" placeholder="Buscar menu ou módulo" aria-label="Buscar menu ou módulo"><div id="firma-busca-resultados"></div></dialog>
 

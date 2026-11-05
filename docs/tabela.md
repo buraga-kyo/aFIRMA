@@ -295,7 +295,7 @@ A tabela mãe intercepta cliques em `button.destrutivo` e `button[data-confirmar
 
 ## Rodapé de acesso compartilhado
 
-`fragments/trator.html :: acesso(fontes)` renderiza o mesmo rodapé em assinaturas e Zapiou. `fontes=true` inclui o seletor de origem das assinaturas; `false` o omite no Zapiou. Os controles e o CSS são compartilhados: `lista-chave`, `lista-token`, `lista-conectar` e `usar-credenciais-teste`. Os dados de teste são fornecidos por `CredenciaisTesteTrator` somente no perfil `local-test`. O acesso usa chave e JWT, sem uma etapa de usuário/senha no Zapiou.
+`fragments/trator.html :: acesso(fontes)` renderiza o mesmo rodapé em assinaturas e conversas. `fontes=true` inclui o seletor de origem das assinaturas; `false` o omite no chat. Os controles e o CSS são compartilhados: `lista-chave`, `lista-token`, `lista-conectar` e `usar-credenciais-teste`. Os dados de teste são fornecidos por `CredenciaisTesteTrator` somente no perfil `local-test`. O acesso usa chave e JWT, sem uma etapa de usuário/senha no chat.
 
 ## Padrão dos tratores
 

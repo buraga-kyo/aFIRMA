@@ -2,7 +2,7 @@
 
 O trator de assinaturas é a referência. Assinaturas, conversas e cadastros de relacionamento são montados por `FirmaTrator.montar`, que usa a mesma `FirmaTabela`. Os módulos declaram suas colunas e operações; não precisam lembrar de habilitar cada recurso básico.
 
-| Recurso da referência | Assinaturas | Conversas do Zapiou |
+| Recurso da referência | Assinaturas | Zapiou |
 | --- | --- | --- |
 | Abas curvas na barra de comandos | Compartilhadas | Compartilhadas; grupos abrem seus menus |
 | Coluna AÇÕES | Visualizar, editar, histórico, excluir documento | Visualizar, editar contato, histórico, finalizar/reativar atendimento |
@@ -29,11 +29,69 @@ Os cadastros remotos usam os mesmos recursos básicos e mantêm os formulários 
 
 ## Verificação
 
-- `python scripts/verificar-zapiou.py`: recursos, ações reais simuladas, seleção entre páginas, seletor de colunas, filtros salvos, busca com prévia, exportação, importação e conexão.
+- `python scripts/verificar-chat-firma.py`: recursos, ações reais simuladas, seleção entre páginas, seletor de colunas, filtros salvos, busca com prévia, exportação, importação e conexão.
 - `python scripts/verificar-tabela.py`: componente base e trator de assinaturas real, incluindo os mesmos recursos e os recados com X.
 - `python scripts/verificar-mensagens.py`: avisos em desktop/celular e sobre formulários, fechamento e ausência de reaparecimento.
-- `./mvnw -Dtest=ServicoPlanoBuscaConversasTest,FiltroTratorAutenticaTest test`: planos válidos, recusa de campos de outro módulo e filtros do servidor.
+- `./mvnw -Dtest=ServicoPlanoBuscaConversasTest,FiltroTratorFirmaTest test`: planos válidos, recusa de campos de outro módulo e filtros do servidor.
 
 ## Configuração daFIRMA
 
-`/firma` usa formulários para dados, aparência e canais. Não incorpora o trator. Os modelos da folha de assinaturas ficam no ADVai, em `/advai#editor-templates`. Conversas e cadastros continuam nos tratores do Zapiou.
+`/firma` usa formulários para dados, aparência e canais. Não incorpora o trator. Os modelos da folha de assinaturas ficam no ADVai, em `/advai#editor-templates`. Conversas e cadastros continuam nos tratores de relacionamento.
+
+
+## Faixa compartilhada de abas
+
+`FirmaTrator.montar` prepara a faixa arrastável e o Burro de Carga automaticamente.
+O desenho da pasta, as cores, as alturas e a sobreposição ficam em `trator-firma.css`.
+Os módulos não precisam implementar o arraste nem posicionar o filtro por CSS.
+A navegação também funciona por toque e pelas teclas de seta, Home e End.
+
+Use `slots.comandos` para os módulos e comandos antes de Colunas.
+Use `slots.abasFinais` para a navegação que deve aparecer depois de Colunas,
+como o menu Telas. Esse conteúdo é montado uma vez e preservado nas atualizações.
+
+```javascript
+FirmaTrator.montar({
+  elemento: '#minha-tabela',
+  rotulo: 'Pedidos',
+  dados: pedidos,
+  colunas: [{ id: 'nome', nome: 'NOME' }],
+  slots: {
+    comandos: destino => destino.append(botaoNovoPedido),
+    abasFinais: destino => destino.append(menuTelas)
+  }
+});
+```
+
+`FirmaTabela` continua sendo o núcleo de dados e renderização. `FirmaTrator`
+adiciona a apresentação padrão daFIRMA. Os dois módulos usam a mesma camada.
+Os eventos da faixa são removidos junto com a instância da tabela.
+
+
+## Cadastros e consultas paginadas
+
+Os tratores ativos estão nas telas de assinaturas, chat e nos 23 cadastros do
+catálogo `relacionamento/modulos.json`. Os cadastros compartilham o template
+`relacionamento.html`; os apelidos de rota usam esse mesmo template.
+
+Para consultas paginadas, defina `buscarNoServidor(consulta, instancia)` e mantenha
+`recursos.buscaIA: false`. A base cria o mesmo Burro de Carga e chama a consulta
+quando o formulário é enviado, voltando à primeira página. Nesse modo o servidor
+continua responsável por busca, filtros, ordenação e paginação dos registros.
+
+Não crie outra faixa acima do cabeçalho de colunas. A navegação entre cadastros
+fica na aba Telas; Atualizar e os comandos auxiliares ficam no rodapé existente.
+A busca rápida aparece apenas na lista lateral do chat expandido. Ao recolher,
+o campo é ocultado e a consulta é limpa.
+
+Verificações de interface sem serviços externos:
+
+```bash
+python3 scripts/verificar-tabela.py
+python3 scripts/verificar-chat-firma.py
+python3 scripts/verificar-tratores.py
+```
+
+A última verificação percorre todos os cadastros em 1440 e 500 pixels e confere
+estrutura, cores, limites de largura, envio da busca e remontagem na reconexão.
+Os dados e respostas da API são simulados nessa verificação.

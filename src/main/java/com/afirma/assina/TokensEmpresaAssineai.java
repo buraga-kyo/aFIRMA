@@ -56,14 +56,14 @@ public final class TokensEmpresaAssineai {
         assinar(jwt.getSigningInput(), segredo)
       )
     ) throw new IllegalArgumentException("Token inválido");
-    var claims = jwt.getJWTClaimsSet();
+    var informacoesToken = jwt.getJWTClaimsSet();
     if (
-      claims.getExpirationTime() == null ||
-      !claims.getExpirationTime().toInstant().isAfter(Instant.now()) ||
-      (claims.getNotBeforeTime() != null &&
-        claims.getNotBeforeTime().toInstant().isAfter(Instant.now()))
+      informacoesToken.getExpirationTime() == null ||
+      !informacoesToken.getExpirationTime().toInstant().isAfter(Instant.now()) ||
+      (informacoesToken.getNotBeforeTime() != null &&
+        informacoesToken.getNotBeforeTime().toInstant().isAfter(Instant.now()))
     ) throw new IllegalArgumentException("Token expirado ou ainda não válido");
-    String email = claims.getStringClaim("id");
+    String email = informacoesToken.getStringClaim("id");
     if (
       email == null || email.isBlank() || email.length() > 254
     ) throw new IllegalArgumentException("Empresa inválida");

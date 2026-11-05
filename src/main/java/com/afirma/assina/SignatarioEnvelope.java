@@ -185,8 +185,8 @@ public class SignatarioEnvelope {
 	public void setDispositivo(String dispositivo) { this.dispositivo = dispositivo; }
 	public String getGeolocalizacao() { return geolocalizacao; }
 	public void setGeolocalizacao(String geolocalizacao) { this.geolocalizacao = geolocalizacao; }
-	public String getAutenticadoVia() { return autenticadoVia; }
-	public void setAutenticadoVia(String autenticadoVia) { this.autenticadoVia = autenticadoVia; }
+	public String getFirmadoVia() { return autenticadoVia; }
+	public void setFirmadoVia(String autenticadoVia) { this.autenticadoVia = autenticadoVia; }
 	public String getSelfieBase64() { return selfieBase64; }
 	public void setSelfieBase64(String selfieBase64) { this.selfieBase64 = selfieBase64; }
 	public String getAssinaturaEscritaBase64() { return assinaturaEscritaBase64; }

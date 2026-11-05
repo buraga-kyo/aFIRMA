@@ -31,7 +31,7 @@ public final class PaginaRegistroAssinaturas {
       "a42d8e97c6513b80f74e2c96d8f03b61c59a78e24d861f093c72b1a6e0549f38",
       "https://exemplo.com/autenticidade/8d7f3c21","31/10/2026 · 14:32:08 -03:00",
       List.of(new LinkedHashMap<>(Map.ofEntries(Map.entry("SignatarioNome","Marina Costa Almeida"),Map.entry("SignatarioQualificacao","Representante legal"),
-        Map.entry("SignatarioAssinou",true),Map.entry("SignatarioDataAssinatura","31/10/2026 · 14:30:42 -03:00"),Map.entry("SignatarioAutenticadoVia","Assinatura na tela, código por e-mail"),
+        Map.entry("SignatarioAssinou",true),Map.entry("SignatarioDataAssinatura","31/10/2026 · 14:30:42 -03:00"),Map.entry("SignatarioFirmadoVia","Assinatura na tela, código por e-mail"),
         Map.entry("SignatarioEmail","marina@exemplo.com"),Map.entry("SignatarioWhatsApp","+55 (11) 99999-0000"),Map.entry("SignatarioCPF","000.000.000-00"),Map.entry("SignatarioRG","00.000.000-0"),
         Map.entry("SignatarioIp","192.0.2.10"),Map.entry("SignatarioDispositivo","Chrome · Windows · computador"),Map.entry("SignatarioGeolocalizacao","Não informada")))));
   }
@@ -54,24 +54,24 @@ public final class PaginaRegistroAssinaturas {
     }
   }
   private byte[] renderizar(Dados d) throws Exception {
-    var out=new ByteArrayOutputStream(); var pdf=new Document(PageSize.A4,0,0,0,0);var writer=PdfWriter.getInstance(pdf,out);
+    var saidaAtual=new ByteArrayOutputStream(); var pdf=new Document(PageSize.A4,0,0,0,0);var writer=PdfWriter.getInstance(pdf,saidaAtual);
     pdf.addTitle("Registro de assinaturas · "+d.empresa());pdf.addAuthor(d.empresa());pdf.open(); c=writer.getDirectContent();
-    var docArea=area("documento"); var sigArea=area("signatarios");
+    var areaDocumento=area("documento"); var sigArea=area("signatarios");
     List<Linha> documento=new ArrayList<>();
-    campo(documento,"Documento",d.documento(),false,docArea[2]-36);
-    campo(documento,"Identificador",d.identificador(),true,docArea[2]-36);
-    campo(documento,"SHA-256 do PDF original",d.hash(),true,docArea[2]-36);
-    campo(documento,"Autenticidade",d.autenticidade(),true,docArea[2]-36);
-    int docOffset=0,pessoa=0,offset=0,pagina=0;
+    campo(documento,"Documento",d.documento(),false,areaDocumento[2]-36);
+    campo(documento,"Identificador",d.identificador(),true,areaDocumento[2]-36);
+    campo(documento,"SHA-256 do PDF original",d.hash(),true,areaDocumento[2]-36);
+    campo(documento,"Autenticidade",d.autenticidade(),true,areaDocumento[2]-36);
+    int deslocamentoDocumento=0,pessoa=0,offset=0,pagina=0;
     do {
       if(pagina++>0) {pdf.newPage();c=writer.getDirectContent();}
       fundo(d,pagina); cabecalho(d);
-      painel(docArea); secao(docArea,"01", "DADOS DO DOCUMENTO");
-      float dy=docArea[1]+40, limite=docArea[1]+docArea[3]-14;
-      if(docOffset>=documento.size()) {
-        List<Linha> resumo=new ArrayList<>();campo(resumo,"Documento",d.documento(),false,docArea[2]-36);campo(resumo,"SHA-256 original",d.hash(),true,docArea[2]-36);
-        for(var l:resumo) {if(dy+12>limite) break;desenharLinha(l,docArea[0]+18,dy);dy+=12;}
-      } else while(docOffset<documento.size() && dy+12<=limite) {desenharLinha(documento.get(docOffset++),docArea[0]+18,dy);dy+=12;}
+      painel(areaDocumento); secao(areaDocumento,"01", "DADOS DO DOCUMENTO");
+      float dy=areaDocumento[1]+40, limite=areaDocumento[1]+areaDocumento[3]-14;
+      if(deslocamentoDocumento>=documento.size()) {
+        List<Linha> resumo=new ArrayList<>();campo(resumo,"Documento",d.documento(),false,areaDocumento[2]-36);campo(resumo,"SHA-256 original",d.hash(),true,areaDocumento[2]-36);
+        for(var l:resumo) {if(dy+12>limite) break;desenharLinha(l,areaDocumento[0]+18,dy);dy+=12;}
+      } else while(deslocamentoDocumento<documento.size() && dy+12<=limite) {desenharLinha(documento.get(deslocamentoDocumento++),areaDocumento[0]+18,dy);dy+=12;}
       // Os participantes paginam dentro da área reservada; nenhuma evidência é descartada.
       boolean grade=Set.of("atlas","botanica","prisma").contains(modelo.get("design"));
       float sy=sigArea[1];
@@ -102,7 +102,7 @@ public final class PaginaRegistroAssinaturas {
         if(offset>=linhas.size()) {offset=0;pessoa++;} else break;
       }
       integridade(d,pagina);
-    } while(docOffset<documento.size() || pessoa<d.signatarios().size());
+    } while(deslocamentoDocumento<documento.size() || pessoa<d.signatarios().size());
     // Imagens são evidências reais; acompanham os dados em folhas com a mesma identidade.
     for(var p:d.signatarios()) if(Boolean.TRUE.equals(p.get("SignatarioAssinou"))) {
       var imagens=new ArrayList<Map.Entry<String,byte[]>>();
@@ -121,12 +121,12 @@ public final class PaginaRegistroAssinaturas {
       }
       integridade(d,pagina);
     }
-    pdf.close();return out.toByteArray();
+    pdf.close();return saidaAtual.toByteArray();
   }
   private List<Linha> linhasPessoa(Map<String,Object> p,float w) {
     var linhas=new ArrayList<Linha>();
     for(var f:List.of(new String[]{"Nome","SignatarioNome"},new String[]{"Qualificação","SignatarioQualificacao"},
-      new String[]{"Situação","_situacao"},new String[]{"Assinou em","SignatarioDataAssinatura"},new String[]{"Métodos","SignatarioAutenticadoVia"},
+      new String[]{"Situação","_situacao"},new String[]{"Assinou em","SignatarioDataAssinatura"},new String[]{"Métodos","SignatarioFirmadoVia"},
       new String[]{"E-mail","SignatarioEmail"},new String[]{"WhatsApp","SignatarioWhatsApp"},new String[]{"CPF","SignatarioCPF"},new String[]{"RG","SignatarioRG"},
       new String[]{"IP","SignatarioIp"},new String[]{"Dispositivo","SignatarioDispositivo"},new String[]{"Localização informada","SignatarioGeolocalizacao"})) {
       String v=f[1].equals("_situacao")?(Boolean.TRUE.equals(p.get("SignatarioAssinou"))?"Assinado":"Assinatura pendente"):valor(p,f[1]);
@@ -142,18 +142,18 @@ public final class PaginaRegistroAssinaturas {
   private void cabecalho(Dados d) throws Exception {
     var a=area("cabecalho"); float x=a[0],y=a[1],w=a[2];
     String design=modelo.get("design").toString();boolean escuro=design.equals("noir");
-    Color ink=escuro?cor("tinta"):cor("tinta");
+    Color corTexto=escuro?cor("tinta"):cor("tinta");
     String logo=modelo.get("logo").toString();float logoW=0;
     if(!logo.isEmpty()) {var img=Image.getInstance(Base64.getDecoder().decode(logo.substring(logo.indexOf(',')+1)));img.scaleToFit(92,36);img.setAbsolutePosition(x+w-img.getScaledWidth(),842-y-img.getScaledHeight());c.addImage(img);logoW=106;}
-    float nomeSize=9;var nomes=quebrar(d.empresa(),forte,nomeSize,w-logoW-20);
-    for(int i=0;i<nomes.size();i++)txt(nomes.get(i),forte,nomeSize,cor("destaque"),x,y+i*11);
+    float tamanhoNome=9;var nomes=quebrar(d.empresa(),forte,tamanhoNome,w-logoW-20);
+    for(int i=0;i<nomes.size();i++)txt(nomes.get(i),forte,tamanhoNome,cor("destaque"),x,y+i*11);
     float ty=y+Math.max(34,nomes.size()*11+12);
     float fs=design.equals("editorial")?34:design.equals("noir")?32:design.equals("prisma")?31:27;
     String textoTitulo=modelo.get("titulo").toString();
     if(Set.of("noir","prisma","editorial").contains(design) && textoTitulo.equals("Registro de assinaturas"))textoTitulo="Registro de\nassinaturas";
     var titulo=quebrar(textoTitulo,design.equals("prisma")?forte:normal,fs,w-24);
     while(titulo.size()*fs*1.05> y+a[3]-32-ty && fs>12) {fs--;titulo=quebrar(textoTitulo,design.equals("prisma")?forte:normal,fs,w-24);}
-    for(String l:titulo) {float tx=design.equals("noir")?x+(w-normal.getWidthPoint(l,fs))/2:x;txt(l,design.equals("prisma")?forte:normal,fs,ink,tx,ty);ty+=fs*1.05f;}
+    for(String l:titulo) {float transacoes=design.equals("noir")?x+(w-normal.getWidthPoint(l,fs))/2:x;txt(l,design.equals("prisma")?forte:normal,fs,corTexto,transacoes,ty);ty+=fs*1.05f;}
     txt(modelo.get("subtitulo").toString(),forte,6.2f,cor("destaque"),x,y+a[3]-18);
     linha(x,y+a[3],x+w,y+a[3],cor("destaque"),design.equals("editorial")?3:1);
   }
@@ -238,20 +238,20 @@ public final class PaginaRegistroAssinaturas {
   private Color cor(String chave) {return Color.decode(cores.get(chave).toString());}
   private static Color contraste(Color c) {return c.getRed()*.299+c.getGreen()*.587+c.getBlue()*.114>145?new Color(20,25,30):Color.WHITE;}
   private static Color misturar(Color a,Color b,float p) {return new Color((int)(a.getRed()*(1-p)+b.getRed()*p),(int)(a.getGreen()*(1-p)+b.getGreen()*p),(int)(a.getBlue()*(1-p)+b.getBlue()*p));}
-  private void txt(String s,BaseFont f,float size,Color color,float x,float top) {c.beginText();c.setFontAndSize(f,size);c.setColorFill(color);c.setTextMatrix(x,842-top-size);c.showText(limpar(s));c.endText();}
-  private void box(float x,float y,float w,float h,float r,Color color) {c.setColorFill(color);c.roundRectangle(x,842-y-h,w,h,r);c.fill();}
-  private void linha(float x,float y,float xx,float yy,Color color,float width) {c.setColorStroke(color);c.setLineWidth(width);c.moveTo(x,842-y);c.lineTo(xx,842-yy);c.stroke();}
-  private void circulo(float x,float y,float raio,Color color) {c.setColorFill(color);c.circle(x,842-y,raio);c.fill();}
-  private void bolha(float x,float y,float raio,Color color) {circulo(x,y,raio,color);}
-  private void folha(float x,float y,float w,float h,float angulo,Color color) {c.saveState();double a=Math.toRadians(angulo);c.concatCTM((float)Math.cos(a),(float)Math.sin(a),(float)-Math.sin(a),(float)Math.cos(a),x,842-y);c.setColorFill(color);c.moveTo(0,0);c.curveTo(w*.1f,h,w*.8f,h,w,0);c.curveTo(w*.8f,-h,w*.1f,-h,0,0);c.fill();c.restoreState();}
-  private void poligono(float[] p,Color color) {c.setColorFill(color);c.moveTo(p[0],842-p[1]);for(int i=2;i<p.length;i+=2)c.lineTo(p[i],842-p[i+1]);c.closePath();c.fill();}
+  private void txt(String s,BaseFont f,float tamanhoAtual,Color corAtual,float x,float topo) {c.beginText();c.setFontAndSize(f,tamanhoAtual);c.setColorFill(corAtual);c.setTextMatrix(x,842-topo-tamanhoAtual);c.showText(limpar(s));c.endText();}
+  private void box(float x,float y,float w,float h,float r,Color corAtual) {c.setColorFill(corAtual);c.roundRectangle(x,842-y-h,w,h,r);c.fill();}
+  private void linha(float x,float y,float xx,float yy,Color corAtual,float width) {c.setColorStroke(corAtual);c.setLineWidth(width);c.moveTo(x,842-y);c.lineTo(xx,842-yy);c.stroke();}
+  private void circulo(float x,float y,float raio,Color corAtual) {c.setColorFill(corAtual);c.circle(x,842-y,raio);c.fill();}
+  private void bolha(float x,float y,float raio,Color corAtual) {circulo(x,y,raio,corAtual);}
+  private void folha(float x,float y,float w,float h,float angulo,Color corAtual) {c.saveState();double a=Math.toRadians(angulo);c.concatCTM((float)Math.cos(a),(float)Math.sin(a),(float)-Math.sin(a),(float)Math.cos(a),x,842-y);c.setColorFill(corAtual);c.moveTo(0,0);c.curveTo(w*.1f,h,w*.8f,h,w,0);c.curveTo(w*.8f,-h,w*.1f,-h,0,0);c.fill();c.restoreState();}
+  private void poligono(float[] p,Color corAtual) {c.setColorFill(corAtual);c.moveTo(p[0],842-p[1]);for(int i=2;i<p.length;i+=2)c.lineTo(p[i],842-p[i+1]);c.closePath();c.fill();}
   private static String valor(Map<String,Object> m,String chave) {return Objects.toString(m.get(chave),"");}
   private static String limpar(String s) {return s==null?"":s.replaceAll("[\\p{Cntrl}&&[^\\n]]"," ");}
-  private static List<String> quebrar(String s,BaseFont fonte,float size,float largura) {
+  private static List<String> quebrar(String s,BaseFont fonte,float tamanhoAtual,float largura) {
     var linhas=new ArrayList<String>();
     for(String paragrafo:limpar(s).split("\\n",-1)) {
       String resto=paragrafo.strip();if(resto.isEmpty()){linhas.add("");continue;}
-      while(!resto.isEmpty()) {int fim=resto.length();while(fim>1 && fonte.getWidthPoint(resto.substring(0,fim),size)>largura)fim--;
+      while(!resto.isEmpty()) {int fim=resto.length();while(fim>1 && fonte.getWidthPoint(resto.substring(0,fim),tamanhoAtual)>largura)fim--;
         if(fim<resto.length()){int espaco=resto.lastIndexOf(' ',fim);if(espaco>fim/2)fim=espaco;}
         linhas.add(resto.substring(0,fim).strip());resto=resto.substring(fim).stripLeading();
       }

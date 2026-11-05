@@ -61,19 +61,19 @@ public class ControleEnvelopes {
     @PostMapping("/envelopes/{id}/notificar")
     public java.util.List<ServicoAutenticacaoAssinatura.Notificacao> notificar(@PathVariable UUID id,
             @org.springframework.web.bind.annotation.RequestBody java.util.List<String> tokens,
-            Principal usuario, HttpServletRequest request) {
-        String origem = org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromRequestUri(request)
+            Principal usuario, HttpServletRequest requisicaoAtual) {
+        String origem = org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromRequestUri(requisicaoAtual)
             .replacePath(null).replaceQuery(null).build().toUriString();
         return autenticacao.notificar(id, usuario.getName(), tokens, origem);
     }
     @PostMapping("/convites/{token}/codigos/{canal}")
-    public ResponseEntity<Void> enviarCodigo(@PathVariable String token, @PathVariable String canal, HttpServletRequest request) {
-        autenticacao.enviarCodigo(token, canal, request.getRemoteAddr(), request.getHeader("User-Agent")); return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> enviarCodigo(@PathVariable String token, @PathVariable String canal, HttpServletRequest requisicaoAtual) {
+        autenticacao.enviarCodigo(token, canal, requisicaoAtual.getRemoteAddr(), requisicaoAtual.getHeader("User-Agent")); return ResponseEntity.noContent().build();
     }
     @PostMapping("/convites/{token}/codigos/{canal}/verificar")
     public ResponseEntity<Void> verificarCodigo(@PathVariable String token, @PathVariable String canal,
-            @org.springframework.web.bind.annotation.RequestBody Codigo codigo, HttpServletRequest request) {
-        return autenticacao.verificarCodigo(token, canal, codigo.codigo(), request.getRemoteAddr(), request.getHeader("User-Agent")) ? ResponseEntity.noContent().build()
+            @org.springframework.web.bind.annotation.RequestBody Codigo codigo, HttpServletRequest requisicaoAtual) {
+        return autenticacao.verificarCodigo(token, canal, codigo.codigo(), requisicaoAtual.getRemoteAddr(), requisicaoAtual.getHeader("User-Agent")) ? ResponseEntity.noContent().build()
             : ResponseEntity.badRequest().build();
     }
     public record Codigo(String codigo) {}
@@ -100,9 +100,9 @@ public class ControleEnvelopes {
 	}
 
 	@GetMapping("/convites/{token}")
-	public ServicoEnvelopes.DadosConvite convite(@PathVariable String token, HttpServletRequest request) {
+	public ServicoEnvelopes.DadosConvite convite(@PathVariable String token, HttpServletRequest requisicaoAtual) {
         var dados = servico.consultarConvite(token);
-        servico.registrarAcessoConvite(token, request.getRemoteAddr(), request.getHeader("User-Agent"));
+        servico.registrarAcessoConvite(token, requisicaoAtual.getRemoteAddr(), requisicaoAtual.getHeader("User-Agent"));
 		return dados;
 	}
 

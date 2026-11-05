@@ -159,7 +159,7 @@ public class ServicoEnvelopes {
 		List<EstadoSignatario> estados = signatarios.findByEnvelopeIdOrderByNome(id).stream()
 				.map(signatario -> new EstadoSignatario(signatario.getNome(), signatario.getEmail(),
 						signatario.getAssinadoEm(), signatario.getSituacaoAssinatura(),
-                        signatario.getQuantidadeDeAcessosNoLinkDeAssinatura(), signatario.getAutenticadoVia(),
+                        signatario.getQuantidadeDeAcessosNoLinkDeAssinatura(), signatario.getFirmadoVia(),
                         historicos.findBySignatarioIdOrderByCriadoEmAscIdAsc(signatario.getId()).stream()
                             .map(h -> new HistoricoSignatario(h.getStatus(), h.getAcao(), h.getEnderecoIp(), h.getDispositivo(), h.getCriadoEm())).toList())).toList();
 		return new EstadoEnvelope(id, envelope.getNomeEmpresa(), envelope.getNomeDocumento(),
@@ -269,7 +269,7 @@ public class ServicoEnvelopes {
         if (desenho != null) metodos.add("tela");
         if (inicial != null) metodos.add("rubrica");
         if (fotografia != null) metodos.add("selfie");
-        signatario.setAutenticadoVia(String.join(",", metodos));
+        signatario.setFirmadoVia(String.join(",", metodos));
         historicos.save(new SignatarioHistorico(signatario.getId(), "assinado", "assinatura_confirmada", ip, dispositivo));
 		if (temFinal(envelope)) throw new ResponseStatusException(HttpStatus.CONFLICT,
 				"Documento já finalizado");
@@ -323,16 +323,16 @@ public class ServicoEnvelopes {
 
     private void atualizarProgresso(EnvelopeAssinatura envelope) {
         var pessoas = signatarios.findByEnvelopeIdOrderByNome(envelope.getId());
-        var docs = documentos.findByEnvelopeIdOrderByPaginaInicio(envelope.getId());
+        var documentosAtual = documentos.findByEnvelopeIdOrderByPaginaInicio(envelope.getId());
         var posicoes = pessoas.stream().collect(java.util.stream.Collectors.toMap(SignatarioEnvelope::getId,
             p -> campos.findBySignatarioId(p.getId())));
         long completos = 0;
-        for (var documento : docs) {
+        for (var documento : documentosAtual) {
             var envolvidos = pessoas.stream().filter(p -> posicoes.get(p.getId()).stream()
                 .anyMatch(c -> documento.getId().equals(c.getDocumentoId()))).toList();
             if (!envolvidos.isEmpty() && envolvidos.stream().allMatch(p -> p.getAssinadoEm() != null)) completos++;
         }
-        if (docs.isEmpty() && !pessoas.isEmpty() && pessoas.stream().allMatch(p -> p.getAssinadoEm() != null)) completos = 1;
+        if (documentosAtual.isEmpty() && !pessoas.isEmpty() && pessoas.stream().allMatch(p -> p.getAssinadoEm() != null)) completos = 1;
         envelope.setQuantidadeDocumentoAssinado(String.valueOf(completos));
         envelope.setStatus("Em Processo");
     }
@@ -426,8 +426,8 @@ public class ServicoEnvelopes {
 			return null;
 		}
 		if (arquivo.getSize() > LIMITE_IMAGEM) throw erro("Cada imagem deve ter até 2 MB");
-		String mime = arquivo.getContentType();
-		if (!"image/png".equals(mime) && !"image/jpeg".equals(mime)) {
+		String tipoArquivo = arquivo.getContentType();
+		if (!"image/png".equals(tipoArquivo) && !"image/jpeg".equals(tipoArquivo)) {
 			throw erro("Use imagens PNG ou JPEG");
 		}
 		byte[] dados;

@@ -45,10 +45,10 @@ public class ControleDocumentosAssinatura {
 				.map(envelope -> {
 					var pessoas = signatarios.findByEnvelopeIdOrderByNome(envelope.getId());
 					long assinados = pessoas.stream().filter(p -> p.getAssinadoEm() != null).count();
-					String status = envelope.getFinalizadoEm() != null ? "Assinado"
+					String situacao = envelope.getFinalizadoEm() != null ? "Assinado"
 							: assinados > 0 || "Em Processo".equals(envelope.getStatus()) ? "Em Processo" : "Pendente";
 					return new DocumentoLista(envelope.getId(), envelope.getNomeDocumento(),
-							envelope.getCriadoEm(), envelope.getCriador(), status, pessoas.size(), assinados,
+							envelope.getCriadoEm(), envelope.getCriador(), situacao, pessoas.size(), assinados,
 							pessoas.stream().map(p -> new SignatarioLista(p.getNome(), p.getEmail(),
 									p.getAssinadoEm())).toList());
 				}).toList();
@@ -74,12 +74,12 @@ public class ControleDocumentosAssinatura {
 		if (nomeArquivo == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nome de arquivo inválido");
 		}
-		String nomeLower = nomeArquivo.toLowerCase();
-		if (!nomeLower.endsWith(".csv") && !nomeLower.endsWith(".xlsx") && !nomeLower.endsWith(".xls")) {
+		String nomeMinusculo = nomeArquivo.toLowerCase();
+		if (!nomeMinusculo.endsWith(".csv") && !nomeMinusculo.endsWith(".xlsx") && !nomeMinusculo.endsWith(".xls")) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Apenas arquivos Excel ou CSV são permitidos");
 		}
 
-		if (nomeLower.endsWith(".csv")) {
+		if (nomeMinusculo.endsWith(".csv")) {
 			try {
 				String conteudoCsv = new String(arquivo.getBytes(), java.nio.charset.StandardCharsets.UTF_8);
 				String[] linhas = conteudoCsv.split("\n");
@@ -98,8 +98,8 @@ public class ControleDocumentosAssinatura {
 							java.time.LocalDate dataLocal = java.time.LocalDate.parse(dataTexto, formatador);
 							Instant criadoEm = dataLocal.atStartOfDay(zone).toInstant();
 							UUID envelopeId = UUID.randomUUID();
-							EnvelopeAssinatura env = new EnvelopeAssinatura(envelopeId, "Importação via CSV", titulo, usuario.getName(), new byte[0], criadoEm, criadoEm.plusSeconds(86400 * 30));
-							envelopes.save(env);
+							EnvelopeAssinatura ambiente = new EnvelopeAssinatura(envelopeId, "Importação via CSV", titulo, usuario.getName(), new byte[0], criadoEm, criadoEm.plusSeconds(86400 * 30));
+							envelopes.save(ambiente);
 							
 							if (!signatariosRaw.isEmpty()) {
 								String[] emails = signatariosRaw.split(",");

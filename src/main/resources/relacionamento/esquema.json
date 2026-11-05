@@ -1,0 +1,3554 @@
+{
+  "tabelas": [
+    {
+      "schema": "firma",
+      "nome": "APILog",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "APILogDataHoraRecebimento",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "APILogMetodoHTTP",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "APILogStatusCode",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "APILogURL",
+          "tipo": "VARCHAR(2000)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "APILogTempoDecorridoMS",
+          "tipo": "FLOAT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "APILogIP",
+          "tipo": "VARCHAR(60)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "APILogDadosRecebidos",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "APILogRespostaEnviada",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "APILogChaveAPI",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "Arquivo",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "ArquivoURL",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ArquivoChave",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ArquivoNome",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ArquivoMimeType",
+          "tipo": "VARCHAR(500)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ArquivoExtensao",
+          "tipo": "VARCHAR(10)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ArquivoSize",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ArquivoThumbnailURL",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ArquivoThumbnailChave",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ArquivoLatitude",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ArquivoLongitude",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "Atendente",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "AtendenteNome",
+          "tipo": "VARCHAR(70)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendenteStatus",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendenteStatusChat",
+          "tipo": "VARCHAR(20)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendenteSobreChat",
+          "tipo": "VARCHAR(256)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendenteUsuarioId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendenteNotificacoes",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "AtendenteSetor",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendenteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SetorId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "Atendimento",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "AtendimentoProtocolo",
+          "tipo": "VARCHAR(16)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoStatus",
+          "tipo": "VARCHAR(20)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoAvaliacao",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoQtdMensagensNaoLidas",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoBOTExterno",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoDataFinalizado",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendenteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ContatoId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SetorId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoContextoIA",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoReceptivo",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoDuracao",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoTempoPendente",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoTempoRespostaCliente",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoTempoRespostaAtendente",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoDataUltimaMensagemCliente",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": [
+        {
+          "fields": [
+            "CanalId",
+            "ContatoId",
+            "AtendimentoStatus"
+          ],
+          "unique": true,
+          "name": "atendimento_pendente_unique",
+          "where": {
+            "AtendimentoStatus": "pendente"
+          }
+        },
+        {
+          "name": "canal_createdat_idx",
+          "using": "BTREE",
+          "fields": [
+            "CanalId",
+            "AtendimentoStatus",
+            {
+              "name": "updatedAt",
+              "order": "DESC"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schema": "firma",
+      "nome": "AtendimentoAcao",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "AtendimentoAcaoTipo",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoAcaoTexto",
+          "tipo": "VARCHAR(200)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "AtendimentoTag",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "TagId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": [
+        {
+          "fields": [
+            "AtendimentoId",
+            {
+              "attribute": "id",
+              "order": "DESC",
+              "name": "id"
+            }
+          ],
+          "name": "idx_atendimentotag_atendimentoid_id"
+        }
+      ]
+    },
+    {
+      "schema": "firma",
+      "nome": "Canal",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "CanalNome",
+          "tipo": "VARCHAR(60)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalGUID",
+          "tipo": "UUID",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalNomePastaWhatsApp",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalNumeroCelular",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalStatus",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalStatusUso",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalProvedorAPI",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalValorCredsWhatsApp",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalMetaNumeroIdentificador",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalMetaWAID",
+          "tipo": "VARCHAR(60)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalMsgEncerramentoAtendimento",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalVisualizaMenuBOTChat",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalFinalizaAtendimentoPorTempoInatividade",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalAtendimentoTempoInatividade",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalMsgFinalizarTempoInatividade",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": [
+        {
+          "fields": [
+            "CanalGUID"
+          ],
+          "unique": true
+        }
+      ]
+    },
+    {
+      "schema": "firma",
+      "nome": "ChatbotDefinicao",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "ChatbotDefinicaoNome",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotDefinicaoJSON",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotDefinicaoMetadata",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotDefinicaoStatus",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotDefinicaoFuncionamento",
+          "tipo": "JSON",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotDefinicaoFlow",
+          "tipo": "JSON",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotDefinicaoProvedor",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotDefinicaoN8nURL",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "ChatbotMetadata",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "ChatbotMetadataIdentificador",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotMetadataNomeBOT",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotMetadataCanalGUID",
+          "tipo": "UUID",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotMetadataDados",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotMensagens",
+          "tipo": "JSON",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotMetadataDefinicao",
+          "tipo": "JSON",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotMetadataDadosN8n",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChatbotMetadataProvedorBOT",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "ChaveAPI",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "ChaveAPIDescricao",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChaveAPIStatus",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChaveAPIValor",
+          "tipo": "UUID",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ChaveAPIResponsavelCriacao",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "Cliente",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "ClienteNome",
+          "tipo": "VARCHAR(255)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteStatus",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteProvedorAPI",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteMetaToken",
+          "tipo": "VARCHAR(500)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteMetaIdAplicativo",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteRazaoSocial",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteCpfCnpj",
+          "tipo": "VARCHAR(20)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteCep",
+          "tipo": "VARCHAR(8)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteLogradouro",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteNumero",
+          "tipo": "VARCHAR(30)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteComplemento",
+          "tipo": "VARCHAR(30)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteBairro",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteCidade",
+          "tipo": "VARCHAR(80)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteEstado",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteTelefone",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteEmail",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PlanoId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "Contato",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "ContatoNome",
+          "tipo": "VARCHAR(70)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ContatoNumero",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ContatoEmail",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ContatoInformacaoAdicional",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ContatoAvatar",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ContatoAvatarChave",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ContatoJidWhatsApp",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": [
+        {
+          "fields": [
+            "ContatoNumero",
+            "ClienteId"
+          ],
+          "unique": true
+        }
+      ]
+    },
+    {
+      "schema": "firma",
+      "nome": "Mensagem",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "MensagemTexto",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemRemetente",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemDestinatario",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemACK",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemFromMe",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTipo",
+          "tipo": "VARCHAR(60)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemEnviadaPeloBot",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemEnviadaViaAPI",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemEnviadaPeloAtendente",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemRAW",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemIdWhatsApp",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemDataHoraWhatsApp",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTimestampWhatsApp",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemDeletada",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemKeyWhatsApp",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemRespostaId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendimentoId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendenteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ArquivoId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemReacao",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemEditada",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemInterativa",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemEnviadaExternamente",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": [
+        {
+          "fields": [
+            "MensagemIdWhatsApp"
+          ],
+          "unique": true
+        },
+        {
+          "fields": [
+            {
+              "name": "AtendimentoId",
+              "order": "DESC NULLS LAST"
+            }
+          ],
+          "name": "idx_mensagem_atendimentoid"
+        },
+        {
+          "fields": [
+            {
+              "name": "MensagemIdWhatsApp",
+              "order": "ASC NULLS LAST"
+            },
+            {
+              "name": "createdAt",
+              "order": "ASC NULLS LAST"
+            }
+          ],
+          "name": "idx_mensagem_whatsapp_created_at"
+        },
+        {
+          "fields": [
+            {
+              "name": "MensagemIdWhatsApp",
+              "order": "ASC NULLS LAST"
+            },
+            {
+              "name": "createdAt",
+              "order": "DESC NULLS LAST"
+            }
+          ],
+          "name": "idx_mensagem_whatsapp_created_at_desc"
+        },
+        {
+          "name": "atendimento_createdat_idx",
+          "using": "BTREE",
+          "fields": [
+            {
+              "name": "AtendimentoId",
+              "order": "ASC NULLS LAST"
+            },
+            {
+              "name": "createdAt",
+              "order": "DESC"
+            }
+          ]
+        },
+        {
+          "unique": true,
+          "fields": [
+            "MensagemIdWhatsApp",
+            "CanalId"
+          ]
+        }
+      ]
+    },
+    {
+      "schema": "firma",
+      "nome": "MensagemRapida",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "MensagemRapidaGUID",
+          "tipo": "UUID",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemRapidaTexto",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SetorId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "Setor",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "SetorStatus",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SetorNome",
+          "tipo": "VARCHAR(70)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "Tag",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "TagStatus",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "TagNome",
+          "tipo": "VARCHAR(60)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "TagGUID",
+          "tipo": "UUID",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SetorId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "Webhook",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "WebhookURL",
+          "tipo": "VARCHAR(2000)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "WebhookResponsavelCriacao",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "WebhookEvento",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "WebhookTodosCanais",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "WebhookLog",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "WebhookLogDataHoraEnvio",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "WebhookLogDataHoraRecebimento",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "WebhookLogStatusCode",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "WebhookLogEvento",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "WebhookLogDados",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "WebhookLogURLNotificada",
+          "tipo": "VARCHAR(2000)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "MensagemTemplate",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "MensagemTemplateNome",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateCategoria",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateMetaId",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateCabecalhoTipo",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateCabecalhoConteudo",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateCabecalhoVariaveis",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateCorpo",
+          "tipo": "VARCHAR(1024)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateCorpoVariaveis",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateRodape",
+          "tipo": "VARCHAR(60)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateBotoes",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateStatusMeta",
+          "tipo": "VARCHAR(60)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateStatusUso",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateMotivoRejeicaoMeta",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SetorId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateMetodoEnvio",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateMedia",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateMediaChave",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "InteligenciaArtificial",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "InteligenciaArtificialNome",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "InteligenciaArtificialStatus",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "InteligenciaArtificialProvedor",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "InteligenciaArtificialModelo",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "InteligenciaArtificialProvedorAPIKey",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "InteligenciaArtificialTextoPrompt",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "InteligenciaArtificialAtivador",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SetorId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "ListaContato",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "ListaContatoNome",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ListaContatoStatus",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ListaContatoContatos",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ListaContatoQuantidadeContatos",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ListaContatoFonteContatos",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "DisparoMassa",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "DisparoMassaDataHoraInicio",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaStatus",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaMensagensPorDisparos",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaIntervaloEntreDisparos",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaMaxMensagemDia",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaUltimoHorario",
+          "tipo": "VARCHAR(5)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaHoraReinicio",
+          "tipo": "VARCHAR(5)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaDiasEnvio",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaConteudo",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaQuantidadeMensagens",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaQuantidadePendente",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaQuantidadeEnviado",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaQuantidadeFalha",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaQuantidadeCancelado",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaMensagens",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaTemplateVariaveis",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaAnexo",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaAnexoChave",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaAnexoTipo",
+          "tipo": "VARCHAR(40)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaAnexoNome",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaColunaDestinatario",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaProcessandoMensagens",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaDesejaGerarAtendimento",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaDiaReinicio",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "DisparoMassaQtdMensagensEnviadasDiaAtual",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "CanalId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "MensagemTemplateId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ListaContatoId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SetorId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "Integracao",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "IntegracaoNome",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "IntegracaoDados",
+          "tipo": "JSONB",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "ClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "IntegracaoStatus",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "Plano",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "PlanoNome",
+          "tipo": "VARCHAR(128)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PlanoStatus",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PlanoValor",
+          "tipo": "DECIMAL(12,2)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PlanoRenovacaoDias",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PlanoQtdDisparos",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PlanoQtdCanais",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PlanoQtdAtendentes",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PlanoPermiteIntegracao",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PlanoPermiteWebhook",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma",
+      "nome": "FCMToken",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "Token",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "AtendenteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": [
+        {
+          "fields": [
+            "Token"
+          ],
+          "unique": true,
+          "name": "idx_token_unique"
+        }
+      ]
+    },
+    {
+      "schema": "firma_identidade",
+      "nome": "Usuario",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "UsuarioPrimeiroNome",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioUltimoNome",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioEmail",
+          "tipo": "VARCHAR(200)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioSenha",
+          "tipo": "VARCHAR(300)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioRandomBytes",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioTipoAutenticacao",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioAvatar",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioAvatarChaveS3",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioClienteId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioBloqueado",
+          "tipo": "BOOLEAN",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioQtdTentativasLoginFalha",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioUltimaTentativaLoginFalha",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioRecSenhaToken",
+          "tipo": "VARCHAR(6)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioRecSenhaTokenTempoExpirar",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "RepositorioId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PerfilId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioNomeCompleto",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma_identidade",
+      "nome": "Sessao",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "SessaoJWT",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SessaoStatus",
+          "tipo": "VARCHAR(1)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SessaoTipoAutenticacao",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SessaoCriacao",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SessaoUltimoAcesso",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SessaoHabilidadesCasl",
+          "tipo": "TEXT",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "SessaoIP",
+          "tipo": "VARCHAR(60)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "RepositorioId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma_identidade",
+      "nome": "Repositorio",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "RepositorioNome",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "RepositorioToken",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma_identidade",
+      "nome": "Permissao",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "PermissaoNome",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PermissaoAcao",
+          "tipo": "VARCHAR(50)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "RepositorioId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma_identidade",
+      "nome": "Perfil",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "PerfilNome",
+          "tipo": "VARCHAR(100)",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "RepositorioId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma_identidade",
+      "nome": "PerfilPermissao",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "RepositorioId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PerfilId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PermissaoId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    },
+    {
+      "schema": "firma_identidade",
+      "nome": "UsuarioPermissao",
+      "colunas": [
+        {
+          "nome": "id",
+          "tipo": "INTEGER",
+          "obrigatorio": true,
+          "primaria": true,
+          "automatica": true
+        },
+        {
+          "nome": "createdAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "updatedAt",
+          "tipo": "TIMESTAMP WITH TIME ZONE",
+          "obrigatorio": true,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "UsuarioId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "PermissaoId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        },
+        {
+          "nome": "RepositorioId",
+          "tipo": "INTEGER",
+          "obrigatorio": false,
+          "primaria": false,
+          "automatica": false
+        }
+      ],
+      "indices": []
+    }
+  ],
+  "relacionamentos": [
+    {
+      "schema": "firma",
+      "tabela": "Atendente",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "AtendenteSetor",
+      "coluna": "AtendenteId",
+      "alvo": "Atendente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "AtendenteSetor",
+      "coluna": "SetorId",
+      "alvo": "Setor",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Atendimento",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Atendimento",
+      "coluna": "AtendenteId",
+      "alvo": "Atendente",
+      "chave": "id",
+      "onDelete": "NO ACTION",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Atendimento",
+      "coluna": "CanalId",
+      "alvo": "Canal",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Atendimento",
+      "coluna": "ContatoId",
+      "alvo": "Contato",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Atendimento",
+      "coluna": "SetorId",
+      "alvo": "Setor",
+      "chave": "id",
+      "onDelete": "NO ACTION",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Atendimento",
+      "coluna": "MensagemId",
+      "alvo": "Mensagem",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "AtendimentoAcao",
+      "coluna": "AtendimentoId",
+      "alvo": "Atendimento",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "AtendimentoTag",
+      "coluna": "AtendimentoId",
+      "alvo": "Atendimento",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "AtendimentoTag",
+      "coluna": "TagId",
+      "alvo": "Tag",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Canal",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "ChatbotDefinicao",
+      "coluna": "CanalId",
+      "alvo": "Canal",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "ChatbotMetadata",
+      "coluna": "CanalId",
+      "alvo": "Canal",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "ChaveAPI",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Cliente",
+      "coluna": "PlanoId",
+      "alvo": "Plano",
+      "chave": "id",
+      "onDelete": "SET NULL",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Contato",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Mensagem",
+      "coluna": "CanalId",
+      "alvo": "Canal",
+      "chave": "id",
+      "onDelete": "NO ACTION",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Mensagem",
+      "coluna": "MensagemRespostaId",
+      "alvo": "Mensagem",
+      "chave": "id",
+      "onDelete": "NO ACTION",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Mensagem",
+      "coluna": "AtendimentoId",
+      "alvo": "Atendimento",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Mensagem",
+      "coluna": "AtendenteId",
+      "alvo": "Atendente",
+      "chave": "id",
+      "onDelete": "NO ACTION",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Mensagem",
+      "coluna": "ArquivoId",
+      "alvo": "Arquivo",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "MensagemRapida",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "MensagemRapida",
+      "coluna": "SetorId",
+      "alvo": "Setor",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Setor",
+      "coluna": "CanalId",
+      "alvo": "Canal",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Tag",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Tag",
+      "coluna": "SetorId",
+      "alvo": "Setor",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Webhook",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Webhook",
+      "coluna": "CanalId",
+      "alvo": "Canal",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "WebhookLog",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "MensagemTemplate",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "MensagemTemplate",
+      "coluna": "SetorId",
+      "alvo": "Setor",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "MensagemTemplate",
+      "coluna": "CanalId",
+      "alvo": "Canal",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "InteligenciaArtificial",
+      "coluna": "CanalId",
+      "alvo": "Canal",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "NO ACTION"
+    },
+    {
+      "schema": "firma",
+      "tabela": "InteligenciaArtificial",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma",
+      "tabela": "InteligenciaArtificial",
+      "coluna": "SetorId",
+      "alvo": "Setor",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma",
+      "tabela": "ListaContato",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma",
+      "tabela": "DisparoMassa",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma",
+      "tabela": "DisparoMassa",
+      "coluna": "CanalId",
+      "alvo": "Canal",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma",
+      "tabela": "DisparoMassa",
+      "coluna": "MensagemTemplateId",
+      "alvo": "MensagemTemplate",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma",
+      "tabela": "DisparoMassa",
+      "coluna": "ListaContatoId",
+      "alvo": "ListaContato",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma",
+      "tabela": "DisparoMassa",
+      "coluna": "SetorId",
+      "alvo": "Setor",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma",
+      "tabela": "Integracao",
+      "coluna": "ClienteId",
+      "alvo": "Cliente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma",
+      "tabela": "FCMToken",
+      "coluna": "AtendenteId",
+      "alvo": "Atendente",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "Usuario",
+      "coluna": "RepositorioId",
+      "alvo": "Repositorio",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "Usuario",
+      "coluna": "PerfilId",
+      "alvo": "Perfil",
+      "chave": "id",
+      "onDelete": "SET NULL",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "Sessao",
+      "coluna": "RepositorioId",
+      "alvo": "Repositorio",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "Sessao",
+      "coluna": "UsuarioId",
+      "alvo": "Usuario",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "Permissao",
+      "coluna": "RepositorioId",
+      "alvo": "Repositorio",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "Perfil",
+      "coluna": "RepositorioId",
+      "alvo": "Repositorio",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "PerfilPermissao",
+      "coluna": "RepositorioId",
+      "alvo": "Repositorio",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "PerfilPermissao",
+      "coluna": "PerfilId",
+      "alvo": "Perfil",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "PerfilPermissao",
+      "coluna": "PermissaoId",
+      "alvo": "Permissao",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "UsuarioPermissao",
+      "coluna": "UsuarioId",
+      "alvo": "Usuario",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "UsuarioPermissao",
+      "coluna": "PermissaoId",
+      "alvo": "Permissao",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    },
+    {
+      "schema": "firma_identidade",
+      "tabela": "UsuarioPermissao",
+      "coluna": "RepositorioId",
+      "alvo": "Repositorio",
+      "chave": "id",
+      "onDelete": "CASCADE",
+      "onUpdate": "CASCADE"
+    }
+  ]
+}

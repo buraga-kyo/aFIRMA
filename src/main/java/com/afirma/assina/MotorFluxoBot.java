@@ -30,12 +30,12 @@ public class MotorFluxoBot {
 	private static final Pattern FUNCAO = Pattern.compile("(somenteNumero|somenteAlphaNumerico|formatarData)\\(([^()]*)\\)");
 	private final NamedParameterJdbcTemplate banco;
 	private final ObjectMapper json;
-    private IntegracoesAutentica integracoes;
+    private IntegracoesFirma integracoes;
 	private final HttpClient cliente = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5))
 			.followRedirects(HttpClient.Redirect.NEVER).build();
 
 	@org.springframework.beans.factory.annotation.Autowired
-    public MotorFluxoBot(NamedParameterJdbcTemplate banco,ObjectMapper json,IntegracoesAutentica integracoes){this(banco,json);this.integracoes=integracoes;}
+    public MotorFluxoBot(NamedParameterJdbcTemplate banco,ObjectMapper json,IntegracoesFirma integracoes){this(banco,json);this.integracoes=integracoes;}
     public MotorFluxoBot(NamedParameterJdbcTemplate banco, ObjectMapper json) {
 		this.banco = banco;
 		this.json = json;

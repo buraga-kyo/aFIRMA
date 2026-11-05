@@ -53,8 +53,8 @@ public class ServicoInteligenciaConversacional {
 		}
 		String referencia = (String) configuracao.get("referencia_segredo");
         String segredo;
-        if (referencia != null && referencia.startsWith("AUTENTICA:")) {
-            var credenciais = banco.queryForList("SELECT ia.\"InteligenciaArtificialProvedorAPIKey\" AS valor FROM autentica.\"InteligenciaArtificial\" ia JOIN firma_autentica_vinculo v ON v.destino='Cliente' AND v.destino_id=ia.\"ClienteId\" AND v.origem='empresa' WHERE ia.id=:id AND v.origem_id=:empresa", dados("id", Long.parseLong(referencia.substring(10)), "empresa", Long.toString(empresa)));
+        if (referencia != null && referencia.startsWith("FIRMA:")) {
+            var credenciais = banco.queryForList("SELECT ia.\"InteligenciaArtificialProvedorAPIKey\" AS valor FROM firma.\"InteligenciaArtificial\" ia JOIN firma_relacionamento_vinculo v ON v.destino='Cliente' AND v.destino_id=ia.\"ClienteId\" AND v.origem='empresa' WHERE ia.id=:id AND v.origem_id=:empresa", dados("id", Long.parseLong(referencia.substring(10)), "empresa", Long.toString(empresa)));
             segredo = credenciais.isEmpty() ? null : (String) credenciais.getFirst().get("valor");
             if (segredo != null && segredo.startsWith("APP_IA_TOKEN_")) segredo=ambiente.getProperty(segredo);
         } else segredo = ambiente.getProperty(referencia);

@@ -80,8 +80,8 @@ public final class TemplatesEmpresa {
     var modelo=objeto(m); validar(Map.of("versao",2,"ativo",modelo.getOrDefault("id",""),"modelos",List.of(modelo))); return modelo;
   }
   public static double n(Map<String,Object> m,String chave) {return ((Number)m.get(chave)).doubleValue();}
-  private static double numero(Map<String,Object> m,String chave,double min,double max) {
-    if(!(m.get(chave) instanceof Number n) || !Double.isFinite(n.doubleValue()) || n.doubleValue()<min || n.doubleValue()>max) throw invalido(); return n.doubleValue();
+  private static double numero(Map<String,Object> m,String chave,double menorValor,double maiorValor) {
+    if(!(m.get(chave) instanceof Number n) || !Double.isFinite(n.doubleValue()) || n.doubleValue()<menorValor || n.doubleValue()>maiorValor) throw invalido(); return n.doubleValue();
   }
   public static void imagem(String valor) {
     if(valor.isEmpty()) return;
@@ -96,8 +96,8 @@ public final class TemplatesEmpresa {
       }
     } catch(Exception e) {throw invalido();}
   }
-  public static String texto(Map<String,Object> m,String chave,int max) {
-    if(!(m.get(chave) instanceof String s) || s.length()>max) throw invalido(); return s;
+  public static String texto(Map<String,Object> m,String chave,int maiorValor) {
+    if(!(m.get(chave) instanceof String s) || s.length()>maiorValor) throw invalido(); return s;
   }
   @SuppressWarnings("unchecked") public static Map<String,Object> objeto(Object v) {if(!(v instanceof Map<?,?>)) throw invalido();return (Map<String,Object>)v;}
   private static ResponseStatusException invalido() {return new ResponseStatusException(HttpStatus.BAD_REQUEST,"Modelo inválido. Preserve os quatro blocos de evidências, seus limites e os campos fixos.");}

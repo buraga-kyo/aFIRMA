@@ -10,16 +10,16 @@ import tools.jackson.databind.ObjectMapper;
 @Repository
 public class BancoAssineai {
 
-  private final NamedParameterJdbcTemplate jdbc;
+  private final NamedParameterJdbcTemplate consultasSql;
   private final ObjectMapper json;
 
-  public BancoAssineai(NamedParameterJdbcTemplate jdbc, ObjectMapper json) {
-    this.jdbc = jdbc;
+  public BancoAssineai(NamedParameterJdbcTemplate consultasSql, ObjectMapper json) {
+    this.consultasSql = consultasSql;
     this.json = json;
   }
 
-  public List<Map<String, Object>> listar(String sql, Map<String, ?> params) {
-    var linhas = jdbc.queryForList(sql, params);
+  public List<Map<String, Object>> listar(String sql, Map<String, ?> parametros) {
+    var linhas = consultasSql.queryForList(sql, parametros);
     for (var linha : linhas)
       for (var entrada : linha.entrySet()) {
         try {
@@ -37,13 +37,13 @@ public class BancoAssineai {
     return linhas;
   }
 
-  public Map<String, Object> um(String sql, Map<String, ?> params) {
-    var itens = listar(sql, params);
+  public Map<String, Object> um(String sql, Map<String, ?> parametros) {
+    var itens = listar(sql, parametros);
     return itens.isEmpty() ? null : itens.getFirst();
   }
 
-  public int executar(String sql, Map<String, ?> params) {
-    return jdbc.update(sql, params);
+  public int executar(String sql, Map<String, ?> parametros) {
+    return consultasSql.update(sql, parametros);
   }
 
   public long inserir(
@@ -55,16 +55,16 @@ public class BancoAssineai {
     var dados = new LinkedHashMap<>(valores);
     dados.putIfAbsent("createdAt", java.time.OffsetDateTime.now());
     dados.putIfAbsent("updatedAt", java.time.OffsetDateTime.now());
-    var params = new HashMap<String, Object>();
+    var parametros = new HashMap<String, Object>();
     var colunas = new ArrayList<String>();
     var expressoes = new ArrayList<String>();
     int i = 0;
     for (var item : dados.entrySet()) {
       String nome = "v" + i++;
       colunas.add(citar(item.getKey()));
-      expressoes.add(valor(item, nome, params));
+      expressoes.add(valor(item, nome, parametros));
     }
-    return jdbc.queryForObject(
+    return consultasSql.queryForObject(
       "INSERT INTO " +
         citar(tabela) +
         " (" +
@@ -73,7 +73,7 @@ public class BancoAssineai {
         String.join(",", expressoes) +
         ") RETURNING " +
         citar(chave),
-      params,
+      parametros,
       Long.class
     );
   }
@@ -87,13 +87,13 @@ public class BancoAssineai {
     validarTabela(tabela);
     var dados = new LinkedHashMap<>(valores);
     dados.put("updatedAt", java.time.OffsetDateTime.now());
-    var params = new HashMap<String, Object>();
-    params.put("id", id);
+    var parametros = new HashMap<String, Object>();
+    parametros.put("id", id);
     var partes = new ArrayList<String>();
     int i = 0;
     for (var item : dados.entrySet()) {
       String nome = "v" + i++;
-      partes.add(citar(item.getKey()) + "=" + valor(item, nome, params));
+      partes.add(citar(item.getKey()) + "=" + valor(item, nome, parametros));
     }
     executar(
       "UPDATE " +
@@ -103,22 +103,22 @@ public class BancoAssineai {
         " WHERE " +
         citar(chave) +
         "=:id",
-      params
+      parametros
     );
   }
 
   private String valor(
     Map.Entry<String, Object> item,
     String nome,
-    Map<String, Object> params
+    Map<String, Object> parametros
   ) {
     Object valor = item.getValue();
     if (Set.of("DocumentoColecaoDeDivArrastavel", "EmpresaTemplates").contains(item.getKey())) {
-      params.put(nome, json.writeValueAsString(valor));
+      parametros.put(nome, json.writeValueAsString(valor));
       return "CAST(:" + nome + " AS JSON)";
     }
     if (valor instanceof List<?> lista) {
-      params.put(
+      parametros.put(
         nome,
         lista
           .stream()
@@ -132,7 +132,7 @@ public class BancoAssineai {
       );
       return "CAST(:" + nome + " AS VARCHAR[])";
     }
-    params.put(nome, valor);
+    parametros.put(nome, valor);
     return ":" + nome;
   }
 

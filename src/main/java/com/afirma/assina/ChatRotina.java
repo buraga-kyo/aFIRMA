@@ -8,7 +8,7 @@ import org.springframework.core.env.Environment;
 
 @Component
 public class ChatRotina {
-	private static final Logger log = LoggerFactory.getLogger(ChatRotina.class);
+	private static final Logger registroLog = LoggerFactory.getLogger(ChatRotina.class);
 	private final ChatServico servico;
 	private final ChatTransporte transporte;
 	private final Environment ambiente;
@@ -27,7 +27,7 @@ public class ChatRotina {
 				transporte.conectar(canal);
 				servico.estadoCanal(canal, transporte.estado(canal));
 			}
-			catch (RuntimeException erro) { log.warn("Canal {} aguardando ponte WhatsApp", canal); }
+			catch (RuntimeException erro) { registroLog.warn("Canal {} aguardando ponte WhatsApp", canal); }
 		}
 	}
 
