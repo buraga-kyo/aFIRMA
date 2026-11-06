@@ -19,7 +19,7 @@ class RelacionamentosAssinaturaTest {
     private final RepositorioSignatarioHistorico historicos = mock(RepositorioSignatarioHistorico.class);
     private final ValidadorPedidoAssinatura validador = mock(ValidadorPedidoAssinatura.class);
     private final ServicoEnvelopes servico = new ServicoEnvelopes(envelopes, pessoas, campos, validador, new ServicoCamposPdf(),
-        mock(ServicoAssinaturaPdf.class), mock(ArmazenamentoMinio.class), mock(ServicoAutenticacaoAssinatura.class), documentos, historicos);
+        mock(ServicoAssinaturaPdf.class), mock(ArmazenamentoMinio.class), mock(ServicoAutenticacaoAssinatura.class), documentos, historicos, mock(PaginaAssinaturaEmpresa.class));
 
     private MockMultipartFile pdf() throws Exception {
         try (PDDocument pdf = new PDDocument(); ByteArrayOutputStream saida = new ByteArrayOutputStream()) {

@@ -1,8 +1,12 @@
 (() => {
-  const porId = id => document.getElementById(id);
+  const porId = (id) => document.getElementById(id);
+  const trator = new TratorDocumentos({
+    elemento: '#trator-documentos',
+    editor: '#editor-templates',
+  });
   let versao = 0;
   function aviso(texto, erro = false) {
-    const no = porId('advai-modelos-aviso');
+    const no = porId('assineai-modelos-aviso');
     no.dataset.firmaTipo = erro ? 'erro' : 'info';
     no.textContent = texto;
     no.hidden = !texto;
@@ -15,11 +19,13 @@
       cache: 'no-store',
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      ...(dados ? {
-        body: JSON.stringify(dados)
-      } : {})
+      ...(dados
+        ? {
+            body: JSON.stringify(dados),
+          }
+        : {}),
     });
     if (!resposta.ok) {
       const evento = await resposta.json().catch(() => ({}));
@@ -40,12 +46,15 @@
         porId('editor-templates').hidden = true;
         return;
       }
+      window.dispatchEvent(new Event('firma:editor-carregado'));
+      trator.encaixarFolha();
+      porId('assineai-acesso-modelos').open = false;
       aviso('');
     } catch (evento) {
       if (valor === versao) aviso(evento.message, true);
     }
   }
-  porId('advai-carregar-modelos').onsubmit = evento => {
+  porId('assineai-carregar-modelos').onsubmit = (evento) => {
     evento.preventDefault();
     carregar();
   };
@@ -54,23 +63,29 @@
     porId('editor-templates').hidden = true;
     porId('perfil-nome').value = '';
   };
-  porId('template-salvar').onclick = async () => {
+  async function salvar() {
     const elemento = porId('template-salvar'),
       valor = versao,
       token = porId('empresa-token').value.trim();
     elemento.disabled = true;
     try {
       await pedido('PUT', {
-        EmpresaTemplates: EditorTemplates.dados()
+        EmpresaTemplates: EditorTemplates.dados(),
       });
       if (valor !== versao || token !== porId('empresa-token').value.trim()) return;
       EditorTemplates.salvo();
-      aviso('Modelo salvo.');
+      aviso('Padrão salvo para todas as assinaturas da empresa na daFIRMA.');
     } catch (evento) {
       if (valor === versao) aviso(evento.message, true);
     } finally {
       elemento.disabled = false;
     }
+  }
+  porId('template-salvar').onclick = salvar;
+  const definirPadrao = porId('template-ativar').onclick;
+  porId('template-ativar').onclick = async () => {
+    definirPadrao();
+    await salvar();
   };
   porId('empresa-token').value = localStorage.getItem('assineai-token') || '';
   if (porId('empresa-token').value) carregar();

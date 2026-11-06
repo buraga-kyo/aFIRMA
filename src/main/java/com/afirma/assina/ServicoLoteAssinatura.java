@@ -56,7 +56,7 @@ public class ServicoLoteAssinatura {
                 if (campo.pagina() < 1 || campo.pagina() > quantidades.get(indice)) throw erro("Página do documento inválida");
                 usados[indice] = true;
                 campos.add(new ServicoEnvelopes.CampoNovo(campo.tipo(), inicios.get(indice) + campo.pagina() - 1,
-                    campo.posicaoX(), campo.posicaoY(), campo.largura(), campo.altura()));
+                    campo.posicaoX(), campo.posicaoY(), campo.largura(), campo.altura(), null,campo.nome(),campo.obrigatorio()));
             }
             pessoas.add(new ServicoEnvelopes.SignatarioNovo(pessoa.nome(), pessoa.email(), pessoa.cpf(), pessoa.whatsapp(),
                 pessoa.rg(), pessoa.qualificacao(), campos, pessoa.formaDeAutenticacao(), pessoa.formaDeNotificacao()));

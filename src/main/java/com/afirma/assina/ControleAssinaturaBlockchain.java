@@ -16,12 +16,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api/blockchain")
+@RequestMapping({"/api/blockchain", "/api/assineai/blockchain"})
 public class ControleAssinaturaBlockchain {
 	private final ServicoAssinaturaBlockchain servico;
+    private final PaginaAssinaturaEmpresa paginas;
 
-	public ControleAssinaturaBlockchain(ServicoAssinaturaBlockchain servico) {
+	public ControleAssinaturaBlockchain(ServicoAssinaturaBlockchain servico, PaginaAssinaturaEmpresa paginas) {
 		this.servico = servico;
+        this.paginas = paginas;
 	}
 
 	@PostMapping(value = "/preparar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -30,8 +32,12 @@ public class ControleAssinaturaBlockchain {
 			@RequestParam(value = "paginaPersonalizada", defaultValue = "false") boolean paginaPersonalizada,
 			@RequestParam(value = "nomeEmpresa", required = false) String nomeEmpresa,
 			@RequestParam(value = "imagemEmpresa", required = false) MultipartFile imagemEmpresa,
-            @RequestParam(value = "templatePagina", required = false) String templatePagina) throws Exception {
+            @RequestParam(value = "templatePagina", required = false) String templatePagina, jakarta.servlet.http.HttpServletRequest requisicao) throws Exception {
 		try {
+            if (requisicao.getRequestURI().startsWith("/api/assineai/") || requisicao.getHeader("Authorization") != null) {
+                var pagina = paginas.daRequisicao(requisicao);
+                return servico.preparar(pdf, carteira, true, pagina.nomeEmpresa(), null, pagina.modelo());
+            }
             if(paginaPersonalizada && templatePagina!=null && !templatePagina.isBlank()) {
                 var modelo=TemplatesEmpresa.lerModelo(templatePagina);
                 return servico.preparar(pdf,carteira,true,nomeEmpresa,imagemEmpresa,modelo);

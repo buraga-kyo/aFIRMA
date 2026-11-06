@@ -83,7 +83,7 @@ class PdfAssineaiTest {
     p.put("SignatarioId", 1);
     p.put("SignatarioNome", "Ana");
     p.put("SignatarioDataAssinatura", "2026-10-29T00:00:00Z");
-    p.put("SignatarioFirmadoVia", "email");
+    p.put("SignatarioAutenticadoVia", "email");
     byte[] marcado = servico.aplicar(
       documento,
       List.of(p),
@@ -99,6 +99,8 @@ class PdfAssineaiTest {
       );
       assertTrue(
         new PdfTextExtractor(leitor).getTextFromPage(2).contains("Ana")
+      );
+      assertTrue(new PdfTextExtractor(leitor).getTextFromPage(2).contains("email")
       );
     }
   }

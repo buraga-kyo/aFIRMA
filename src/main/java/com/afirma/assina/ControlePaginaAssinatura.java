@@ -10,6 +10,9 @@ public class ControlePaginaAssinatura {
 	@GetMapping({"/", "/institucional"})
 	public String inicio() { return "inicio"; }
 
+	@GetMapping("/assineai/pagina-assinatura")
+	public String paginaAssinatura() { return "pagina-assinatura"; }
+
 	@GetMapping("/assinatura")
 	public String assinatura() {
 		return "assinatura";

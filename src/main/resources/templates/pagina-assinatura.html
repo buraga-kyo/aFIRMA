@@ -1,0 +1,105 @@
+<!doctype html><html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Página de assinatura | AssineAI</title>
+<link rel="stylesheet" href="/css/assinatura.css"><link rel="stylesheet" href="/css/templates-empresa.css"><link rel="stylesheet" href="/css/mensagens-firma.css"><link rel="stylesheet" href="/css/trator-documentos.css">
+<script src="/js/mensagens-firma.js" defer></script><script src="/js/editor-templates.js" defer></script><script src="/js/trator-documentos.js" defer></script><script src="/js/editor-documentos-firma.js" defer></script><script src="/js/pagina-assinatura.js" defer></script>
+</head><body class="pagina-trator-documentos">
+<main id="trator-documentos" class="trator-documentos" aria-label="Trator de edição de documentos">
+  <header class="documentos-cabecalho">
+    <nav class="documentos-abas" aria-label="Módulos daFIRMA">
+      <a class="documentos-aba documentos-marca" href="/firma" aria-label="aFIRMA, perfil da empresa">aFIRMA.</a>
+      <a class="documentos-aba" href="/assineai/trator" aria-current="page">AssineAI</a>
+      <a class="documentos-aba" href="/chat">Zapiou</a>
+      <a class="documentos-aba" href="/advai">ADVai</a>
+    </nav>
+    <a class="documentos-voltar" href="/assineai/trator">↙ VOLTAR AOS DOCUMENTOS</a>
+  </header>
+  <div class="documentos-comandos" role="toolbar" aria-label="Ferramentas do trator de documentos">
+    <span class="documentos-identificacao">BANCADA DE DOCUMENTOS <small>A4 · PADRÃO DA FIRMA</small></span>
+    <button type="button" data-documentos="modelos" aria-controls="modelos-galeria" aria-expanded="true">▤ MODELOS</button>
+    <button type="button" data-documentos="ferramentas" aria-controls="documentos-ferramentas" aria-expanded="true">⚒ FERRAMENTAS</button>
+    <div class="documentos-zoom" role="group" aria-label="Tamanho da folha na tela">
+      <button type="button" data-documentos="diminuir" aria-label="Diminuir folha">−</button><output data-documentos-escala aria-live="polite">100%</output><button type="button" data-documentos="aumentar" aria-label="Aumentar folha">+</button><button type="button" data-documentos="encaixar">ENCAIXAR FOLHA</button>
+    </div>
+  </div>
+  <section id="documentos-vazio" class="documentos-vazio"><span aria-hidden="true">▤</span><h1>Prepare a folha da sua FIRMA.</h1><p>Conecte sua empresa no acesso abaixo para abrir os modelos e trabalhar na folha.</p></section>
+<section id="editor-templates" class="registro-editor" hidden>
+  <div id="modelos-galeria" class="registro-galeria" aria-label="Designs da página de assinaturas"></div>
+  <div class="registro-workspace">
+    <aside id="documentos-ferramentas" class="registro-inspector" aria-label="Editar o documento">
+      <span class="registro-kicker">SUA BANCADA DE CRIAÇÃO</span>
+      <p class="studio-ajuda">Clique nos blocos da folha para mover e redimensionar. Arraste os campos abaixo para preparar um PDF para assinatura.</p>
+      <div class="studio-paleta" aria-label="Campos para arrastar para a página">
+        <button type="button" draggable="true" data-campo-tipo="signature">✍ Assinatura</button>
+        <button type="button" draggable="true" data-campo-tipo="initials">⌁ Rubrica</button>
+        <button type="button" draggable="true" data-campo-tipo="text">T Texto</button>
+        <button type="button" draggable="true" data-campo-tipo="date">▦ Data</button>
+        <button type="button" draggable="true" data-campo-tipo="checkbox">☑ Seleção</button><button type="button" draggable="true" data-campo-tipo="number"># Número</button><button type="button" draggable="true" data-campo-tipo="file">↥ Anexo</button>
+      </div>
+      <section id="studio-campo" hidden aria-label="Propriedades do campo selecionado">
+        <strong>Campo selecionado</strong>
+        <label>Nome<input id="studio-campo-nome" maxlength="80"></label>
+        <label>Quem preenche<input id="studio-campo-papel" maxlength="80" value="Signatário"></label>
+        <label class="registro-checkbox"><input id="studio-campo-obrigatorio" type="checkbox" checked>Obrigatório</label>
+        <button id="studio-campo-excluir" type="button">Excluir campo</button>
+      </section>
+      <details open class="studio-integracao"><summary>Documento da FIRMA</summary>
+        <p>Escolha o PDF real que receberá os campos. A folha de evidências continua sendo configurada separadamente.</p>
+        <label>Documento PDF<input id="studio-pdf" type="file" accept="application/pdf,.pdf"></label>
+        <div class="registro-botoes"><button id="studio-pagina-anterior" type="button">←</button><output id="studio-pagina">Página 1</output><button id="studio-pagina-proxima" type="button">→</button></div>
+        <button id="studio-evidencias" type="button">Voltar à folha da FIRMA</button>
+        <button id="studio-exportar" type="button">Baixar mapa dos campos</button><label>Restaurar mapa de campos<input id="studio-importar" type="file" accept="application/json,.json"></label>
+        <label>Nome do modelo<input id="studio-modelo-nome" maxlength="120" placeholder="Contrato de prestação de serviços"></label>
+        <div class="registro-botoes"><button id="studio-salvar" type="button">Salvar modelo</button><button id="studio-salvar-copia" type="button">Salvar cópia</button></div>
+        <label>Biblioteca da FIRMA<select id="studio-modelos"><option value="">Selecione um modelo</option></select></label>
+        <button id="studio-listar" type="button">Atualizar biblioteca</button>
+        <label>Histórico<select id="studio-versoes"><option value="">Versões salvas</option></select></label>
+        <button id="studio-restaurar-versao" type="button">Abrir versão selecionada</button>
+        <button id="studio-preparar-convites" type="button">Preparar participantes e convites</button>
+        <section id="studio-participantes" hidden><p>Vincule cada papel a uma pessoa. A criação gera links; o envio é feito por você.</p><div id="studio-pessoas"></div><button id="studio-criar-convites" type="button">Gerar convites da FIRMA</button><div id="studio-convites"></div></section>
+        <details id="studio-acompanhamento"><summary>Acompanhar assinaturas</summary>
+          <label>Documentos preparados<select id="studio-envelopes"><option value="">Selecione um documento</option></select></label>
+          <button id="studio-atualizar-envelope" type="button">Atualizar andamento</button><button id="studio-baixar-envelope" type="button">Baixar PDF atual</button>
+          <div id="studio-andamento" role="status"></div>
+          <label>Certificado digital<input id="studio-certificado" type="file" accept=".pfx,.p12"></label><label>Senha do certificado<input id="studio-certificado-senha" type="password" autocomplete="off"></label>
+          <button id="studio-certificar" type="button">Finalizar com certificado</button>
+        </details>
+        <details><summary>Conector externo opcional</summary><button id="studio-docuseal" type="button" disabled>Criar modelo no DocuSeal</button></details>
+        <p id="studio-status" role="status" aria-live="polite"></p>
+      </details>
+      <details class="studio-opcoes"><summary>Modelos e identidade da folha</summary><label>Modelo em edição<select id="template-selecionado"></select></label>
+      <div class="registro-botoes"><button id="template-duplicar" type="button">Criar minha versão</button><button id="template-zero" type="button">Começar do zero</button><button id="template-excluir" type="button">Excluir versão</button></div>
+      <label>Nome da versão<input data-modelo="nome" maxlength="120"></label>
+      <label>Título da folha<input data-modelo="titulo" maxlength="80"></label>
+      <label>Linha de apresentação<input data-modelo="subtitulo" maxlength="120"></label>
+      <label>Assinatura da marca<textarea data-modelo="rodape" maxlength="160" rows="2"></textarea></label>
+      <label>Família tipográfica<select data-modelo="fonte"><option value="sans">Contemporânea · sem serifa</option><option value="serif">Editorial · com serifa</option><option value="mono">Técnica · monoespaçada</option></select></label>
+      <div class="registro-cores"><label>Fundo<input data-cor="fundo" type="color"></label><label>Painéis<input data-cor="papel" type="color"></label><label>Texto<input data-cor="tinta" type="color"></label><label>Destaque<input data-cor="destaque" type="color"></label><label>Ornamentos<input data-cor="secundaria" type="color"></label></div>
+      <div class="registro-numeros"><label>Corpo do texto<input data-modelo="tamanho" type="number" min="8" max="12" step="0.5"></label><label>Arredondamento<input data-modelo="raio" type="number" min="0" max="26"></label></div>
+      <label>Seu logotipo<input id="template-logo" type="file" accept="image/png,image/jpeg"></label><small>PNG ou JPEG, até 500 KB. A marca vai para a folha adicionada.</small>
+      <button id="template-remover-logo" type="button">Remover logotipo</button><label>Imagem de fundo / marca d’água<input id="template-fundo-imagem" type="file" accept="image/png,image/jpeg"></label><label>Opacidade da imagem de fundo<input data-modelo="opacidade" type="number" min="0" max="0.35" step="0.01"></label><button id="template-remover-fundo" type="button">Remover imagem de fundo</button>
+      </details><details class="registro-posicoes"><summary>Composição livre dos blocos</summary><p>Arraste os blocos sobre a página ou ajuste as medidas. Os campos permanecem completos em todos os designs.</p><label>Bloco<select id="template-area"><option value="cabecalho">Identidade e título</option><option value="documento">Dados do documento</option><option value="signatarios">Dados dos signatários</option><option value="integridade">Integridade e emissão</option></select></label><div class="registro-numeros"><label>X (pt)<input type="number" data-area="x" min="20" max="175"></label><label>Y (pt)<input type="number" data-area="y" min="20" max="800"></label><label>Largura (pt)<input type="number" data-area="w" min="400" max="555"></label><label>Altura (pt)<input type="number" data-area="h" min="60" max="650"></label></div><label class="registro-checkbox"><input id="template-editar-posicoes" type="checkbox" checked>Mostrar alças na página</label></details>
+      <div class="registro-botoes"><button id="template-desfazer" type="button">↶ Desfazer</button><button id="template-refazer" type="button">↷ Refazer</button></div>
+      <div class="registro-botoes"><button id="template-exportar" type="button">Exportar biblioteca</button><label class="registro-importar">Importar<input id="template-importar" type="file" accept="application/json,.json"></label></div>
+    </aside>
+    <div class="registro-preview-col">
+      <div class="studio-acoes" role="toolbar" aria-label="Editar documento">
+        <button type="button" id="studio-desfazer">↶ Desfazer</button><button type="button" id="studio-refazer">↷ Refazer</button>
+        <button type="button" id="studio-duplicar">Duplicar campo</button><button type="button" id="studio-alinhar">Centralizar campo</button>
+        <button type="button" id="studio-detectar">Detectar campos</button><button type="button" id="studio-baixar-pdf">Baixar PDF</button>
+        <details><summary>Páginas</summary><div class="registro-botoes">
+          <button type="button" id="studio-girar">Girar 90°</button><button type="button" id="studio-mover-antes">Mover antes</button><button type="button" id="studio-mover-depois">Mover depois</button>
+          <button type="button" id="studio-duplicar-pagina">Duplicar página</button><button type="button" id="studio-excluir-pagina">Excluir página</button>
+          <button type="button" id="studio-recortar">Recortar área</button><button type="button" id="studio-ocultar">Ocultar área</button>
+          <label>Adicionar PDFs<input id="studio-adicionar-pdf" type="file" multiple accept="application/pdf,.pdf"></label>
+        </div></details>
+      </div><div class="registro-toolbar"><span>PRÉVIA DA FOLHA ADICIONADA AO PDF</span><button id="template-atualizar" type="button">Atualizar prévia</button><button id="template-baixar" type="button">Baixar amostra em PDF ↗</button></div>
+      <div class="registro-prancheta"><div id="template-canvas" class="registro-canvas"><img id="template-previa" alt="Prévia real da página de registro de assinaturas"><div id="template-alcas"></div><div id="studio-campos" hidden></div></div></div>
+      <p class="registro-nota">Dados fictícios apenas nesta amostra. Na assinatura, o sistema insere os dados reais e acrescenta folhas de continuação quando necessário.</p>
+
+    </div>
+  </div>
+</section>
+<footer class="documentos-rodape"><h1>TRATOR DE <em>DOCUMENTOS.</em></h1><p>A folha é da sua FIRMA. O padrão vale para todas as assinaturas.</p>      <div class="registro-publicar"><div><strong id="template-ativo"></strong><p id="template-estado" role="status" aria-live="polite" data-firma-mensagem></p></div><div class="registro-botoes"><button id="template-ativar" type="button">Salvar como padrão da empresa</button><button id="template-salvar" type="button" class="registro-primary">Salvar modelo</button></div></div><details id="assineai-acesso-modelos" class="documentos-acesso" open><summary>ACESSO DA FIRMA</summary><form id="assineai-carregar-modelos" class="etapa campos"><label>TOKEN DA FIRMA<input id="empresa-token" type="password" autocomplete="off" required></label><label>NOME DA FIRMA<input id="perfil-nome" readonly></label><button class="botao-carteira" type="submit">CARREGAR MODELOS</button><a href="/firma">ENTRAR NA FIRMA ↗</a></form><p id="assineai-modelos-aviso" data-firma-mensagem hidden></p></details>
+</footer>
+</main></body></html>

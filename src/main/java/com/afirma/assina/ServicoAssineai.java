@@ -826,7 +826,7 @@ public class ServicoAssineai {
     if (selfie != null) usados.add("selfie");
     if (rubrica != null) usados.add("rubrica");
     if (usados.isEmpty()) usados.add("aceite");
-    valores.put("SignatarioFirmadoVia", String.join(",", usados));
+    valores.put("SignatarioAutenticadoVia", String.join(",", usados));
     valores.put(
       "SignatarioAssinaturaEscritaBase64",
       desenho == null ? null : Base64.getEncoder().encodeToString(desenho)

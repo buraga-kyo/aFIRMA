@@ -69,15 +69,22 @@
     alcas();
     agendar();
   }
+  function alturaMinima(area) {
+    return area === 'signatarios' ? 180 : area === 'documento' ? 130 : area === 'cabecalho' ? (atual().design === 'classico' ? 40 : 110) : 60;
+  }
   function medidas() {
     const elementoDoRegistro = atual().areas[porId('template-area').value];
-    document.querySelectorAll('[data-area]').forEach(evento => evento.value = elementoDoRegistro[evento.dataset.area]);
+    document.querySelectorAll('[data-area]').forEach(evento => {
+      evento.value = elementoDoRegistro[evento.dataset.area];
+      if (evento.dataset.area === 'h') evento.min = alturaMinima(porId('template-area').value);
+    });
   }
   function agendar() {
     clearTimeout(espera);
     espera = setTimeout(() => previa().catch(evento => estado(evento.message)), 650);
   }
   async function previa() {
+    if (window.EditorDocuseal?.documentoAberto()) return;
     const minhaVersao = ++versao;
     const elementoDaTela = await api('/previa', {
       modelo: clonar(atual()),
@@ -91,13 +98,14 @@
     }
     if (enderecoPrevia) URL.revokeObjectURL(enderecoPrevia);
     enderecoPrevia = endereco;
+    if (window.EditorDocuseal?.documentoAberto()) { URL.revokeObjectURL(endereco); return; }
     porId('template-previa').src = endereco;
     alcas();
   }
   function alcas() {
     const camada = porId('template-alcas');
     camada.replaceChildren();
-    camada.hidden = !porId('template-editar-posicoes').checked;
+    camada.hidden = !porId('template-editar-posicoes').checked || !!window.EditorDocuseal?.documentoAberto();
     for (const [id, registro] of Object.entries(atual().areas)) {
       const conteiner = document.createElement('div');
       conteiner.className = 'registro-alca' + (id === porId('template-area').value ? ' selecionada' : '');
@@ -114,6 +122,7 @@
       conteiner.onpointerdown = evento => {
         evento.preventDefault();
         porId('template-area').value = id;
+        camada.querySelectorAll('.registro-alca').forEach(no => no.classList.toggle('selecionada', no === conteiner));
         medidas();
         guardar();
         const inicio = {
@@ -129,7 +138,7 @@
             distanciaVertical = (eventoAtual.clientY - y) / escala;
           if (redimensionar) {
             registro.w = Math.round(Math.max(400, Math.min(575 - registro.x, inicio.w + distanciaHorizontal)));
-            registro.h = Math.round(Math.max(id === 'signatarios' ? 180 : id === 'documento' ? 130 : id === 'cabecalho' ? 110 : 60, Math.min(815 - registro.y, inicio.h + distanciaVertical)));
+            registro.h = Math.round(Math.max(alturaMinima(id), Math.min(815 - registro.y, inicio.h + distanciaVertical)));
           } else {
             registro.x = Math.round(Math.max(20, Math.min(575 - registro.w, inicio.x + distanciaHorizontal)));
             registro.y = Math.round(Math.max(20, Math.min(815 - registro.h, inicio.y + distanciaVertical)));
@@ -139,6 +148,14 @@
         };
         conteiner.onpointerup = () => {
           conteiner.onpointermove = null;
+          const sobreposto = Object.entries(atual().areas).some(([chave, outra]) => chave !== id && registro.x < outra.x + outra.w && outra.x < registro.x + registro.w && registro.y < outra.y + outra.h && outra.y < registro.y + registro.h);
+          if (sobreposto) {
+            Object.assign(registro, inicio);
+            posicionar(conteiner, registro);
+            medidas();
+            estado('Este espaço pertence a outro bloco. Escolha uma área livre na folha.');
+            return;
+          }
           marcar();
           agendar();
         };
@@ -148,9 +165,15 @@
         if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(evento.key)) return;
         evento.preventDefault();
         guardar();
+        const inicio = {...registro};
         const valorDoRegistro = evento.shiftKey ? 10 : 1;
         registro.x = Math.max(20, Math.min(575 - registro.w, registro.x + (evento.key === 'ArrowRight' ? valorDoRegistro : evento.key === 'ArrowLeft' ? -valorDoRegistro : 0)));
         registro.y = Math.max(20, Math.min(815 - registro.h, registro.y + (evento.key === 'ArrowDown' ? valorDoRegistro : evento.key === 'ArrowUp' ? -valorDoRegistro : 0)));
+        if (Object.entries(atual().areas).some(([chave, outra]) => chave !== id && registro.x < outra.x + outra.w && outra.x < registro.x + registro.w && registro.y < outra.y + outra.h && outra.y < registro.y + registro.h)) {
+          Object.assign(registro, inicio);
+          estado('Escolha uma área livre: os blocos de evidências não podem se sobrepor.');
+          return;
+        }
         porId('template-area').value = id;
         medidas();
         posicionar(conteiner, registro);
@@ -251,7 +274,7 @@
   };
   porId('template-zero').onclick = () => {
     if (biblioteca.modelos.length >= 24) return estado('Limite de 24 versões.');
-    const item = clonar(catalogo[0]);
+    const item = clonar(catalogo.find(modelo => modelo.id === 'atlas') || catalogo[0]);
     item.id = crypto.randomUUID();
     item.design = 'livre';
     item.nome = 'Minha composição';

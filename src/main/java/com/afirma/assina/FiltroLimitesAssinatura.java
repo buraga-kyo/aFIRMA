@@ -29,6 +29,9 @@ public class FiltroLimitesAssinatura extends OncePerRequestFilter {
 
 	private final StringRedisTemplate redis;
 	private final int limitePorMinuto;
+    @Value("${app.editor.requisicoes-por-minuto:180}")
+    private int limiteEditor=180;
+    private final Semaphore vagasEditor=new Semaphore(4);
 	private final Semaphore vagas;
 
 	public FiltroLimitesAssinatura(StringRedisTemplate redis,
@@ -61,11 +64,13 @@ public class FiltroLimitesAssinatura extends OncePerRequestFilter {
 			return;
 		}
 
+        boolean editor=requisicao.getServletPath().startsWith("/api/assineai/editor/");
+        Semaphore vagasAtuais=editor?vagasEditor:vagas;
 		Long tentativas;
 		try {
 			String endereco = requisicao.getRemoteAddr();
 			tentativas = redis.execute(CONTADOR,
-					List.of("assinatura:ip:" + (endereco == null ? "desconhecido" : endereco)), "60000");
+					List.of((editor?"editor:ip:":"assinatura:ip:") + (endereco == null ? "desconhecido" : endereco)), "60000");
 		} catch (RuntimeException erro) {
 			resposta.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 			return;
@@ -74,12 +79,12 @@ public class FiltroLimitesAssinatura extends OncePerRequestFilter {
 			resposta.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 			return;
 		}
-		if (tentativas > limitePorMinuto) {
+		if (tentativas > (editor?limiteEditor:limitePorMinuto)) {
 			resposta.setHeader("Retry-After", "60");
 			resposta.setStatus(429);
 			return;
 		}
-		if (!vagas.tryAcquire()) {
+		if (!vagasAtuais.tryAcquire()) {
 			resposta.setHeader("Retry-After", "1");
 			resposta.setStatus(429);
 			return;
@@ -87,7 +92,7 @@ public class FiltroLimitesAssinatura extends OncePerRequestFilter {
 		try {
 			cadeia.doFilter(requisicao, resposta);
 		} finally {
-			vagas.release();
+			vagasAtuais.release();
 		}
 	}
 }

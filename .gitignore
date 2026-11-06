@@ -47,25 +47,6 @@ chat-baileys/node_modules/
 chat-arquivos/
 .tarefa
 
-# Instruções, memória e arquivos locais de assistentes de IA
-AGENTS.md
-AGENTS.local.md
-CLAUDE.md
-CLAUDE.local.md
-GEMINI.md
-MEMORY.md
-.codex/
-.claude/
-.gemini/
-.cursor/
-.aider*
-.github/copilot-instructions.md
-.github/instructions/
-.github/prompts/
-
-# Anotações de retomada e artefatos locais de trabalho da IA
-docs/RETOMADA*.md
-docs/HANDOFF*.md
 /artifacts/
 
 /docs/

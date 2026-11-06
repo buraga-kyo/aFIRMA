@@ -150,3 +150,6 @@ body.pagina-chatwoot #chatwoot{position:static;flex:1;min-height:0;width:100%;he
 @media(max-width:600px){.trator-compartilhado .lista-toolbar .toolbar-faixa{--trator-burro-largura:min(240px,70vw)}}
 
 .trator-compartilhado:not(:has(.trator-burro-fixo)) .toolbar-faixa{--trator-burro-largura:0px}
+
+.trator-menu-telas{padding:12px;border:2px solid var(--primary);background:var(--card);color:var(--foreground);box-shadow:5px 5px 0 var(--secondary)}
+.trator-menu-telas a{display:block;padding:12px;text-decoration:none;font:700 13px Inter,sans-serif}.trator-menu-telas a:hover,.trator-menu-telas a:focus-visible{background:var(--primary);color:var(--background)}

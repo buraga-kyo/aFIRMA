@@ -1,0 +1,63 @@
+/* A bancada é da FIRMA; o desenho da folha continua sendo o escolhido pela empresa. */
+body.pagina-trator-documentos{margin:0;padding:24px;background:#0e2117;color:#f2f7ec;min-height:100dvh}
+.trator-documentos{width:100%;max-width:none;margin:0;padding:0;--papel-roca:#d2bc8e;--terra:#3b2a1a;--linha:#2e5a3f}
+.documentos-cabecalho{display:flex;align-items:end;justify-content:space-between;gap:12px;border-bottom:8px solid #c9ff3d}
+.documentos-abas{display:flex;align-items:end;min-width:0;overflow-x:auto;scrollbar-width:none;padding-top:6px}
+.documentos-aba{position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;flex:none;min-height:50px;padding:12px 22px 10px 26px;color:#f2f7ec;text-decoration:none;font:800 12px/1.2 Inter,sans-serif;white-space:nowrap;--aba:#2e5a3f}
+.documentos-aba::before{content:"";position:absolute;inset:0 -26px 0 0;z-index:-1;background:var(--aba);mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 50' preserveAspectRatio='none'%3E%3Cpath d='M0 50V23Q0 0 24 0H116C149 0 141 50 180 50Z'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+.documentos-marca{--aba:#3b2a1a;z-index:4;font:400 22px/1.2 'Archivo Black',sans-serif;letter-spacing:-.075em}
+.documentos-aba:nth-child(2){z-index:3}.documentos-aba:nth-child(3){--aba:#244b34;z-index:2}.documentos-aba:nth-child(4){z-index:1;margin-right:26px}
+.documentos-aba[aria-current=page]{--aba:#c9ff3d;color:#0e2117;min-height:56px}
+.documentos-aba[aria-current=page]::after{content:"";position:absolute;left:28px;right:20px;bottom:9px;height:3px;background:#0e2117}
+.documentos-voltar{padding:14px 16px;color:#c9ff3d;text-decoration:none;font-size:11px;font-weight:800;white-space:nowrap}
+.documentos-comandos{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;border:1px solid var(--linha);border-top:0;background:#173225}
+.documentos-comandos button,.documentos-rodape button{min-height:38px;padding:8px 12px;background:#0e2117;border:1px solid var(--linha);color:#f2f7ec;font:800 11px/1.2 Inter,sans-serif;cursor:pointer}
+.documentos-comandos button[aria-expanded=true]{border-color:#bda06c;color:#e4d2aa}.documentos-comandos button:disabled{opacity:.45;cursor:default}
+.documentos-identificacao{margin-right:auto;font-size:12px;font-weight:800}.documentos-identificacao small{display:block;margin-top:4px;color:#b6bd9e;font-size:9px;letter-spacing:.08em}
+.documentos-zoom{display:flex;align-items:center;gap:6px}.documentos-zoom output{min-width:44px;text-align:center;color:#e4d2aa;font:700 11px Inter,sans-serif}
+.trator-documentos .registro-editor{--studio-ink:#f2f7ec;--studio-muted:#b1bea5;--studio-line:#2e5a3f;margin:0;border:1px solid var(--linha);border-top:0;border-radius:0;overflow:visible;background:#173225;color:#f2f7ec}
+.trator-documentos .registro-galeria{display:flex;gap:12px;overflow-x:auto;padding:16px;background:linear-gradient(0deg,#3b2a1a55,transparent),#12291d;scrollbar-color:#8d744d #12291d}
+.trator-documentos .registro-card{flex:0 0 160px;border:1px solid #806743;border-radius:3px;background:radial-gradient(ellipse at 0 100%,#75431f44,transparent 70%),#d2bc8e;color:#35291d}
+.trator-documentos .registro-card[aria-pressed=true]{outline:2px solid #c9ff3d;outline-offset:2px}.trator-documentos .registro-card strong{padding:9px 10px;font:800 12px Inter,sans-serif}.trator-documentos .registro-card p{display:none}
+.trator-documentos .registro-thumb{height:116px;aspect-ratio:auto;padding:10px 30px;background:radial-gradient(ellipse at 90% 10%,#fff0ba55,transparent 60%),#bba476}
+.trator-documentos .registro-workspace{display:grid;grid-template-columns:280px minmax(0,1fr);grid-template-areas:'ferramentas folha';border-top:1px solid var(--linha);min-width:0}
+.trator-documentos .registro-inspector{grid-area:ferramentas;display:grid;grid-template-columns:1fr;align-content:start;gap:14px;max-height:720px;overflow:auto;padding:20px;background:#173225;border-right:1px solid var(--linha);scrollbar-color:#8b7752 #173225}
+.trator-documentos .registro-kicker{color:#d2bc8e}.trator-documentos .registro-inspector small{color:#b1bea5}
+.trator-documentos .registro-editor button:not(.registro-card),.trator-documentos .registro-editor .registro-importar{background:#244532;color:#f2f7ec;border:1px solid #416449;border-radius:3px;box-shadow:none}
+.trator-documentos .registro-editor input,.trator-documentos .registro-editor select,.trator-documentos .registro-editor textarea{min-width:0;max-width:100%;background:#0e2117;border:1px solid #416449;color:#f2f7ec;border-radius:2px}
+.trator-documentos .registro-editor input[type=color]{width:100%;height:34px}.trator-documentos .registro-inspector details{grid-column:auto;min-width:0}.trator-documentos .registro-inspector summary{color:#d2bc8e}
+.trator-documentos .registro-preview-col{grid-area:folha;min-width:0;background:#10271c}
+.trator-documentos .registro-toolbar{padding:12px 16px;gap:8px;flex-wrap:wrap;background:#173225;color:#b1bea5;border-bottom:1px solid var(--linha)}
+.trator-documentos .registro-prancheta{display:flex;align-items:flex-start;justify-content:safe center;min-width:0;min-height:360px;height:600px;overflow:auto;padding:24px;background:radial-gradient(ellipse at 0 100%,#75431f24,transparent 70%),repeating-linear-gradient(90deg,transparent 0 39px,#d2bc8e08 40px),#10271c;scrollbar-color:#8b7752 #10271c}
+.trator-documentos .registro-canvas{position:relative;flex:none;width:calc(595px * var(--documentos-escala,1));max-width:none;margin:0;box-shadow:8px 10px 0 #08170f55,0 0 0 1px #bba47666}.trator-documentos .registro-canvas>img{display:block;width:100%;height:auto}
+.trator-documentos .registro-alca{border-color:#c9ff3d;background:#c9ff3d0c}.trator-documentos .registro-alca span{background:#3b2a1a;color:#fff0d3}.trator-documentos .registro-alca i{border-color:#c9ff3d;background:#173225}
+.trator-documentos.documentos-sem-ferramentas .registro-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:'folha'}
+.documentos-rodape{max-width:none;display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:16px 20px;border:1px solid var(--linha);border-top:0;background:#173225}
+.documentos-rodape>h1{margin:0;font:400 clamp(14px,1.5vw,22px)/1.2 'Archivo Black',sans-serif;letter-spacing:-.05em}.documentos-rodape>h1 em{color:#c9ff3d;font-style:normal}.documentos-rodape>p{margin:0;color:#b1bea5;font-size:11px}
+.documentos-rodape .registro-publicar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:center;width:100%;padding:12px 0;background:transparent;border-top:1px solid var(--linha);color:#f2f7ec}.documentos-rodape .registro-publicar p{color:#b1bea5}.documentos-rodape #template-ativar{background:#c9ff3d;border-color:#c9ff3d;color:#0e2117}.documentos-rodape #template-salvar{background:#3b2a1a;border-color:#8b7752}
+.documentos-acesso{width:100%;border-top:1px solid var(--linha);padding-top:12px}.documentos-acesso summary{cursor:pointer;font-size:10px;font-weight:800;color:#d2bc8e}.documentos-acesso form{display:flex;align-items:end;gap:12px;flex-wrap:wrap;padding:14px 0;margin:0;border:0}.documentos-acesso label{display:grid;gap:6px;font-size:10px;color:#b1bea5;flex:1 1 220px}.documentos-acesso input{width:100%;max-width:100%;min-height:38px;background:#0e2117;color:#f2f7ec;border:1px solid var(--linha);padding:8px}.documentos-acesso a{color:#c9ff3d;font-size:11px}
+.documentos-vazio{padding:70px 24px;text-align:center;border:1px solid var(--linha);background:#173225}.documentos-vazio>span{color:#d2bc8e;font-size:60px}.documentos-vazio h1{font-family:'Archivo Black',sans-serif}.documentos-vazio p{color:#b1bea5}
+@media(max-width:900px){body.pagina-trator-documentos{padding:12px}.documentos-cabecalho{flex-wrap:wrap;gap:0}.documentos-voltar{padding:8px 0}.documentos-comandos{padding:12px}.documentos-identificacao{flex-basis:100%}.documentos-zoom{flex-wrap:wrap}.trator-documentos .registro-workspace{grid-template-columns:minmax(0,1fr);grid-template-areas:'folha' 'ferramentas'}.trator-documentos .registro-inspector{max-height:480px;border-right:0;border-top:1px solid var(--linha)}.trator-documentos .registro-prancheta{height:500px}.trator-documentos .registro-card{flex-basis:136px}.trator-documentos .registro-thumb{height:96px}.documentos-rodape{padding:14px}.documentos-rodape .registro-botoes{display:flex;flex-wrap:wrap;gap:8px}.documentos-aba{padding-left:20px;padding-right:16px;font-size:11px}.documentos-marca{font-size:22px}}
+/* Ferramentas visuais e campos do documento. */
+.studio-ajuda,.studio-integracao p{font-size:11px;line-height:1.6;color:#b1bea5;margin:0}
+.studio-paleta{display:grid;grid-template-columns:1fr 1fr;gap:8px}.studio-paleta button{padding:12px 8px;cursor:grab;text-align:left}.studio-paleta button:active{cursor:grabbing}
+#studio-campo{display:grid;gap:12px;padding:14px;border:1px solid #c9ff3d;background:#10271c}#studio-campo[hidden]{display:none}
+.studio-integracao{display:grid;gap:12px;border-block:1px solid #416449;padding:14px 0}.studio-integracao> *{margin-top:12px}
+#studio-status{overflow-wrap:anywhere}#studio-pagina{font-size:11px;align-self:center}
+#studio-campos{position:absolute;inset:0}#studio-campos[hidden]{display:none}
+.studio-campo{position:absolute;display:flex;align-items:center;border:1.5px solid #7252b8;background:#d6c4ff99;color:#251645;cursor:move;touch-action:none;box-sizing:border-box;font:600 11px/1.2 sans-serif}
+.studio-campo span{padding:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}.studio-campo.selecionado,.studio-campo:focus{outline:2px solid #c9ff3d;outline-offset:2px}
+.studio-campo i{position:absolute;right:-5px;bottom:-5px;width:12px;height:12px;background:#fff;border:2px solid #7252b8;cursor:nwse-resize}
+.trator-documentos .registro-alca:not(.selecionada){background:transparent;border:1px dashed #647b6966}.trator-documentos .registro-alca:not(.selecionada) span{opacity:.6}
+.trator-documentos .registro-alca:hover{border-color:#c9ff3d}.trator-documentos .registro-alca.selecionada{outline-color:#c9ff3d}
+.studio-opcoes[open]{display:grid;gap:14px}.studio-opcoes>label:first-of-type{margin-top:14px}.studio-opcoes summary{cursor:pointer;font-weight:700;font-size:12px}.studio-opcoes .registro-cores{margin-block:10px}
+.studio-acoes{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:12px 16px;background:#173225;border-bottom:1px solid #416449}.studio-acoes button{padding:9px;font-size:11px;cursor:pointer}.studio-acoes details{position:relative}.studio-acoes summary{font-size:12px;cursor:pointer;padding:8px}.studio-acoes details[open]>.registro-botoes{position:absolute;top:100%;right:0;z-index:20;width:260px;padding:16px;background:#173225;box-shadow:0 8px 24px #0009;border:1px solid #416449}.studio-acoes label{font-size:11px;max-width:100%}.studio-acoes input{width:100%}
+#studio-participantes{border:1px solid #416449;padding:10px}#studio-participantes[hidden]{display:none}#studio-pessoas>div{border-bottom:1px solid #416449;padding:10px 0;display:grid;gap:8px}#studio-convites a{display:block;color:#c9ff3d;overflow-wrap:anywhere;padding:8px 0}.studio-selecao{position:absolute;border:2px dashed #e99836;background:#e9983633;pointer-events:none;box-sizing:border-box}#studio-campos.desenhando{cursor:crosshair}
+
+.studio-documento-aberto .registro-publicar,.studio-documento-aberto .studio-opcoes,.studio-documento-aberto .registro-posicoes,.studio-documento-aberto #template-atualizar,.studio-documento-aberto #template-baixar,.studio-documento-aberto .registro-nota{display:none!important}
+.studio-documento-aberto .registro-inspector>.registro-botoes{display:none}.studio-documento-aberto .registro-toolbar>span{overflow-wrap:anywhere}
+
+.studio-ocupado .studio-acoes,.studio-ocupado .studio-paleta,.studio-ocupado .studio-integracao button,.studio-ocupado .studio-integracao input,.studio-ocupado .studio-integracao select{pointer-events:none;opacity:.65}
+
+.studio-acoes{position:relative;z-index:10}.studio-documento-aberto #modelos-galeria,.studio-documento-aberto [data-documentos=modelos]{display:none!important}
+.studio-campo[data-tipo=checkbox]{justify-content:center}.studio-campo[data-tipo=checkbox] span{padding:0}

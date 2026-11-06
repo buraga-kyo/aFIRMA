@@ -54,10 +54,30 @@ function documentoOriginal() {
     await paginaAtual.waitForSelector('#perfil-empresa:not([hidden])');
     await paginaAtual.fill('#perfil-nome', 'Horizonte & Co.');
     await paginaAtual.locator('#dados-empresa [type=submit]').click();
-    await paginaAtual.waitForFunction(() => document.querySelector('#mensagem-empresa').textContent.includes('Dados daFIRMA salvos'));
-    await paginaAtual.goto(base + '/advai');
+    await paginaAtual.waitForFunction(() => document.querySelector('#mensagem-empresa').textContent.includes('Dados daFIRMA salvos')).catch(async erro => { console.error(await paginaAtual.locator('#mensagem-empresa').textContent()); console.error(await paginaAtual.locator('#dados-empresa').evaluate(form => [...form.elements].filter(c => c.validity && !c.validity.valid).map(c => ({id:c.id, motivo:c.validationMessage})))); throw erro; });
+    await paginaAtual.goto(base + '/assineai/trator');
+    await paginaAtual.getByRole('link', {name:'A Gráfica', exact:true}).click();
     await paginaAtual.waitForSelector('#editor-templates:not([hidden])');
-    await paginaAtual.waitForFunction(() => [...document.querySelectorAll('.registro-thumb img')].length === 6 && [...document.querySelectorAll('.registro-thumb img')].every(indice => indice.naturalWidth > 0));
+    assert.equal(await paginaAtual.evaluate(() => typeof window.FirmaTabela), 'undefined', 'Editor depende do trator de tabelas');
+    assert.equal(await paginaAtual.locator('.documentos-abas a').count(), 4);
+    assert.equal(await paginaAtual.locator('.documentos-marca').evaluate(no => getComputedStyle(no).getPropertyValue('--aba').trim()), '#3b2a1a');
+    assert(await paginaAtual.locator('#trator-documentos').evaluate(no => no.classList.contains('trator-documentos')));
+    const larguraAntesDoZoom = await paginaAtual.locator('#template-canvas').evaluate(no => no.getBoundingClientRect().width);
+    await paginaAtual.locator('[data-documentos=aumentar]').click();
+    assert(await paginaAtual.locator('#template-canvas').evaluate(no => no.getBoundingClientRect().width) > larguraAntesDoZoom, 'Zoom não alterou a folha');
+    await paginaAtual.locator('[data-documentos=encaixar]').click();
+    assert(await paginaAtual.locator('#template-canvas').evaluate(no => no.getBoundingClientRect().height <= no.closest('.registro-prancheta').clientHeight - 40), 'Encaixar folha cortou a página');
+    await paginaAtual.locator('[data-documentos=ferramentas]').click();
+    assert(await paginaAtual.locator('#documentos-ferramentas').isHidden(), 'Ferramentas não recolheram');
+    await paginaAtual.locator('[data-documentos=ferramentas]').click();
+    await paginaAtual.locator('[data-documentos=modelos]').click();
+    assert(await paginaAtual.locator('#modelos-galeria').isHidden(), 'Modelos não recolheram');
+    await paginaAtual.locator('[data-documentos=modelos]').click();
+    assert(await paginaAtual.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Trator de documentos ultrapassou a tela');
+
+    await paginaAtual.waitForFunction(() => [...document.querySelectorAll('.registro-thumb img')].length === 7 && [...document.querySelectorAll('.registro-thumb img')].every(indice => indice.naturalWidth > 0));
+    assert.equal(await paginaAtual.locator('.registro-card').first().getAttribute('data-design'), 'classico');
+    assert.ok((await paginaAtual.locator('#template-ativo').textContent()).includes('daFIRMA'));
     await paginaAtual.locator('.registro-card[data-design=noir]').click();
     await paginaAtual.locator('#template-duplicar').click();
     await paginaAtual.locator('[data-modelo=nome]').fill('Noir · Horizonte');
@@ -71,8 +91,7 @@ function documentoOriginal() {
     await paginaAtual.mouse.move(caixa.x + caixa.width / 2 + 7, caixa.y + 10);
     await paginaAtual.mouse.up();
     await paginaAtual.locator('#template-ativar').click();
-    await paginaAtual.locator('#template-salvar').click();
-    await paginaAtual.waitForFunction(() => document.querySelector('#advai-modelos-aviso').textContent.includes('Modelo salvo'));
+    await paginaAtual.waitForFunction(() => document.querySelector('#assineai-modelos-aviso').textContent.includes('Padrão salvo'));
     const esperado = await paginaAtual.evaluate(() => EditorTemplates.dados());
     assert.equal(esperado.versao, 2);
     assert.equal(esperado.modelos.find(item => item.id === esperado.ativo).design, 'noir');
@@ -80,7 +99,7 @@ function documentoOriginal() {
     await paginaAtual.waitForSelector('#editor-templates:not([hidden])');
     assert.deepEqual(await paginaAtual.evaluate(() => EditorTemplates.dados()), esperado);
     await paginaAtual.waitForFunction(() => document.querySelector('#template-previa').naturalWidth > 0);
-    await paginaAtual.locator('#editor-templates').screenshot({
+    await paginaAtual.locator('#trator-documentos').screenshot({
       path: caminhos.join(destino, 'estudio.png')
     });
     const [download] = await Promise.all([paginaAtual.waitForEvent('download'), paginaAtual.locator('#template-baixar').click()]);
@@ -147,6 +166,36 @@ function documentoOriginal() {
         }]
       }]
     };
+    // A assinatura individual deve usar o mesmo padrão sem receber modelo pela tela.
+    const executar = require('node:child_process').execFileSync;
+    const pastaCertificado = arquivosEmDisco.mkdtempSync(caminhos.join(require('node:os').tmpdir(), 'firma-certificado-teste-'));
+    let certificadoTeste;
+    try {
+      executar('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-keyout', caminhos.join(pastaCertificado, 'chave.pem'), '-out', caminhos.join(pastaCertificado, 'certificado.pem'), '-days', '1', '-nodes', '-subj', '/CN=Teste pagina assinatura'], {stdio:'ignore'});
+      executar('openssl', ['pkcs12', '-export', '-out', caminhos.join(pastaCertificado, 'teste.pfx'), '-inkey', caminhos.join(pastaCertificado, 'chave.pem'), '-in', caminhos.join(pastaCertificado, 'certificado.pem'), '-passout', 'pass:senha-teste'], {stdio:'ignore'});
+      certificadoTeste = arquivosEmDisco.readFileSync(caminhos.join(pastaCertificado, 'teste.pfx'));
+    } finally {
+      arquivosEmDisco.rmSync(pastaCertificado, {recursive:true, force:true});
+    }
+    const individual = await paginaAtual.request.post(base + '/api/assineai/pdf/assinar', {
+      headers:credenciais,
+      multipart:{
+        pdf:{name:'original.pdf',mimeType:'application/pdf',buffer:documentoOriginal()},
+        certificado:{name:'teste.pfx',mimeType:'application/octet-stream',buffer:certificadoTeste},
+        senha:'senha-teste',paginaPersonalizada:'false',templatePagina:'ignorar modelo enviado'
+      }
+    });
+    assert.ok(individual.ok(), 'Assinatura individual: HTTP ' + individual.status() + ' ' + (individual.ok() ? '' : await individual.text()));
+    const arquivoIndividual = caminhos.join(destino, 'assinatura-individual.pdf');
+    arquivosEmDisco.writeFileSync(arquivoIndividual, await individual.body());
+    const textoIndividual = executar('pdftotext', [arquivoIndividual, '-'], {encoding:'utf8'});
+    assert.ok(textoIndividual.includes('Horizonte & Co.: documento assinado.'), 'Assinatura individual ignorou o padrão salvo');
+    assert.ok(textoIndividual.includes('CONTEUDO ORIGINAL INALTERADO'), 'Conteúdo original ausente');
+    const carteira = await paginaAtual.request.post(base + '/api/assineai/blockchain/preparar', {
+      headers:credenciais,
+      multipart:{pdf:{name:'original.pdf',mimeType:'application/pdf',buffer:documentoOriginal()},carteira:'0x1111111111111111111111111111111111111111',paginaPersonalizada:'false'}
+    });
+    assert.ok(carteira.ok(), await carteira.text());
     const criacao = await paginaAtual.request.post(base + '/api/assineai/assinaturas', {
       headers: credenciais,
       multipart: {
@@ -197,7 +246,7 @@ function documentoOriginal() {
     assert.ok(texto.includes('CONTEUDO ORIGINAL INALTERADO'));
     assert.ok(texto.includes('Horizonte & Co.'));
     assert.ok(texto.includes('Marina Costa'));
-    assert.ok(texto.includes('Compromissos com identidade.'));
+    assert.ok(texto.includes('Horizonte & Co.: documento assinado.'));
     assert.ok(!texto.includes('aFIRMA'));
     // O visual salvo deve estar na folha acrescentada, e a folha deve ser renderizável.
     const ultima = await paginaAtual.request.get(`${base}/api/assineai/convites/${conviteToken}/documentos/${id}/paginas/2`);
@@ -218,11 +267,12 @@ function documentoOriginal() {
       width: 390,
       height: 844
     });
-    await paginaAtual.locator('#editor-templates').screenshot({
+    await paginaAtual.locator('#trator-documentos').screenshot({
       path: caminhos.join(destino, 'estudio-celular.png')
     });
+    assert(await paginaAtual.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Trator de documentos ultrapassou a tela no celular');
     assert.deepEqual(erros, []);
-    console.log('OK: 6 designs, editor de posições, persistência, isolamento, original preservado e folha real com dados da assinatura.');
+    console.log('OK: padrão global na assinatura individual, carteira e convite; 7 designs, editor de posições, persistência, isolamento, original preservado e folha real com dados da assinatura.');
   } finally {
     await navegador.close();
   }

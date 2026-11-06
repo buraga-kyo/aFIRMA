@@ -31,7 +31,7 @@ public final class PaginaRegistroAssinaturas {
       "a42d8e97c6513b80f74e2c96d8f03b61c59a78e24d861f093c72b1a6e0549f38",
       "https://exemplo.com/autenticidade/8d7f3c21","31/10/2026 · 14:32:08 -03:00",
       List.of(new LinkedHashMap<>(Map.ofEntries(Map.entry("SignatarioNome","Marina Costa Almeida"),Map.entry("SignatarioQualificacao","Representante legal"),
-        Map.entry("SignatarioAssinou",true),Map.entry("SignatarioDataAssinatura","31/10/2026 · 14:30:42 -03:00"),Map.entry("SignatarioFirmadoVia","Assinatura na tela, código por e-mail"),
+        Map.entry("SignatarioAssinou",true),Map.entry("SignatarioDataAssinatura","31/10/2026 · 14:30:42 -03:00"),Map.entry("SignatarioAutenticadoVia","Assinatura na tela, código por e-mail"),
         Map.entry("SignatarioEmail","marina@exemplo.com"),Map.entry("SignatarioWhatsApp","+55 (11) 99999-0000"),Map.entry("SignatarioCPF","000.000.000-00"),Map.entry("SignatarioRG","00.000.000-0"),
         Map.entry("SignatarioIp","192.0.2.10"),Map.entry("SignatarioDispositivo","Chrome · Windows · computador"),Map.entry("SignatarioGeolocalizacao","Não informada")))));
   }
@@ -49,6 +49,12 @@ public final class PaginaRegistroAssinaturas {
         // Links precisam ser recriados: anotações não são parte do fluxo de desenho importado.
         if(dados.autenticidade()!=null && dados.autenticidade().matches("https?://[^\\s]+"))
           stamper.addAnnotation(PdfAnnotation.createLink(stamper.getWriter(),new Rectangle(35,18,560,38),PdfAnnotation.HIGHLIGHT_INVERT,new PdfAction(dados.autenticidade())),inicio+i);
+        if (modelo.get("design").equals("classico") && dados.autenticidade()!=null && dados.autenticidade().matches("https?://[^\\s]+")) {
+          var area=TemplatesEmpresa.objeto(TemplatesEmpresa.objeto(modelo.get("areas")).get("documento"));
+          float x=((Number)area.get("x")).floatValue()+((Number)area.get("w")).floatValue()-64;
+          float y=842-((Number)area.get("y")).floatValue()-64;
+          stamper.addAnnotation(PdfAnnotation.createLink(stamper.getWriter(),new Rectangle(x,y,x+64,y+64),PdfAnnotation.HIGHLIGHT_INVERT,new PdfAction(dados.autenticidade())),inicio+i);
+        }
       }
       stamper.close();return saida.toByteArray();
     }
@@ -57,24 +63,32 @@ public final class PaginaRegistroAssinaturas {
     var saidaAtual=new ByteArrayOutputStream(); var pdf=new Document(PageSize.A4,0,0,0,0);var writer=PdfWriter.getInstance(pdf,saidaAtual);
     pdf.addTitle("Registro de assinaturas · "+d.empresa());pdf.addAuthor(d.empresa());pdf.open(); c=writer.getDirectContent();
     var areaDocumento=area("documento"); var sigArea=area("signatarios");
+    boolean classico = modelo.get("design").equals("classico");
+    float larguraDocumento = areaDocumento[2] - (classico ? 100 : 36);
     List<Linha> documento=new ArrayList<>();
-    campo(documento,"Documento",d.documento(),false,areaDocumento[2]-36);
-    campo(documento,"Identificador",d.identificador(),true,areaDocumento[2]-36);
-    campo(documento,"SHA-256 do PDF original",d.hash(),true,areaDocumento[2]-36);
-    campo(documento,"Autenticidade",d.autenticidade(),true,areaDocumento[2]-36);
+    campo(documento,"Documento",d.documento(),false,larguraDocumento);
+    campo(documento,"Identificador",d.identificador(),true,larguraDocumento);
+    campo(documento,"SHA-256 do PDF original",d.hash(),true,larguraDocumento);
+    campo(documento,"Autenticidade",d.autenticidade(),true,larguraDocumento);
     int deslocamentoDocumento=0,pessoa=0,offset=0,pagina=0;
     do {
       if(pagina++>0) {pdf.newPage();c=writer.getDirectContent();}
       fundo(d,pagina); cabecalho(d);
       painel(areaDocumento); secao(areaDocumento,"01", "DADOS DO DOCUMENTO");
-      float dy=areaDocumento[1]+40, limite=areaDocumento[1]+areaDocumento[3]-14;
+      if (classico) qrAutenticidade(d, areaDocumento,writer);
+      float dy=areaDocumento[1]+(classico?24:40), limite=areaDocumento[1]+areaDocumento[3]-(classico?8:14);
       if(deslocamentoDocumento>=documento.size()) {
-        List<Linha> resumo=new ArrayList<>();campo(resumo,"Documento",d.documento(),false,areaDocumento[2]-36);campo(resumo,"SHA-256 original",d.hash(),true,areaDocumento[2]-36);
+        List<Linha> resumo=new ArrayList<>();campo(resumo,"Documento",d.documento(),false,larguraDocumento);campo(resumo,"SHA-256 original",d.hash(),true,larguraDocumento);
         for(var l:resumo) {if(dy+12>limite) break;desenharLinha(l,areaDocumento[0]+18,dy);dy+=12;}
       } else while(deslocamentoDocumento<documento.size() && dy+12<=limite) {desenharLinha(documento.get(deslocamentoDocumento++),areaDocumento[0]+18,dy);dy+=12;}
       // Os participantes paginam dentro da área reservada; nenhuma evidência é descartada.
       boolean grade=Set.of("atlas","botanica","prisma").contains(modelo.get("design"));
       float sy=sigArea[1];
+      if (classico) {
+        txt("Assinaturas",forte,15,cor("tinta"),sigArea[0],sy);
+        linha(sigArea[0]+100,sy+10,sigArea[0]+sigArea[2],sy+10,cor("secundaria"),.5f);
+        sy+=30;
+      }
       if(d.signatarios().isEmpty()) {painel(sigArea);secao(sigArea,"02","DADOS DA ASSINATURA");txt("Nenhum signatário registrado.",normal,tamanho,cor("tinta"),sigArea[0]+18,sy+44);}
       while(pessoa<d.signatarios().size() && sy+65<sigArea[1]+sigArea[3]) {
         var p=d.signatarios().get(pessoa);var linhas=linhasPessoa(p,grade?(sigArea[2]-58)/2:sigArea[2]-58);
@@ -83,14 +97,21 @@ public final class PaginaRegistroAssinaturas {
         float h=59+porColuna*14;
         var a=new float[]{sigArea[0],sy,sigArea[2],h};painel(a);
         String design=modelo.get("design").toString();
-        if(design.equals("editorial"))box(sigArea[0],sy,31,31,0,cor("destaque"));
+        if (classico) {
+          c.setColorStroke(cor("destaque"));c.setLineWidth(.7f);
+          c.rectangle(sigArea[0]+2,842-sy-26,13,13);c.stroke();
+          if(Boolean.TRUE.equals(p.get("SignatarioAssinou"))) {
+            linha(sigArea[0]+4,sy+20,sigArea[0]+7,sy+23,cor("tinta"),1);
+            linha(sigArea[0]+7,sy+23,sigArea[0]+13,sy+15,cor("tinta"),1);
+          }
+        } else if(design.equals("editorial"))box(sigArea[0],sy,31,31,0,cor("destaque"));
         else if(design.equals("noir"))poligono(new float[]{sigArea[0]+22,sy+10,sigArea[0]+35,sy+23,sigArea[0]+22,sy+36,sigArea[0]+9,sy+23},cor("destaque"));
         else bolha(sigArea[0]+22,sy+23,11,cor("destaque"));
-        txt(String.format("%02d",pessoa+1),forte,8,contraste(cor("destaque")),sigArea[0]+(design.equals("editorial")?9:16),sy+(design.equals("editorial")?9:18));
+        if (!classico) txt(String.format("%02d",pessoa+1),forte,8,contraste(cor("destaque")),sigArea[0]+(design.equals("editorial")?9:16),sy+(design.equals("editorial")?9:18));
         String nome=valor(p,"SignatarioNome"); float fs=11;
         while(forte.getWidthPoint(nome,fs)>sigArea[2]-64 && fs>7) fs-=.5f;
         // O nome completo também está nas linhas, para nomes maiores que o cabeçalho.
-        txt(forte.getWidthPoint(nome,fs)>sigArea[2]-64?"Participante "+(pessoa+1):nome,forte,fs,cor("tinta"),sigArea[0]+42,sy+16);
+        txt(forte.getWidthPoint(nome,fs)>sigArea[2]-64?"Participante "+(pessoa+1):nome,forte,fs,cor("tinta"),sigArea[0]+(classico?22:42),sy+16);
         if(offset>0) txt("CONTINUAÇÃO",forte,6,cor("destaque"),sigArea[0]+42,sy+30);
         linha(sigArea[0]+20,sy+40,sigArea[0]+sigArea[2]-20,sy+40,cor("secundaria"),.6f);
         if(grade)linha(sigArea[0]+sigArea[2]/2,sy+52,sigArea[0]+sigArea[2]/2,sy+h-12,cor("secundaria"),.5f);
@@ -126,7 +147,7 @@ public final class PaginaRegistroAssinaturas {
   private List<Linha> linhasPessoa(Map<String,Object> p,float w) {
     var linhas=new ArrayList<Linha>();
     for(var f:List.of(new String[]{"Nome","SignatarioNome"},new String[]{"Qualificação","SignatarioQualificacao"},
-      new String[]{"Situação","_situacao"},new String[]{"Assinou em","SignatarioDataAssinatura"},new String[]{"Métodos","SignatarioFirmadoVia"},
+      new String[]{"Situação","_situacao"},new String[]{"Assinou em","SignatarioDataAssinatura"},new String[]{"Métodos","SignatarioAutenticadoVia"},
       new String[]{"E-mail","SignatarioEmail"},new String[]{"WhatsApp","SignatarioWhatsApp"},new String[]{"CPF","SignatarioCPF"},new String[]{"RG","SignatarioRG"},
       new String[]{"IP","SignatarioIp"},new String[]{"Dispositivo","SignatarioDispositivo"},new String[]{"Localização informada","SignatarioGeolocalizacao"})) {
       String v=f[1].equals("_situacao")?(Boolean.TRUE.equals(p.get("SignatarioAssinou"))?"Assinado":"Assinatura pendente"):valor(p,f[1]);
@@ -142,6 +163,25 @@ public final class PaginaRegistroAssinaturas {
   private void cabecalho(Dados d) throws Exception {
     var a=area("cabecalho"); float x=a[0],y=a[1],w=a[2];
     String design=modelo.get("design").toString();boolean escuro=design.equals("noir");
+    if (design.equals("classico")) {
+      String marca=modelo.get("logo").toString();
+      float reserva=marca.isEmpty()?0:66;
+      if(!marca.isEmpty()) {
+        var imagem=Image.getInstance(Base64.getDecoder().decode(marca.substring(marca.indexOf(',')+1)));
+        imagem.scaleToFit(60,32);imagem.setAbsolutePosition(x+w-imagem.getScaledWidth(),842-y-imagem.getScaledHeight());c.addImage(imagem);
+      }
+      float fs=20;
+      String titulo=modelo.get("titulo").toString();
+      while(forte.getWidthPoint(titulo,fs)>w-160-reserva && fs>10)fs--;
+      txt(titulo,forte,fs,cor("tinta"),x,y);
+      int linhaEmpresa=0;
+      for(String trecho:quebrar(d.empresa(),normal,7,w-10-reserva))txt(trecho,normal,7,cor("destaque"),x,y+25+linhaEmpresa++*8);
+      txt("Gerado: "+d.emissao(),normal,6.5f,cor("destaque"),x+w-154-reserva,y+2);
+      txt(modelo.get("subtitulo").toString(),normal,6.5f,cor("destaque"),x+w-154-reserva,y+14);
+      linha(x,y+a[3],x+w,y+a[3],cor("secundaria"),.5f);
+      return;
+    }
+
     Color corTexto=escuro?cor("tinta"):cor("tinta");
     String logo=modelo.get("logo").toString();float logoW=0;
     if(!logo.isEmpty()) {var img=Image.getInstance(Base64.getDecoder().decode(logo.substring(logo.indexOf(',')+1)));img.scaleToFit(92,36);img.setAbsolutePosition(x+w-img.getScaledWidth(),842-y-img.getScaledHeight());c.addImage(img);logoW=106;}
@@ -159,6 +199,19 @@ public final class PaginaRegistroAssinaturas {
   }
   private void integridade(Dados d,int pagina) {
     var a=area("integridade");
+    if (modelo.get("design").equals("classico")) {
+      linha(a[0],a[1],a[0]+a[2],a[1],cor("secundaria"),.5f);
+      txt("Registro de assinaturas · "+d.empresa(),forte,9,cor("tinta"),a[0],a[1]+12);
+      txt("Confira a integridade e as evidências de assinatura no documento.",normal,8,cor("destaque"),a[0],a[1]+27);
+      float y=a[1]+42;
+      for(String trecho:quebrar(modelo.get("rodape").toString(),normal,7,a[2]-32)) {
+        txt(trecho,normal,7,cor("destaque"),a[0],y);y+=9;
+      }
+      txt(String.format("%02d",pagina),normal,7,cor("destaque"),a[0]+a[2]-14,a[1]+15);
+      if(d.autenticidade()!=null && !d.autenticidade().isBlank())txt("VERIFICAR AUTENTICIDADE",normal,6.5f,cor("destaque"),a[0],816);
+      return;
+    }
+
     linha(a[0],a[1],a[0]+a[2],a[1],cor("destaque"),1);
     txt("INTEGRIDADE & RASTREABILIDADE",forte,7.5f,cor("destaque"),a[0],a[1]+12);
     txt("Emitido em "+d.emissao(),normal,7,cor("tinta"),a[0],a[1]+27);
@@ -170,6 +223,10 @@ public final class PaginaRegistroAssinaturas {
   }
   private void secao(float[] a,String numero,String titulo) {
     String design=modelo.get("design").toString();
+    if (design.equals("classico")) {
+      txt("Dados do documento",forte,12,cor("tinta"),a[0],a[1]);
+      return;
+    }
     if(design.equals("botanica")){box(a[0]+14,a[1]+10,a[2]-28,22,11,cor("secundaria"));}
     if(design.equals("atlas")){box(a[0],a[1],a[2],31,0,cor("secundaria"));}
     if(design.equals("prisma")){poligono(new float[]{a[0]+a[2]-48,a[1],a[0]+a[2],a[1],a[0]+a[2],a[1]+48},cor("secundaria"));}
@@ -233,6 +290,19 @@ public final class PaginaRegistroAssinaturas {
         linha(30,30,565,30,cor("destaque"),.6f);linha(30,812,565,812,cor("destaque"),.6f);
       }
     }
+  }
+  private void qrAutenticidade(Dados dados,float[] area,PdfWriter writer) throws Exception {
+    if (dados.autenticidade()==null || !dados.autenticidade().matches("https?://[^\\s]+")) return;
+    var matriz=new com.google.zxing.qrcode.QRCodeWriter().encode(dados.autenticidade(),
+        com.google.zxing.BarcodeFormat.QR_CODE,192,192);
+    var qr=new java.awt.image.BufferedImage(matriz.getWidth(),matriz.getHeight(),java.awt.image.BufferedImage.TYPE_INT_RGB);
+    for(int y=0;y<matriz.getHeight();y++)for(int x=0;x<matriz.getWidth();x++)qr.setRGB(x,y,matriz.get(x,y)?0xff000000:0xffffffff);
+    var imagem=Image.getInstance(qr,null);
+    imagem.scaleAbsolute(64,64);
+    imagem.setAbsolutePosition(area[0]+area[2]-64,842-area[1]-64);
+    c.addImage(imagem);
+    float x=area[0]+area[2]-64,y=842-area[1]-64;
+    writer.addAnnotation(PdfAnnotation.createLink(writer,new Rectangle(x,y,x+64,y+64),PdfAnnotation.HIGHLIGHT_INVERT,new PdfAction(dados.autenticidade())));
   }
   private float[] area(String chave) {var a=TemplatesEmpresa.objeto(areas.get(chave));return new float[]{((Number)a.get("x")).floatValue(),((Number)a.get("y")).floatValue(),((Number)a.get("w")).floatValue(),((Number)a.get("h")).floatValue()};}
   private Color cor(String chave) {return Color.decode(cores.get(chave).toString());}

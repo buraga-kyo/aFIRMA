@@ -66,7 +66,6 @@ porId("dados-empresa").addEventListener("submit", async evento => {
   evento.preventDefault();
   try {
     await pedido("/api/assineai/empresa", {
-      EmpresaTemplates: EditorTemplates.dados(),
       EmpresaNome: porId("perfil-nome").value,
       EmpresaCNPJ: porId("perfil-cnpj").value,
       EmpresaEmail: porId("perfil-email").value,
