@@ -185,13 +185,13 @@ const base = process.env.FIRMA_TEST_BASE_URL || 'http://127.0.0.1:8080';
       }).click();
       await pagina.fill('#empresa-token', 'outro-token');
       assert(await pagina.locator('#firma-canais').isHidden());
-      await pagina.goto(base + '/advai');
+      await pagina.goto(base + '/assineai/pagina-assinatura');
       await pagina.waitForSelector('#editor-templates:not([hidden])');
       assert.equal(await pagina.inputValue('#perfil-nome'), 'Firma editada');
-      await pagina.waitForFunction(() => document.querySelectorAll('.registro-card').length === 6);
+      await pagina.waitForFunction(() => document.querySelectorAll('.registro-card').length === 7);
       await pagina.fill('[data-modelo=titulo]', 'Quem assinou tá aqui');
       await pagina.click('#template-salvar');
-      await pagina.waitForFunction(() => document.querySelector('#advai-modelos-aviso').textContent === 'Modelo salvo.');
+      await pagina.waitForFunction(() => document.querySelector('#assineai-modelos-aviso').textContent.includes('Padrão salvo'));
       const salvo = escritas.filter(evento => evento.p === '/api/assineai/empresa').at(-1);
       assert.deepEqual(Object.keys(salvo.body), ['EmpresaTemplates']);
       assert.equal(empresa.EmpresaNome, 'Firma editada');
@@ -212,7 +212,7 @@ const base = process.env.FIRMA_TEST_BASE_URL || 'http://127.0.0.1:8080';
       assert.equal(await pagina.locator('#firma-canal-acoes button').count(), 0);
       assert.deepEqual(erros, []);
       await pagina.close();
-      console.log(`OK [${largura}]: firma sem trator, dados, edição/criação de canais, QR fechável, Meta e modelos no ADVai com salvamento separado`);
+      console.log(`OK [${largura}]: firma sem trator, dados, edição/criação de canais, QR fechável, Meta e modelos no AssineAI com salvamento separado`);
     }
   } finally {
     await navegador.close();

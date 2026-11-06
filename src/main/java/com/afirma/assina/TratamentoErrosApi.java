@@ -68,7 +68,8 @@ public class TratamentoErrosApi {
 	}
 
 	@ExceptionHandler(IOException.class)
-	ResponseEntity<ErroApi> arquivoInvalido() {
+	ResponseEntity<ErroApi> arquivoInvalido(IOException erro) {
+        registroLog.warn("Falha ao ler PDF ou imagem: {}",erro.toString());
 		return resposta(HttpStatus.BAD_REQUEST, "PDF ou imagem inválidos");
 	}
 
@@ -80,6 +81,7 @@ public class TratamentoErrosApi {
 
 	private ResponseEntity<ErroApi> resposta(HttpStatus situacao, String mensagem) {
 		return ResponseEntity.status(situacao)
+            .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
 				.header("Cache-Control", "no-store")
 				.body(new ErroApi(situacao.name(), mensagem));
 	}

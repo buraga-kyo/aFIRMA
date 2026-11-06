@@ -198,7 +198,9 @@ assinarBlockchain.addEventListener('click', async () => {
     const carteira = await conectarMetaMask();
     andamentoBlockchain.textContent = 'Preparando PDF...';
     dados.append('carteira', carteira);
-    const resposta = await fetch('/api/blockchain/preparar', { method: 'POST', body: dados, cache: 'no-store' });
+    const tokenFirma = document.getElementById('token').value.trim() || localStorage.getItem('assineai-token') || '';
+    if (!tokenFirma) throw new Error('Entre na conta da empresa para usar a página de assinatura padrão.');
+    const resposta = await fetch('/api/assineai/blockchain/preparar', { method: 'POST', headers: {Authorization: `Bearer ${tokenFirma}`}, body: dados, cache: 'no-store' });
     if (!resposta.ok) throw new Error(await mensagemResposta(resposta));
     const preparo = await resposta.json();
     const mensagem = {

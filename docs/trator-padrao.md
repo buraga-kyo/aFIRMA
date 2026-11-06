@@ -36,7 +36,7 @@ Os cadastros remotos usam os mesmos recursos básicos e mantêm os formulários 
 
 ## Configuração daFIRMA
 
-`/firma` usa formulários para dados, aparência e canais. Não incorpora o trator. Os modelos da folha de assinaturas ficam no ADVai, em `/advai#editor-templates`. Conversas e cadastros continuam nos tratores de relacionamento.
+`/firma` usa formulários para dados, aparência e canais. Não incorpora o trator. Os modelos da folha de assinaturas ficam em AssineAI → Telas → Página de assinatura, em `/assineai/pagina-assinatura`. Conversas e cadastros continuam nos tratores de relacionamento.
 
 
 ## Faixa compartilhada de abas
@@ -95,3 +95,15 @@ python3 scripts/verificar-tratores.py
 A última verificação percorre todos os cadastros em 1440 e 500 pixels e confere
 estrutura, cores, limites de largura, envio da busca e remontagem na reconexão.
 Os dados e respostas da API são simulados nessa verificação.
+
+
+## Trator de documentos
+
+O editor de página de assinatura usa `TratorDocumentos`, definido em
+`trator-documentos.js`, com aparência em `trator-documentos.css`. É uma área
+especializada de edição: modelos, ferramentas, zoom, prancheta e publicação.
+Não instancia `FirmaTabela` nem `FirmaTrator` e não carrega o núcleo de tabelas.
+
+O motor `EditorTemplates` permanece responsável pelos modelos, prévias, posições,
+histórico e biblioteca. O trator organiza o espaço de trabalho e o acesso aos
+comandos. As cores da bancada não alteram as cores do PDF da empresa.

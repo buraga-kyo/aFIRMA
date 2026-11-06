@@ -47,7 +47,7 @@ public class SegurancaApi {
                 .csrf(csrf -> csrf.disable())
 				.sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(regras -> regras
-					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/assineai/trator", "/preparar-assinaturas",
+					.requestMatchers(HttpMethod.GET, "/", "/assinatura", "/assineai/trator", "/assineai/pagina-assinatura", "/preparar-assinaturas",
 							"/convite/**", "/web-panels/**", "/empresa", "/firma", "/firma-chat/trator", "/chat", "/chat/canais", "/chat/gestao",
 							"/advai", "/sistema", "/talkative/trator", "/institucional", "/css/**", "/js/**").permitAll()
 					.requestMatchers("/api/convites/**").permitAll()

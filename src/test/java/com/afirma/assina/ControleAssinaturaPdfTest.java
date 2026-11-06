@@ -32,7 +32,7 @@ class ControleAssinaturaPdfTest {
 				eq(false), eq(null), eq(null)))
 				.thenThrow(new UnrecoverableKeyException("Senha incorreta"));
 		var mvc = MockMvcBuilders.standaloneSetup(
-				new ControleAssinaturaPdf(servico, new ValidadorPedidoAssinatura(repositorio), false))
+				new ControleAssinaturaPdf(servico, new ValidadorPedidoAssinatura(repositorio), false, mock(PaginaAssinaturaEmpresa.class)))
 				.setControllerAdvice(new TratamentoErrosApi()).build();
 
 		mvc.perform(multipart("/api/pdfs/assinar")
@@ -57,7 +57,7 @@ class ControleAssinaturaPdfTest {
 		when(servico.assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(true),
 				eq(false), eq(null), eq(null)))
 				.thenReturn(assinado);
-		var controle = new ControleAssinaturaPdf(servico, new ValidadorPedidoAssinatura(repositorio), true);
+		var controle = new ControleAssinaturaPdf(servico, new ValidadorPedidoAssinatura(repositorio), true, mock(PaginaAssinaturaEmpresa.class));
 		var mvc = MockMvcBuilders.standaloneSetup(controle)
 				.setControllerAdvice(new TratamentoErrosApi()).build();
 
@@ -85,7 +85,7 @@ class ControleAssinaturaPdfTest {
 				eq(true), eq("Empresa Exemplo"), any(byte[].class)))
 				.thenReturn("%PDF-assinado".getBytes(StandardCharsets.US_ASCII));
 		var mvc = MockMvcBuilders.standaloneSetup(new ControleAssinaturaPdf(servico,
-				new ValidadorPedidoAssinatura(repositorio), false)).build();
+				new ValidadorPedidoAssinatura(repositorio), false, mock(PaginaAssinaturaEmpresa.class))).build();
 		mvc.perform(multipart("/api/pdfs/assinar")
 				.file(new MockMultipartFile("pdf", "arquivo.pdf", "application/pdf",
 						"%PDF-1.7\n".getBytes(StandardCharsets.US_ASCII)))

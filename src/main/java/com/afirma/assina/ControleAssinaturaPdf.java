@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RestController
-@RequestMapping("/api/pdfs")
+
 public class ControleAssinaturaPdf {
 	private static final Logger registroLog = LoggerFactory.getLogger(ControleAssinaturaPdf.class);
 	private static final Set<String> MOTIVOS_SEGUROS = Set.of(
@@ -38,25 +38,35 @@ public class ControleAssinaturaPdf {
 
 	private final ServicoAssinaturaPdf servico;
 	private final ValidadorPedidoAssinatura validador;
+    private final PaginaAssinaturaEmpresa paginas;
 	private final boolean permitirCertificadoVencido;
 
 	public ControleAssinaturaPdf(ServicoAssinaturaPdf servico, ValidadorPedidoAssinatura validador,
-			@Value("${APP_PERMITIR_CERTIFICADO_VENCIDO:false}") boolean permitirCertificadoVencido) {
+			@Value("${APP_PERMITIR_CERTIFICADO_VENCIDO:false}") boolean permitirCertificadoVencido, PaginaAssinaturaEmpresa paginas) {
 		this.servico = servico;
+        this.paginas = paginas;
 		this.validador = validador;
 		this.permitirCertificadoVencido = permitirCertificadoVencido;
 	}
 
-	@PostMapping(value = "/assinar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+	@PostMapping(value = {"/api/pdfs/assinar", "/api/assineai/pdf/assinar"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
 			produces = MediaType.APPLICATION_PDF_VALUE)
-	public ResponseEntity<byte[]> assinar(@Valid @ModelAttribute PedidoAssinaturaPdf pedido) throws Exception {
+	public ResponseEntity<byte[]> assinar(@Valid @ModelAttribute PedidoAssinaturaPdf pedido, jakarta.servlet.http.HttpServletRequest requisicao) throws Exception {
+        var pagina = paginas.daRequisicao(requisicao);
+        if (pagina != null) {
+            pedido.setNomeEmpresa(pagina.nomeEmpresa());
+            pedido.setPaginaPersonalizada(true);
+        }
 		ValidadorPedidoAssinatura.ArquivosValidados arquivos = validador.validar(pedido);
 		char[] senhaCertificado = pedido.getSenha().toCharArray();
 		try {
-			byte[] imagem = pedido.isPaginaPersonalizada() && pedido.getImagemEmpresa() != null
+			byte[] imagem = pagina == null && pedido.isPaginaPersonalizada() && pedido.getImagemEmpresa() != null
 					? pedido.getImagemEmpresa().getBytes() : null;
 			byte[] assinado;
-            if (pedido.isPaginaPersonalizada() && pedido.getTemplatePagina()!=null && !pedido.getTemplatePagina().isBlank()) {
+            if (pagina != null) {
+                assinado = servico.assinar(arquivos.pdf(), arquivos.certificado(), senhaCertificado,
+                    permitirCertificadoVencido, true, pagina.nomeEmpresa(), null, pagina.modelo());
+            } else if (pedido.isPaginaPersonalizada() && pedido.getTemplatePagina()!=null && !pedido.getTemplatePagina().isBlank()) {
                 var modelo=TemplatesEmpresa.lerModelo(pedido.getTemplatePagina());
                 assinado=servico.assinar(arquivos.pdf(),arquivos.certificado(),senhaCertificado,permitirCertificadoVencido,true,pedido.getNomeEmpresa(),imagem,modelo);
             } else assinado = servico.assinar(arquivos.pdf(), arquivos.certificado(), senhaCertificado,

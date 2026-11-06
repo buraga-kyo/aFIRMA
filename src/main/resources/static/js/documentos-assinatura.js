@@ -185,6 +185,7 @@
     elemento: '#tabela-montagem',
     rotulo: 'Documentos para assinatura',
     slots: {
+      abasFinais: porId('tabela-telas').content.cloneNode(true),
       comandos: porId('tabela-comandos').content.cloneNode(true),
       rodape: porId('tabela-rodape').content.cloneNode(true)
     },

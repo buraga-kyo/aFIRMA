@@ -1,0 +1,65 @@
+const {chromium} = require('playwright');
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+(async () => {
+ const browser = await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
+ try {
+  const page = await browser.newPage({viewport:{width:1440,height:1100}}), errors=[];
+  page.on('pageerror', e=>errors.push(e.message));
+  const root=path.resolve(__dirname,'../../main/resources');
+  let createBody;
+  const modelo={id:'classico',nome:'daFIRMA',design:'classico',titulo:'Relatório',subtitulo:'Teste',rodape:'Teste',fonte:'sans',tamanho:8,raio:0,cores:{fundo:'#ffffff',papel:'#ffffff',tinta:'#242424',destaque:'#757575',secundaria:'#c7c7c7'},areas:{cabecalho:{x:26,y:26,w:543,h:40},documento:{x:26,y:78,w:543,h:130},signatarios:{x:26,y:220,w:543,h:492},integridade:{x:26,y:730,w:543,h:72}}};
+  await page.route('https://firma.test/**', async route=>{
+   const p=new URL(route.request().url()).pathname;
+   if(p==='/api/assineai/editor/envelopes') return route.fulfill({json:[]});
+   if(p==='/api/assineai/editor/modelos') return route.fulfill({json:[]});
+   if(p==='/api/assineai/empresa') return route.fulfill({json:{EmpresaNome:'FIRMA TESTE',EmpresaTemplates:{versao:2,ativo:'classico',modelos:[modelo]}}});
+   if(p==='/api/assineai/empresa/templates') return route.fulfill({json:[modelo]});
+   if(p.endsWith('/paginas')) return route.fulfill({json:{paginas:[{width:595,height:842},{width:842,height:595}]}});
+   if(p.endsWith('/previa')) return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="595" height="842"><rect width="100%" height="100%" fill="white"/><text x="40" y="80">Documento de teste</text></svg>'});
+   if(p.endsWith('/docuseal/templates')) {createBody=route.request().postDataBuffer().toString();return route.fulfill({json:{id:42}});}
+   const file=p==='/assineai/pagina-assinatura'?path.join(root,'templates/pagina-assinatura.html'):path.join(root,'static',p);
+   return route.fulfill({path:file,contentType:p.endsWith('.js')?'text/javascript':p.endsWith('.css')?'text/css':'text/html'});
+  });
+  await page.goto('https://firma.test/assineai/pagina-assinatura');
+  await page.fill('#empresa-token','teste'); await page.locator('#assineai-carregar-modelos').evaluate(f=>f.requestSubmit());
+  await page.waitForSelector('#editor-templates:not([hidden])');
+  assert.equal(await page.locator('#template-alcas').isVisible(),true);
+  await page.setInputFiles('#studio-pdf',{name:'contrato.pdf',mimeType:'application/pdf',buffer:Buffer.from('%PDF-1.4 teste')});
+  await page.waitForFunction(()=>document.querySelector('#studio-status').textContent.includes('Arraste'));
+  await page.locator('[data-campo-tipo="signature"]').click();
+  assert.equal(await page.locator('.studio-campo').count(),1,JSON.stringify({errors,status:await page.locator('#studio-status').textContent()}));
+  await page.fill('#studio-campo-nome','Assinatura do cliente'); await page.locator('#studio-campo-nome').blur();
+  const field=page.locator('.studio-campo'), before=await field.boundingBox();
+  await page.mouse.move(before.x+20,before.y+12); await page.mouse.down(); await page.mouse.move(before.x+50,before.y+55); await page.mouse.up();
+  const after=await field.boundingBox(); assert(after.x>before.x+20); assert(after.y>before.y+30);
+  await page.keyboard.press('Control+z'); await page.waitForFunction(()=>document.querySelector('#studio-status').textContent.includes('Arraste')); assert((await field.boundingBox()).x<after.x);
+  await page.keyboard.press('Control+Shift+z'); await page.waitForFunction(()=>document.querySelector('#studio-status').textContent.includes('Arraste'));
+  const handle=await page.locator('.studio-campo i').boundingBox();
+  await page.mouse.move(handle.x+5,handle.y+5); await page.mouse.down(); await page.mouse.move(handle.x+35,handle.y+20); await page.mouse.up();
+  assert((await field.boundingBox()).width>after.width+20);
+  await page.locator('#studio-pagina-proxima').click();
+  await page.waitForFunction(()=>document.querySelector('#studio-pagina').textContent==='Página 2 de 2');
+  assert.equal(await field.count(),0);
+  await page.locator('[data-campo-tipo="text"]').click();
+  await page.locator('#studio-docuseal').evaluate(no=>no.closest('details').open=true);
+  await page.locator('#studio-docuseal').click();
+  await page.waitForFunction(()=>document.querySelector('#studio-status').textContent.includes('42 criado'));
+  assert(createBody.includes('Assinatura do cliente')); assert(createBody.includes('"page":2'));
+  await page.locator('.studio-campo').focus(); await page.keyboard.press('Delete'); assert.equal(await field.count(),0);
+  const transferencia = await page.evaluateHandle(() => {const dados = new DataTransfer(); dados.setData('application/x-firma-campo','date'); return dados;});
+  await page.locator('#template-canvas').dispatchEvent('drop',{dataTransfer:transferencia,clientX:800,clientY:600});
+  assert.equal(await field.count(),1);
+  const downloadPromise=page.waitForEvent('download'); await page.locator('#studio-exportar').click();
+  const download=await downloadPromise, mapa=await download.path();
+  await page.locator('.studio-campo').focus(); await page.keyboard.press('Delete');
+  await page.setInputFiles('#studio-importar',mapa);
+  await page.waitForFunction(()=>document.querySelector('#studio-status').textContent.includes('restaurados'));
+  assert.equal(await field.count(),1);
+  await page.locator('#studio-evidencias').click(); assert.equal(await page.locator('#template-alcas').isVisible(),true);
+  assert.deepEqual(errors,[]);
+  await page.screenshot({path:'/tmp/firma-docuseal-check/editor.png',fullPage:true});
+  console.log('OK: seleção, arraste, redimensionamento, histórico, páginas, criação, exclusão e volta à folha.');
+ } finally { await browser.close(); }
+})().catch(e=>{console.error(e);process.exitCode=1;});

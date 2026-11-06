@@ -24,7 +24,7 @@
     assert(window.tabelaTeste instanceof window.FirmaTabelaOriginal, 'Instância não criada');
     const raiz = document.getElementById('tabela-montagem');
     assert(raiz.querySelectorAll('.lista-toolbar').length === 1, 'Barras duplicadas');
-    assert([...raiz.querySelectorAll('.trator-aba')].map(registro => registro.getAttribute('href')).join() === '/firma,/assineai/trator,/chat,/advai', 'Links das abas incorretos');
+    assert([...raiz.querySelectorAll('a.trator-aba')].map(registro => registro.getAttribute('href')).join() === '/firma,/assineai/trator,/chat,/advai,/assineai/pagina-assinatura', 'Links das abas incorretos');
     assert(raiz.querySelector('.trator-firma').closest('.toolbar-grupo').contains(document.getElementById('importar-dados')), 'Abas separadas dos comandos');
     assert(getComputedStyle(raiz.querySelector('.trator-marca')).fontFamily.includes('Archivo Black'), 'Fonte da marca perdida');
     assert(raiz.querySelector('.af-busca input').placeholder === 'FALAR COM O BURRO DE CARGA...', 'Busca incorreta');

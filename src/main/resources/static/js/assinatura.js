@@ -12,31 +12,10 @@ const resultado = document.getElementById('resultado');
 const baixar = document.getElementById('baixar');
 const caixaErro = document.getElementById('erro');
 let enderecoArquivo = null;
-const escolhaPagina = document.getElementById('pagina-personalizada');
-const camposPersonalizacao = document.getElementById('campos-personalizacao');
 const nomeEmpresa = document.getElementById('nome-empresa');
-const imagemEmpresa = document.getElementById('imagem-empresa');
-nomeEmpresa.addEventListener('input', () => {
-  const nome = nomeEmpresa.value.trim() || 'SUA EMPRESA';
-  document.getElementById('marca-empresa').textContent = nome;
-  document.getElementById('rodape-empresa').textContent = nome;
-});
-escolhaPagina.addEventListener('change', () => {
-  camposPersonalizacao.hidden = !escolhaPagina.checked;
-  limparResultado();
-});
 function adicionarPersonalizacao(dados) {
-  dados.append('paginaPersonalizada', String(escolhaPagina.checked));
-  if (!nomeEmpresa.value.trim()) throw new Error('Informe o nome da empresa.');
-  dados.append('nomeEmpresa', nomeEmpresa.value.trim());
-  if (!escolhaPagina.checked) return;
-  const imagem = imagemEmpresa.files[0];
-  if (imagem && (imagem.size > 500000 || !['image/png', 'image/jpeg'].includes(imagem.type))) {
-    throw new Error('Use imagem PNG ou JPEG de até 500 KB.');
-  }
-  if (imagem) dados.append('imagemEmpresa', imagem);
-  const modelo = modelosPagina.find(item => item.id === document.getElementById('modelo-pagina-assinatura').value);
-  if (modelo) dados.append('templatePagina', JSON.stringify(modelo));
+  // O servidor escolhe o modelo da empresa autenticada, sem aceitar uma versão avulsa.
+  dados.append('paginaPersonalizada', 'true');
 }
 function mostrarNomePdf() {
   const arquivo = entradaPdf.files[0];
@@ -173,36 +152,24 @@ formulario.addEventListener('submit', async ocorrencia => {
 window.addEventListener('pagehide', () => {
   if (enderecoArquivo) URL.revokeObjectURL(enderecoArquivo);
 });
-let modelosPagina = [];
-document.getElementById('carregar-modelos-pagina').onclick = async () => {
+async function mostrarPadraoDaEmpresa() {
+  const token = document.getElementById('token').value.trim();
+  if (!token) return;
   const estado = document.getElementById('estado-modelo-pagina');
   try {
-    const token = localStorage.getItem('assineai-token');
-    if (!token) throw Error('Entre na conta da empresa em /firma para carregar seus modelos.');
-    const respostaAtual = await fetch('/api/assineai/empresa', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      cache: 'no-store'
-    });
-    if (!respostaAtual.ok) throw Error('Entre novamente no perfil da empresa para carregar os modelos.');
-    const empresa = await respostaAtual.json();
+    const resposta = await fetch('/api/assineai/empresa', {headers: {Authorization: `Bearer ${token}`}, cache: 'no-store'});
+    if (!resposta.ok) throw Error('Confira seu acesso para consultar o padrão da empresa.');
+    const empresa = await resposta.json();
+    if (token !== document.getElementById('token').value.trim()) return;
     const biblioteca = empresa.EmpresaTemplates;
-    if (biblioteca?.versao !== 2) throw Error('Escolha e salve um modelo da folha de assinaturas no ADVai.');
-    modelosPagina = biblioteca.modelos;
-    const seletor = document.getElementById('modelo-pagina-assinatura');
-    seletor.replaceChildren();
-    for (const item of modelosPagina) {
-      const elemento = document.createElement('option');
-      elemento.value = item.id;
-      elemento.textContent = item.nome;
-      seletor.append(elemento);
-    }
-    seletor.value = biblioteca.ativo;
-    nomeEmpresa.value = empresa.EmpresaNome || nomeEmpresa.value;
-    nomeEmpresa.dispatchEvent(new Event('input'));
-    estado.textContent = 'Modelo padrão da empresa carregado. A folha será acrescentada antes da assinatura do PDF.';
-  } catch (eventoAtual) {
-    estado.textContent = eventoAtual.message;
+    const modelo = biblioteca?.modelos?.find(item => item.id === biblioteca.ativo);
+    nomeEmpresa.value = empresa.EmpresaNome || '';
+    estado.textContent = 'Padrão da empresa: ' + (modelo?.nome || 'daFIRMA / Relatório de assinaturas') + '. Aplicado automaticamente ao assinar.';
+  } catch (erro) {
+    if (token === document.getElementById('token').value.trim()) estado.textContent = erro.message;
   }
-};
+}
+const tokenDaTela = document.getElementById('token');
+if (!tokenDaTela.value) tokenDaTela.value = localStorage.getItem('assineai-token') || '';
+tokenDaTela.addEventListener('change', mostrarPadraoDaEmpresa);
+mostrarPadraoDaEmpresa();

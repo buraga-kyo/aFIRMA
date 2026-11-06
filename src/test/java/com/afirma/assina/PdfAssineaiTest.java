@@ -100,6 +100,8 @@ class PdfAssineaiTest {
       assertTrue(
         new PdfTextExtractor(leitor).getTextFromPage(2).contains("Ana")
       );
+      assertTrue(new PdfTextExtractor(leitor).getTextFromPage(2).contains("email")
+      );
     }
   }
 
