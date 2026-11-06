@@ -3,7 +3,11 @@
 # { aFIRMA }
 </div>
 
-### aFIRMA é uma acronimo recursivo para "A FIRma MAxima"
+<p align="center">
+  <img src="./Trator daFIRMA.png" alt="imagem do trator daFIRMA">
+</p>
+
+### A FIRma MAxima
 Todos os recursos para planejamento, execução de tarefas e gestão de relacionamento com clientes
 aFIRMA vai ter vai disponibilizar de forma gratuita, se você quiser fechar esse repositorio ou precisa de ajudar para implementar aFIRMA na sua firma
 entre em contato comigo por <sprtj@protonmail.com> eu aceito cripto como pagamento e se quiser me ajudar a comprar café para continuar desenvolvendo aFIRMA, ficaria, agradicido ;)
@@ -17,9 +21,6 @@ bc1qkvg28q9jatqm884ghkdvngzc38ahn9kxum4xkd
 0x1A461A6ef7Ba0d1715ca143Eb74F5A2Ad245AF1A
 ```
 ### em resumo aFIRMA é um ERP e CRM completo para qualquer empresa.
-
-por enquanto o que temos funcionando é a assinatura digital de documentos, a ideia é você usar o certificado da sua empresa (ou FIRMA rsrs) e pronto, vai sair assinando documentos com validade juridica sem ter que pagar
-nada para ninguém, pois é XapZign, ZocuSign e etc vocês não são mais necessarios (mentira eles ainda tem muita coisa que não tem aqui, por enquanto....)
 
 vou deixar o passo a passo de como assinar um PDF manualmente aqui, e cara, eu uso linux, se vira pra fazer no Ruindows ai valeu?!;
 Em breve receio ter que colocar essas instruções em outro arquivo, enfim por enquanto segue:
