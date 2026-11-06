@@ -706,7 +706,7 @@ public class ControleAssineai {
             p.get("SignatarioQuantidadeDeAcessosNoLinkDeAssinatura")
           );
           pessoa.put("assinadoEm", p.get("SignatarioDataAssinatura"));
-          pessoa.put("autenticadoVia", p.get("SignatarioAutenticadoVia"));
+          pessoa.put("autenticadoVia", p.get("SignatarioFirmadoVia"));
           pessoa.put(
             "historicos",
             ((List<Map<String, Object>>) p.get("historicos"))

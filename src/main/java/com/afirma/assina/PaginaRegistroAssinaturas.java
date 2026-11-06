@@ -31,7 +31,7 @@ public final class PaginaRegistroAssinaturas {
       "a42d8e97c6513b80f74e2c96d8f03b61c59a78e24d861f093c72b1a6e0549f38",
       "https://exemplo.com/autenticidade/8d7f3c21","31/10/2026 · 14:32:08 -03:00",
       List.of(new LinkedHashMap<>(Map.ofEntries(Map.entry("SignatarioNome","Marina Costa Almeida"),Map.entry("SignatarioQualificacao","Representante legal"),
-        Map.entry("SignatarioAssinou",true),Map.entry("SignatarioDataAssinatura","31/10/2026 · 14:30:42 -03:00"),Map.entry("SignatarioAutenticadoVia","Assinatura na tela, código por e-mail"),
+        Map.entry("SignatarioAssinou",true),Map.entry("SignatarioDataAssinatura","31/10/2026 · 14:30:42 -03:00"),Map.entry("SignatarioFirmadoVia","Assinatura na tela, código por e-mail"),
         Map.entry("SignatarioEmail","marina@exemplo.com"),Map.entry("SignatarioWhatsApp","+55 (11) 99999-0000"),Map.entry("SignatarioCPF","000.000.000-00"),Map.entry("SignatarioRG","00.000.000-0"),
         Map.entry("SignatarioIp","192.0.2.10"),Map.entry("SignatarioDispositivo","Chrome · Windows · computador"),Map.entry("SignatarioGeolocalizacao","Não informada")))));
   }
@@ -147,7 +147,7 @@ public final class PaginaRegistroAssinaturas {
   private List<Linha> linhasPessoa(Map<String,Object> p,float w) {
     var linhas=new ArrayList<Linha>();
     for(var f:List.of(new String[]{"Nome","SignatarioNome"},new String[]{"Qualificação","SignatarioQualificacao"},
-      new String[]{"Situação","_situacao"},new String[]{"Assinou em","SignatarioDataAssinatura"},new String[]{"Métodos","SignatarioAutenticadoVia"},
+      new String[]{"Situação","_situacao"},new String[]{"Assinou em","SignatarioDataAssinatura"},new String[]{"Métodos","SignatarioFirmadoVia"},
       new String[]{"E-mail","SignatarioEmail"},new String[]{"WhatsApp","SignatarioWhatsApp"},new String[]{"CPF","SignatarioCPF"},new String[]{"RG","SignatarioRG"},
       new String[]{"IP","SignatarioIp"},new String[]{"Dispositivo","SignatarioDispositivo"},new String[]{"Localização informada","SignatarioGeolocalizacao"})) {
       String v=f[1].equals("_situacao")?(Boolean.TRUE.equals(p.get("SignatarioAssinou"))?"Assinado":"Assinatura pendente"):valor(p,f[1]);
