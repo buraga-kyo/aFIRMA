@@ -26,8 +26,16 @@ public class TratamentoErrosApi {
 		return resposta(HttpStatus.PAYLOAD_TOO_LARGE, "Arquivo excede limite permitido");
 	}
 
-	@ExceptionHandler({MethodArgumentNotValidException.class, MultipartException.class})
-	ResponseEntity<ErroApi> pedidoInvalido() {
+	@ExceptionHandler({MethodArgumentNotValidException.class, MultipartException.class,
+			org.springframework.web.bind.MissingServletRequestParameterException.class,
+			org.springframework.web.multipart.support.MissingServletRequestPartException.class,
+			org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class,
+			org.springframework.http.converter.HttpMessageNotReadableException.class})
+	ResponseEntity<ErroApi> pedidoInvalido(Exception erro) {
+        Throwable causa = erro;
+        for (int indice = 0; causa != null && indice < 10; indice++, causa = causa.getCause()) {
+            if (causa instanceof ErroAssinatura dadoInvalido) return resposta(HttpStatus.BAD_REQUEST, dadoInvalido.getMessage());
+        }
 		return resposta(HttpStatus.BAD_REQUEST, "Pedido inválido");
 	}
 
@@ -39,6 +47,11 @@ public class TratamentoErrosApi {
 		}
 		registroLog.warn("Pedido recusado. Status: {}. Motivo: {}", situacao.value(), erro.getReason());
 		return resposta(situacao, erro.getReason() == null ? situacao.getReasonPhrase() : erro.getReason());
+	}
+
+	@ExceptionHandler(org.springframework.dao.PessimisticLockingFailureException.class)
+	ResponseEntity<ErroApi> documentoEmAtualizacao() {
+		return resposta(HttpStatus.CONFLICT, "O documento está sendo atualizado. Aguarde e tente novamente");
 	}
 
 	@ExceptionHandler(DataIntegrityViolationException.class)
@@ -60,6 +73,11 @@ public class TratamentoErrosApi {
 	@ExceptionHandler(CertificateNotYetValidException.class)
 	ResponseEntity<ErroApi> certificadoFuturo() {
 		return resposta(HttpStatus.BAD_REQUEST, "Certificado ainda não válido");
+	}
+
+	@ExceptionHandler(ErroAssinatura.class)
+	ResponseEntity<ErroApi> assinaturaInvalida(ErroAssinatura erro) {
+		return resposta(HttpStatus.BAD_REQUEST, erro.getMessage());
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)

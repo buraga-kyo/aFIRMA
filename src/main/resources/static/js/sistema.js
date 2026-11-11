@@ -136,8 +136,7 @@
     const versao = ++versaoConexao,
       dados = await consultar(token);
     if (versao !== versaoConexao) throw Error('As credenciais foram alteradas. Conecte novamente.');
-    localStorage.setItem('assineai-token', token);
-    if (chave.trim()) localStorage.setItem('assineai-chave', chave.trim());else localStorage.removeItem('assineai-chave');
+    await acessoFirma.conectar(chave, token);
     ativar(dados, token);
     if (acesso.open) acesso.close();
   }
@@ -163,7 +162,7 @@
         }
       });
     } catch {}
-    for (const chaveAtual of ['assineai-token', 'assineai-chave', 'chat-token', 'chat-chave']) localStorage.removeItem(chaveAtual);
+    acessoFirma.desconectar();
     location.reload();
   };
   if (porId('lista-conectar')) {
@@ -211,10 +210,10 @@
     document.body.classList.add('firma-autenticado');
     porId('firma-empresa').textContent = dados.nome || 'Sua empresa';
     porId('firma-usuario').textContent = dados.nome || 'Credenciais';
-    porId('firma-sessao').textContent = 'Acesso conectado';
+    porId('firma-sessao').textContent = 'Acesso da FIRMA';
     porId('firma-entrar').textContent = 'Credenciais';
     porId('firma-sair').hidden = false;
-    if (porId('lista-conectar')) porId('lista-conectar').textContent = '✓ CONECTADO';
+    if (porId('lista-conectar')) porId('lista-conectar').textContent = 'Credenciais';
     document.dispatchEvent(new CustomEvent('firma:contexto', {
       detail: dados
     }));
@@ -223,13 +222,16 @@
     const token = localStorage.getItem('assineai-token');
     if (!token) return;
     try {
-      ativar(await consultar(token), token);
+      const versao = ++versaoConexao;
+      const dados = await consultar(token);
+      if (versao === versaoConexao && acessoFirma.ativa() && token === localStorage.getItem('assineai-token')) ativar(dados, token);
     } catch (evento) {
       aviso(evento.message);
     }
   }
   window.addEventListener('storage', evento => {
-    if (evento.key === 'assineai-token') location.reload();
+    if (evento.key === 'afirma-acesso-compartilhado') contexto();
   });
-  if (!document.body.classList.contains('sistema-trator')) contexto();
+  document.addEventListener('firma:acesso-conectado', contexto);
+  if (acessoFirma.ativa()) contexto();
 })();

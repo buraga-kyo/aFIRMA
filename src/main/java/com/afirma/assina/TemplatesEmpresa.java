@@ -10,6 +10,7 @@ public final class TemplatesEmpresa {
   private TemplatesEmpresa() {}
   public static List<Map<String,Object>> catalogo() {
     return List.of(
+      assineai(),
       classico(),
       modelo("atlas", "Atlas / Engenharia da confiança", "Grade técnica, recortes diagonais e azul profundo.", "sans", "#f0f4f8", "#ffffff", "#172e46", "#16647b", "#d6e8ee", 8, 42, 40, 140, 202, 180, 404, 306),
       modelo("botanica", "Botânica / Assinatura orgânica", "Folhagem vetorial, verdes minerais e respiro editorial.", "serif", "#f5f5eb", "#ffffff", "#293e33", "#537b53", "#dce7cf", 18, 52, 42, 144, 206, 180, 406, 304),
@@ -18,6 +19,20 @@ public final class TemplatesEmpresa {
       modelo("editorial", "Editorial / Registro em destaque", "Tipografia de revista, vermelho terracota e grande numeração.", "serif", "#fbf4ea", "#fffcf6", "#432c28", "#af4c36", "#edcebd", 2, 42, 48, 142, 212, 174, 406, 304),
       modelo("linho", "Linho / Papel de correspondência", "Monograma, filetes finos e composição de papel timbrado.", "serif", "#f9f8f3", "#ffffff", "#343b49", "#4d647e", "#e3e7eb", 4, 52, 44, 142, 206, 180, 406, 304)
     );
+  }
+  private static Map<String,Object> assineai() {
+    var modelo = modelo("assineai_producao", "AssineAi / Modelo original de produção",
+        "Relatório original: Helvetica, posições, filetes, QR e ícones de assinado e pendente.",
+        "sans", "#ffffff", "#ffffff", "#242424", "#757575", "#c7c7c7",
+        0, 26, 20, 35, 70, 70, 140, 550);
+    modelo.put("design", "assineai");
+    modelo.put("titulo", "Relatório de Assinaturas");
+    modelo.put("subtitulo", "Datas e Horários em UTC-0300");
+    modelo.put("rodape", "Confira as assinaturas digitais no seu leitor de PDF.");
+    modelo.put("tamanho", 7);
+    modelo.put("areas", Map.of("cabecalho", area(26,20,544,35), "documento", area(26,70,544,70),
+        "signatarios", area(26,140,544,550), "integridade", area(26,710,544,90)));
+    return modelo;
   }
   private static Map<String,Object> classico() {
     var modelo = modelo("classico", "daFIRMA / Relatório de assinaturas",
@@ -56,8 +71,8 @@ public final class TemplatesEmpresa {
       if (!Set.of("id","nome","descricao","design","fonte","titulo","subtitulo","rodape","logo","tamanho","raio","cores","areas","fundoImagem","opacidade").containsAll(m.keySet())) throw invalido();
       String id=texto(m,"id",80); if (!id.matches("[A-Za-z0-9_-]+") || !ids.add(id)) throw invalido();
       texto(m,"nome",120); texto(m,"descricao",200); texto(m,"titulo",80); texto(m,"subtitulo",120); texto(m,"rodape",160);
-      if (!Set.of("classico","atlas","botanica","noir","prisma","editorial","linho","livre").contains(texto(m,"design",20)) || !Set.of("sans","serif","mono").contains(texto(m,"fonte",10))) throw invalido();
-      numero(m,"tamanho",8,12); numero(m,"raio",0,26);
+      if (!Set.of("assineai","classico","atlas","botanica","noir","prisma","editorial","linho","livre").contains(texto(m,"design",20)) || !Set.of("sans","serif","mono").contains(texto(m,"fonte",10))) throw invalido();
+      numero(m,"tamanho",m.get("design").equals("assineai")?7:8,12); numero(m,"raio",0,26);
       var cores=objeto(m.get("cores"));
       if (!cores.keySet().equals(Set.of("fundo","papel","tinta","destaque","secundaria"))) throw invalido();
       for(String cor:cores.keySet()) if(!texto(cores,cor,7).matches("#[0-9a-fA-F]{6}")) throw invalido();
@@ -67,7 +82,7 @@ public final class TemplatesEmpresa {
       var areas=objeto(m.get("areas")); if(!areas.keySet().equals(AREAS)) throw invalido();
       for(String chave:AREAS) {
         var a=objeto(areas.get(chave)); if(!a.keySet().equals(Set.of("x","y","w","h"))) throw invalido();
-        double x=numero(a,"x",20,175), y=numero(a,"y",20,800), w=numero(a,"w",400,555), h=numero(a,"h",chave.equals("signatarios")?180:chave.equals("documento")?130:chave.equals("cabecalho")?(m.get("design").equals("classico")?40:110):60,650);
+        double x=numero(a,"x",20,175), y=numero(a,"y",20,800), w=numero(a,"w",400,555), h=numero(a,"h",chave.equals("signatarios")?180:chave.equals("documento")?(m.get("design").equals("assineai")?70:130):chave.equals("cabecalho")?(m.get("design").equals("assineai")?35:m.get("design").equals("classico")?40:110):60,650);
         if(x+w>575 || y+h>815) throw invalido();
       }
       var posicoes=new ArrayList<>(areas.values());
@@ -80,8 +95,26 @@ public final class TemplatesEmpresa {
   }
   public static Map<String,Object> ativo(Object valor) {
     if(!(valor instanceof Map<?,?> raiz) || !Objects.equals(raiz.get("versao"),2)) return padrao();
-    var v=validar(valor);
+    var v=biblioteca(valor);
     return ((List<?>)v.get("modelos")).stream().map(TemplatesEmpresa::objeto).filter(m->Objects.equals(m.get("id"),v.get("ativo"))).findFirst().orElseThrow();
+  }
+  public static Map<String,Object> biblioteca(Object valor) {
+    if (!(valor instanceof Map<?,?> raiz) || !Objects.equals(raiz.get("versao"), 2))
+      return Map.of("versao", 2, "ativo", "assineai_producao", "modelos", catalogo());
+    var existente = validar(valor);
+    var modelos = new ArrayList<Object>((List<?>) existente.get("modelos"));
+    boolean contemOriginal = modelos.stream().map(TemplatesEmpresa::objeto)
+        .anyMatch(modelo -> "assineai_producao".equals(modelo.get("id")));
+    String ativo = existente.get("ativo").toString();
+    boolean padraoAnterior = modelos.stream().map(TemplatesEmpresa::objeto)
+        .anyMatch(modelo -> ativo.equals(modelo.get("id")) && modelo.equals(classico()));
+    boolean adicionarOriginal = !contemOriginal && modelos.size() < 24;
+    if (adicionarOriginal) modelos.addFirst(assineai());
+    var atualizada = new LinkedHashMap<>(existente);
+    atualizada.put("modelos", modelos);
+    // Somente o padrão intacto é substituído; uma escolha ou edição da empresa é preservada.
+    if (padraoAnterior && (contemOriginal || adicionarOriginal)) atualizada.put("ativo", "assineai_producao");
+    return atualizada;
   }
   public static Map<String,Object> lerModelo(String valor) {
     try { return validarModelo(new tools.jackson.databind.ObjectMapper().readValue(valor,Map.class)); }

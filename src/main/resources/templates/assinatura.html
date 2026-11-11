@@ -1,118 +1,487 @@
 <!doctype html>
+
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head><link rel="stylesheet" href="/css/mensagens-firma.css"><script src="/js/mensagens-firma.js" defer></script>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Assinar PDF</title>
-  <link rel="stylesheet" th:href="@{/css/assinatura.css}" href="/css/assinatura.css">
-  <script th:src="@{/js/assinatura.js}" src="/js/assinatura.js" defer></script>
-  <script th:src="@{/js/blockchain.js}" src="/js/blockchain.js" defer></script>
-</head>
-<body>
-  <header class="topo">
-    <a class="marca" href="/" aria-label="Início"><span id="marca-empresa">SUA EMPRESA</span><span class="marca-ponto">.</span></a>
-    <span class="topo-selo">ASSINATURA DIGITAL DE DOCUMENTOS</span>
-  </header>
-
-  <main>
-    <section class="apresentacao" aria-labelledby="titulo">
-      <div class="apresentacao-texto">
-        <span class="sobretitulo"><span class="indicador"></span> ASSINOU? O PDF FICA AQUI</span>
-        <h1 id="titulo">ASSINE SEU<br><span>DOCUMENTO.</span></h1>
-        <p>Envie seu PDF e certificado digital. A gente prepara o arquivo assinado para baixar aqui mesmo.</p>
-      </div>
-      <div class="carimbo" aria-hidden="true"><span>SEU DOCUMENTO</span><strong>✳</strong><span>SUA IDENTIDADE</span></div>
-    </section>
-
-    <section class="area-trabalho" aria-label="Formulário de assinatura">
-      <div class="cabecalho-area"><span>01 / ASSINAR PDF</span><span>ARQUIVO PRONTO EM POUCOS PASSOS</span></div>
-      <div class="modos-assinatura" role="group" aria-label="Tipo de assinatura">
-        <button id="modo-certificado" type="button" aria-pressed="true">CERTIFICADO DIGITAL</button>
-        <button id="modo-blockchain" type="button" aria-pressed="false">CARTEIRA BLOCKCHAIN</button>
-      </div>
-      <div class="modos-assinatura"><a class="botao-carteira" href="/preparar-assinaturas">CONVIDAR SIGNATÁRIOS E POSICIONAR CAMPOS ↗</a><a class="botao-carteira" href="/assineai/trator">VER DOCUMENTOS ↗</a></div>
-      <section class="etapa personalizacao" aria-labelledby="titulo-personalizacao">
-        <div class="etapa-titulo"><span class="numero">✳</span><div><h2 id="titulo-personalizacao">PÁGINA DE ASSINATURA DA EMPRESA</h2><p>O padrão salvo no AssineAI é aplicado automaticamente ao PDF assinado.</p></div></div>
-        <input id="nome-empresa" type="hidden">
-        <p id="estado-modelo-pagina" role="status">A página usa o padrão da empresa vinculada ao seu acesso.</p>
-        <a class="botao-carteira" href="/assineai/pagina-assinatura">PERSONALIZAR PÁGINA DE ASSINATURA ↗</a>
-      </section>
-      <form id="formulario-assinatura" class="formulario" th:action="@{/api/pdfs/assinar}" action="/api/assineai/pdf/assinar" method="post" enctype="multipart/form-data">
-        <div class="etapa">
-          <div class="etapa-titulo"><span class="numero">01</span><div><h2>SEU DOCUMENTO</h2><p>Escolha um PDF de até 20 MB.</p></div></div>
-          <label class="zona-arquivo" for="pdf" id="zona-pdf">
-            <span class="icone-arquivo" aria-hidden="true">↥</span>
-            <strong id="nome-pdf">Clique para escolher seu PDF</strong>
-            <span>Ou arraste o arquivo para cá</span>
-            <input id="pdf" name="pdf" type="file" accept=".pdf,application/pdf" required>
-          </label>
-          <div class="arquivo-acoes"><button id="remover-pdf" class="botao-remover" type="button" hidden>REMOVER PDF</button><span id="estado-pdf" role="status" aria-live="polite" data-firma-mensagem></span></div>
+  <head><script src="/js/acesso-compartilhado.js"></script>
+    <link href="/css/mensagens-firma.css" rel="stylesheet" />
+    <script defer="" src="/js/mensagens-firma.js"></script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>Assinar PDF</title>
+    <link
+      href="/css/assinatura.css"
+      rel="stylesheet"
+      th:href="@{/css/assinatura.css}"
+    />
+    <script
+      defer=""
+      src="/js/assinatura.js"
+      th:src="@{/js/assinatura.js}"
+    ></script>
+    <script
+      defer=""
+      src="/js/blockchain.js"
+      th:src="@{/js/blockchain.js}"
+    ></script>
+    <script
+      defer=""
+      src="/js/politica-assinatura.js"
+      th:src="@{/js/politica-assinatura.js}"
+    ></script>
+    <script
+      defer=""
+      src="/js/conferencia-assinatura.js"
+      th:src="@{/js/conferencia-assinatura.js}"
+    ></script>
+  </head>
+  <body>
+    <header class="topo">
+      <a aria-label="Início" class="marca" href="/"
+        ><span id="marca-empresa">SUA EMPRESA</span
+        ><span class="marca-ponto">.</span></a
+      >
+      <span class="topo-selo">ASSINATURA DIGITAL DE DOCUMENTOS</span>
+    </header>
+    <main>
+      <section aria-labelledby="titulo" class="apresentacao">
+        <div class="apresentacao-texto">
+          <span class="sobretitulo"
+            ><span class="indicador"></span> ASSINOU? O PDF FICA AQUI</span
+          >
+          <h1 id="titulo">ASSINE SEU<br /><span>DOCUMENTO.</span></h1>
+          <p>
+            Envie seu PDF e certificado digital. A gente prepara o arquivo
+            assinado para baixar aqui mesmo.
+          </p>
         </div>
-
-        <div class="etapa">
-          <div class="etapa-titulo"><span class="numero">02</span><div><h2>SEU CERTIFICADO</h2><p>Use o arquivo e a senha do certificado digital.</p></div></div>
-          <div class="campos">
-            <label class="campo campo-largo" for="certificado">ARQUIVO DO CERTIFICADO
-              <input id="certificado" name="certificado" type="file" accept=".p12,.pfx,application/x-pkcs12" required>
+        <div aria-hidden="true" class="carimbo">
+          <span>SEU DOCUMENTO</span><strong>✳</strong
+          ><span>SUA IDENTIDADE</span>
+        </div>
+      </section>
+      <section aria-label="Formulário de assinatura" class="area-trabalho">
+        <div class="cabecalho-area">
+          <span>01 / ASSINAR PDF</span
+          ><span>ARQUIVO PRONTO EM POUCOS PASSOS</span>
+        </div>
+        <div
+          aria-label="Tipo de assinatura"
+          class="modos-assinatura"
+          role="group"
+        >
+          <button aria-pressed="true" id="modo-certificado" type="button">
+            CERTIFICADO DIGITAL
+          </button>
+          <button aria-pressed="false" id="modo-blockchain" type="button">
+            CARTEIRA BLOCKCHAIN
+          </button>
+        </div>
+        <div class="modos-assinatura">
+          <a class="botao-carteira" href="/preparar-assinaturas"
+            >CONVIDAR SIGNATÁRIOS E POSICIONAR CAMPOS ↗</a
+          ><a class="botao-carteira" href="/assineai/trator"
+            >VER DOCUMENTOS ↗</a
+          >
+        </div>
+        <section
+          aria-labelledby="titulo-personalizacao"
+          class="etapa personalizacao"
+        >
+          <div class="etapa-titulo">
+            <span class="numero">✳</span>
+            <div>
+              <h2 id="titulo-personalizacao">
+                PÁGINA DE ASSINATURA DA EMPRESA
+              </h2>
+              <p>
+                O padrão salvo no AssineAI é aplicado automaticamente ao PDF
+                assinado.
+              </p>
+            </div>
+          </div>
+          <input id="nome-empresa" type="hidden" />
+          <p id="estado-modelo-pagina" role="status">
+            A página usa o padrão da empresa vinculada ao seu acesso.
+          </p>
+          <a class="botao-carteira" href="/assineai/pagina-assinatura"
+            >PERSONALIZAR PÁGINA DE ASSINATURA ↗</a
+          >
+        </section>
+        <form
+          action="/api/assineai/pdf/assinar"
+          class="formulario"
+          enctype="multipart/form-data"
+          id="formulario-assinatura"
+          method="post"
+          th:action="@{/api/pdfs/assinar}"
+        >
+          <section class="etapa">
+            <h2>FINALIDADE DO DOCUMENTO</h2>
+            <p>
+              Este fluxo atende documentos particulares sem forma especial. Não
+              use para documentos de saúde, procurações, atos públicos ou atos
+              notariais.
+            </p>
+            <div class="campo">
+              <label for="tipo-documento">TIPO DO DOCUMENTO</label
+              ><select data-tipo-documento="" id="tipo-documento"></select>
+            </div>
+            <label class="escolha-pagina"
+              ><input id="formalidades-documento" type="checkbox" /><span
+                data-declaracao-formalidades=""
+              ></span
+            ></label>
+            <details>
+              <summary>Tratamento e preservação dos dados</summary>
+              <p data-aviso-privacidade=""></p>
+            </details>
+          </section>
+          <div class="etapa">
+            <div class="etapa-titulo">
+              <span class="numero">01</span>
+              <div>
+                <h2>SEU DOCUMENTO</h2>
+                <p>Escolha um PDF de até 20 MB.</p>
+              </div>
+            </div>
+            <label class="zona-arquivo" for="pdf" id="zona-pdf">
+              <span aria-hidden="true" class="icone-arquivo">↥</span>
+              <strong id="nome-pdf">Clique para escolher seu PDF</strong>
+              <span>Ou arraste o arquivo para cá</span>
+              <input
+                accept=".pdf,application/pdf"
+                id="pdf"
+                name="pdf"
+                required=""
+                type="file"
+              />
             </label>
-            <div class="arquivo-acoes campo-largo"><button id="remover-certificado" class="botao-remover" type="button" hidden>REMOVER CERTIFICADO</button><span id="estado-certificado" role="status" aria-live="polite" data-firma-mensagem></span></div>
-            <div class="campo"><label for="senha">SENHA DO CERTIFICADO</label><div class="entrada-senha"><input id="senha" name="senha" type="password" maxlength="256" autocomplete="off" required placeholder="Digite sua senha"><button type="button" class="botao-olho" data-alvo="senha" aria-label="Mostrar senha do certificado" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="olho-risco" d="M3 21 21 3"/></svg></button></div></div>
+            <div class="arquivo-acoes">
+              <button
+                class="botao-remover"
+                hidden=""
+                id="remover-pdf"
+                type="button"
+              >
+                REMOVER PDF</button
+              ><span
+                aria-live="polite"
+                data-firma-mensagem=""
+                id="estado-pdf"
+                role="status"
+              ></span>
+            </div>
           </div>
-        </div>
-
-        <div class="etapa">
-          <div class="etapa-titulo"><span class="numero">03</span><div><h2>ACESSO À API</h2><p>Informe credenciais com permissão para assinar PDF.</p></div></div>
-          <div class="campos">
-            <div class="campo"><label for="chave-api">CHAVE DA API (OPCIONAL)</label><div class="entrada-senha"><input id="chave-api" type="password" autocomplete="off" placeholder="Sua chave de acesso"><button type="button" class="botao-olho" data-alvo="chave-api" aria-label="Mostrar chave da API" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="olho-risco" d="M3 21 21 3"/></svg></button></div></div>
-            <div class="campo"><label for="token">TOKEN JWT</label><div class="entrada-senha"><input id="token" type="password" autocomplete="off" required placeholder="Acesso da sua empresa"><button type="button" class="botao-olho" data-alvo="token" aria-label="Mostrar token JWT" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="olho-risco" d="M3 21 21 3"/></svg></button></div></div>
+          <div class="etapa">
+            <div class="etapa-titulo">
+              <span class="numero">02</span>
+              <div>
+                <h2>SEU CERTIFICADO</h2>
+                <p>Use o arquivo e a senha do certificado digital.</p>
+              </div>
+            </div>
+            <div class="campos">
+              <label class="campo campo-largo" for="certificado"
+                >ARQUIVO DO CERTIFICADO
+                <input
+                  accept=".p12,.pfx,application/x-pkcs12"
+                  id="certificado"
+                  name="certificado"
+                  required=""
+                  type="file"
+                />
+              </label>
+              <div class="arquivo-acoes campo-largo">
+                <button
+                  class="botao-remover"
+                  hidden=""
+                  id="remover-certificado"
+                  type="button"
+                >
+                  REMOVER CERTIFICADO</button
+                ><span
+                  aria-live="polite"
+                  data-firma-mensagem=""
+                  id="estado-certificado"
+                  role="status"
+                ></span>
+              </div>
+              <div class="campo">
+                <label for="senha">SENHA DO CERTIFICADO</label>
+                <div class="entrada-senha">
+                  <input
+                    autocomplete="off"
+                    id="senha"
+                    maxlength="256"
+                    name="senha"
+                    placeholder="Vazio usa a senha configurada no servidor"
+                    type="password"
+                  /><button
+                    aria-label="Mostrar senha do certificado"
+                    aria-pressed="false"
+                    class="botao-olho"
+                    data-alvo="senha"
+                    type="button"
+                  >
+                    <svg aria-hidden="true" viewbox="0 0 24 24">
+                      <path
+                        d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path class="olho-risco" d="M3 21 21 3"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <p class="nota-seguranca">Credenciais ficam apenas nesta página. Nenhum arquivo é salvo no navegador.</p>
+          <div class="etapa">
+            <div class="etapa-titulo">
+              <span class="numero">03</span>
+              <div>
+                <h2>CONEXÃO COMPARTILHADA</h2>
+                <p>A conexão feita no rodapé do trator é usada nesta tela.</p>
+              </div>
+            </div>
+            <div class="campos">
+              <div class="campo">
+                <label for="chave-api">CHAVE DA API (OPCIONAL)</label>
+                <div class="entrada-senha">
+                  <input
+                    autocomplete="off"
+                    id="chave-api"
+                    placeholder="Sua chave de acesso"
+                    type="password"
+                  /><button
+                    aria-label="Mostrar chave da API"
+                    aria-pressed="false"
+                    class="botao-olho"
+                    data-alvo="chave-api"
+                    type="button"
+                  >
+                    <svg aria-hidden="true" viewbox="0 0 24 24">
+                      <path
+                        d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path class="olho-risco" d="M3 21 21 3"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="campo">
+                <label for="token">TOKEN JWT</label>
+                <div class="entrada-senha">
+                  <input
+                    autocomplete="off"
+                    id="token"
+                    placeholder="Acesso da sua empresa"
+                    required=""
+                    type="password"
+                  /><button
+                    aria-label="Mostrar token JWT"
+                    aria-pressed="false"
+                    class="botao-olho"
+                    data-alvo="token"
+                    type="button"
+                  >
+                    <svg aria-hidden="true" viewbox="0 0 24 24">
+                      <path
+                        d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z"
+                      ></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                      <path class="olho-risco" d="M3 21 21 3"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <p class="nota-seguranca">
+              A conexão é compartilhada entre as telas até o prazo informado. Nenhum arquivo é salvo no
+              navegador.
+            </p>
+          </div>
+          <div class="rodape-formulario">
+            <p>Ao enviar, o documento será processado para assinatura.</p>
+            <button id="botao-assinar" type="submit">
+              <span>ASSINAR DOCUMENTO</span><span aria-hidden="true">↗</span>
+            </button>
+          </div>
+          <button
+            class="botao-carteira"
+            id="conferir-certificado"
+            type="button"
+          >
+            CONFERIR CERTIFICADO
+          </button>
+          <div
+            class="nota-seguranca"
+            hidden=""
+            id="dados-certificado"
+            role="status"
+          ></div>
+          <a
+            class="botao-carteira"
+            hidden=""
+            id="revisar-pdf"
+            rel="noopener"
+            target="_blank"
+            >ABRIR PDF PARA REVISÃO</a
+          >
+          <div class="etapa" hidden="" id="evidencias-diretas">
+            <button
+              class="botao-carteira"
+              id="baixar-evidencias-diretas"
+              type="button"
+            >
+              BAIXAR PACOTE DE EVIDÊNCIAS
+            </button>
+          </div>
+          <section
+            aria-live="polite"
+            class="etapa"
+            hidden=""
+            id="verificacao-assinatura"
+          ></section>
+          <label class="escolha-pagina"
+            ><input id="confirmar-revisao" required="" type="checkbox" />Revisei
+            o documento e o certificado que será usado para assinar.</label
+          ><label class="escolha-pagina"
+            ><input id="poderes-certificado" type="checkbox" /><span
+              data-declaracao-poderes=""
+            ></span
+          ></label>
+        </form>
+        <section
+          aria-label="Assinatura com carteira"
+          hidden=""
+          id="area-blockchain"
+        >
+          <div class="etapa">
+            <div class="etapa-titulo">
+              <span class="numero">01</span>
+              <div>
+                <h2>SEU DOCUMENTO</h2>
+                <p>Escolha um PDF de até 20 MB.</p>
+              </div>
+            </div>
+            <label
+              class="zona-arquivo"
+              for="pdf-blockchain"
+              id="zona-pdf-blockchain"
+            >
+              <span aria-hidden="true" class="icone-arquivo">↥</span>
+              <strong id="nome-pdf-blockchain"
+                >Clique para escolher seu PDF</strong
+              >
+              <span>Ou arraste o arquivo para cá</span>
+              <input
+                accept=".pdf,application/pdf"
+                id="pdf-blockchain"
+                type="file"
+              />
+            </label>
+            <div class="arquivo-acoes">
+              <button
+                class="botao-remover"
+                hidden=""
+                id="remover-pdf-blockchain"
+                type="button"
+              >
+                REMOVER PDF</button
+              ><span
+                aria-live="polite"
+                data-firma-mensagem=""
+                id="estado-pdf-blockchain"
+                role="status"
+              ></span>
+            </div>
+          </div>
+          <div class="etapa">
+            <div class="etapa-titulo">
+              <span class="numero">02</span>
+              <div>
+                <h2>SUA CARTEIRA</h2>
+                <p>Conecte MetaMask na rede Ethereum Sepolia.</p>
+              </div>
+            </div>
+            <button class="botao-carteira" id="conectar-carteira" type="button">
+              CONECTAR METAMASK
+            </button>
+            <p
+              aria-live="polite"
+              class="nota-seguranca"
+              id="estado-carteira"
+              role="status"
+            >
+              Nenhuma carteira conectada.
+            </p>
+          </div>
+          <div class="rodape-formulario">
+            <p>web3 web3 WEB333333333</p>
+            <button id="assinar-blockchain" type="button">
+              ASSINAR COM CARTEIRA ↗
+            </button>
+          </div>
+          <p
+            aria-live="polite"
+            class="andamento-blockchain"
+            data-firma-mensagem=""
+            id="andamento-blockchain"
+            role="status"
+          ></p>
+          <div class="resultado" hidden="" id="resultado-blockchain">
+            <div aria-hidden="true" class="resultado-icone">✓</div>
+            <div>
+              <h2>DOCUMENTO PRONTO</h2>
+              <p>Prova da carteira incluída no PDF.</p>
+            </div>
+            <a
+              class="botao-baixar"
+              download="documento-blockchain.pdf"
+              id="baixar-blockchain"
+              >BAIXAR PDF ↗</a
+            >
+          </div>
+          <div
+            class="erro"
+            data-firma-mensagem=""
+            hidden=""
+            id="erro-blockchain"
+            role="alert"
+          ></div>
+        </section>
+        <div
+          aria-live="polite"
+          class="resultado"
+          hidden=""
+          id="resultado"
+          role="status"
+        >
+          <div aria-hidden="true" class="resultado-icone">✓</div>
+          <div>
+            <h2>DOCUMENTO PRONTO</h2>
+            <p>Seu PDF assinado está disponível para download.</p>
+          </div>
+          <a
+            class="botao-baixar"
+            download="documento-assinado.pdf"
+            href="#"
+            id="baixar"
+            >BAIXAR PDF ↗</a
+          >
         </div>
-
-        <div class="rodape-formulario">
-          <p>Ao enviar, o documento será processado para assinatura.</p>
-          <button id="botao-assinar" type="submit"><span>ASSINAR DOCUMENTO</span><span aria-hidden="true">↗</span></button>
-        </div>
-      </form>
-
-      <section id="area-blockchain" hidden aria-label="Assinatura com carteira">
-        <div class="etapa">
-          <div class="etapa-titulo"><span class="numero">01</span><div><h2>SEU DOCUMENTO</h2><p>Escolha um PDF de até 20 MB.</p></div></div>
-          <label class="zona-arquivo" for="pdf-blockchain" id="zona-pdf-blockchain">
-            <span class="icone-arquivo" aria-hidden="true">↥</span>
-            <strong id="nome-pdf-blockchain">Clique para escolher seu PDF</strong>
-            <span>Ou arraste o arquivo para cá</span>
-            <input id="pdf-blockchain" type="file" accept=".pdf,application/pdf">
-          </label>
-          <div class="arquivo-acoes"><button id="remover-pdf-blockchain" class="botao-remover" type="button" hidden>REMOVER PDF</button><span id="estado-pdf-blockchain" role="status" aria-live="polite" data-firma-mensagem></span></div>
-        </div>
-        <div class="etapa">
-          <div class="etapa-titulo"><span class="numero">02</span><div><h2>SUA CARTEIRA</h2><p>Conecte MetaMask na rede Ethereum Sepolia.</p></div></div>
-          <button id="conectar-carteira" class="botao-carteira" type="button">CONECTAR METAMASK</button>
-          <p id="estado-carteira" class="nota-seguranca" role="status" aria-live="polite">Nenhuma carteira conectada.</p>
-        </div>
-        <div class="rodape-formulario">
-          <p>web3 web3 WEB333333333</p>
-          <button id="assinar-blockchain" type="button">ASSINAR COM CARTEIRA ↗</button>
-        </div>
-        <p id="andamento-blockchain" class="andamento-blockchain" role="status" aria-live="polite" data-firma-mensagem></p>
-        <div id="resultado-blockchain" class="resultado" hidden>
-          <div class="resultado-icone" aria-hidden="true">✓</div>
-          <div><h2>DOCUMENTO PRONTO</h2><p>Prova da carteira incluída no PDF.</p></div>
-          <a id="baixar-blockchain" class="botao-baixar" download="documento-blockchain.pdf">BAIXAR PDF ↗</a>
-        </div>
-        <div id="erro-blockchain" class="erro" hidden role="alert" data-firma-mensagem></div>
+        <div
+          class="erro"
+          data-firma-mensagem=""
+          hidden=""
+          id="erro"
+          role="alert"
+        ></div>
       </section>
-
-      <div id="resultado" class="resultado" hidden aria-live="polite" role="status">
-        <div class="resultado-icone" aria-hidden="true">✓</div>
-        <div><h2>DOCUMENTO PRONTO</h2><p>Seu PDF assinado está disponível para download.</p></div>
-        <a id="baixar" class="botao-baixar" href="#" download="documento-assinado.pdf">BAIXAR PDF ↗</a>
-      </div>
-      <div id="erro" class="erro" hidden role="alert" data-firma-mensagem></div>
-    </section>
-  </main>
-
-  <footer><span id="rodape-empresa">SUA EMPRESA</span><span>DOCUMENTOS ASSINADOS COM IDENTIDADE.</span></footer>
-</body>
+    </main>
+    <footer>
+      <span id="rodape-empresa">SUA EMPRESA</span
+      ><span>DOCUMENTOS ASSINADOS COM IDENTIDADE.</span>
+    </footer>
+  </body>
 </html>

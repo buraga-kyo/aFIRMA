@@ -30,12 +30,22 @@ public final class PaginaRegistroAssinaturas {
     return new Dados(empresa,"Contrato de prestação de serviços","8d7f3c21-69a4-4b82-a7b1-56ed201f9e43",
       "a42d8e97c6513b80f74e2c96d8f03b61c59a78e24d861f093c72b1a6e0549f38",
       "https://exemplo.com/autenticidade/8d7f3c21","31/10/2026 · 14:32:08 -03:00",
-      List.of(new LinkedHashMap<>(Map.ofEntries(Map.entry("SignatarioNome","Marina Costa Almeida"),Map.entry("SignatarioQualificacao","Representante legal"),
+      List.of(new LinkedHashMap<>(Map.ofEntries(
+        Map.entry("SignatarioNome", empresa), Map.entry("SignatarioQualificacao", "Empresa"), Map.entry("SignatarioAssinou", true),
+        Map.entry("SignatarioDataAssinatura", "31/10/2026, 14:20:00"), Map.entry("SignatarioFirmadoVia", "Certificado digital"),
+        Map.entry("SignatarioResponsavel", "João Pereira"), Map.entry("SignatarioCPF", "000.000.000-00"), Map.entry("SignatarioRG", "00.000.000-0"),
+        Map.entry("SignatarioCNPJ", "00.000.000/0000-00"), Map.entry("SignatarioEmail", "responsavel@exemplo.com"),
+        Map.entry("SignatarioEmailEmpresa", "contato@exemplo.com"), Map.entry("SignatarioWhatsApp", "+55 (11) 99999-0000"),
+        Map.entry("SignatarioIp", "192.0.2.20"), Map.entry("SignatarioOrigemIp", "CONEXAO"), Map.entry("SignatarioDispositivo", "Firefox · Linux"),
+        Map.entry("SignatarioGeolocalizacao", "{\"latitude\":-23.5505,\"longitude\":-46.6333,\"accuracy\":20,\"timestamp\":1793467200000}"),
+        Map.entry("SignatarioContextoAcesso", "Criação dos convites"))),
+        new LinkedHashMap<>(Map.ofEntries(Map.entry("SignatarioNome","Marina Costa Almeida"),Map.entry("SignatarioQualificacao","Representante legal"),
         Map.entry("SignatarioAssinou",true),Map.entry("SignatarioDataAssinatura","31/10/2026 · 14:30:42 -03:00"),Map.entry("SignatarioFirmadoVia","Assinatura na tela, código por e-mail"),
         Map.entry("SignatarioEmail","marina@exemplo.com"),Map.entry("SignatarioWhatsApp","+55 (11) 99999-0000"),Map.entry("SignatarioCPF","000.000.000-00"),Map.entry("SignatarioRG","00.000.000-0"),
         Map.entry("SignatarioIp","192.0.2.10"),Map.entry("SignatarioDispositivo","Chrome · Windows · computador"),Map.entry("SignatarioGeolocalizacao","Não informada")))));
   }
   public static byte[] gerar(Map<String,Object> modelo,Dados dados) throws Exception {
+    if ("assineai".equals(modelo.get("design"))) return PaginaRelatorioAssineai.gerar(modelo, dados);
     return new PaginaRegistroAssinaturas(modelo).renderizar(dados);
   }
   public static byte[] acrescentar(byte[] original,Map<String,Object> modelo,Dados dados) throws Exception {
@@ -44,11 +54,19 @@ public final class PaginaRegistroAssinaturas {
       var stamper=new PdfStamper(leitor,saida,null,true);
       int inicio=leitor.getNumberOfPages();
       for(int i=1;i<=anexo.getNumberOfPages();i++) {
-        stamper.insertPage(inicio+i,PageSize.A4);
+        stamper.insertPage(inicio+i,anexo.getPageSize(i));
         stamper.getOverContent(inicio+i).addTemplate(stamper.getImportedPage(anexo,i),0,0);
         // Links precisam ser recriados: anotações não são parte do fluxo de desenho importado.
         if(dados.autenticidade()!=null && dados.autenticidade().matches("https?://[^\\s]+"))
           stamper.addAnnotation(PdfAnnotation.createLink(stamper.getWriter(),new Rectangle(35,18,560,38),PdfAnnotation.HIGHLIGHT_INVERT,new PdfAction(dados.autenticidade())),inicio+i);
+        if (modelo.get("design").equals("assineai") && anexo.getPageN(i).getAsArray(PdfName.ANNOTS) != null
+            && dados.autenticidade()!=null && dados.autenticidade().matches("https?://[^\\s]+")) {
+          var area=TemplatesEmpresa.objeto(TemplatesEmpresa.objeto(modelo.get("areas")).get("documento"));
+          float x=((Number)area.get("x")).floatValue()+((Number)area.get("w")).floatValue()-57;
+          float y=840-((Number)area.get("y")).floatValue()-61;
+          var link = PdfAnnotation.createLink(stamper.getWriter(),new Rectangle(x,y,x+60,y+60),PdfAnnotation.HIGHLIGHT_INVERT,new PdfAction(dados.autenticidade()));
+          link.setBorder(new PdfBorderArray(0,0,0)); stamper.addAnnotation(link,inicio+i);
+        }
         if (modelo.get("design").equals("classico") && dados.autenticidade()!=null && dados.autenticidade().matches("https?://[^\\s]+")) {
           var area=TemplatesEmpresa.objeto(TemplatesEmpresa.objeto(modelo.get("areas")).get("documento"));
           float x=((Number)area.get("x")).floatValue()+((Number)area.get("w")).floatValue()-64;
@@ -148,9 +166,12 @@ public final class PaginaRegistroAssinaturas {
     var linhas=new ArrayList<Linha>();
     for(var f:List.of(new String[]{"Nome","SignatarioNome"},new String[]{"Qualificação","SignatarioQualificacao"},
       new String[]{"Situação","_situacao"},new String[]{"Assinou em","SignatarioDataAssinatura"},new String[]{"Métodos","SignatarioFirmadoVia"},
-      new String[]{"E-mail","SignatarioEmail"},new String[]{"WhatsApp","SignatarioWhatsApp"},new String[]{"CPF","SignatarioCPF"},new String[]{"RG","SignatarioRG"},
-      new String[]{"IP","SignatarioIp"},new String[]{"Dispositivo","SignatarioDispositivo"},new String[]{"Localização informada","SignatarioGeolocalizacao"})) {
+      new String[]{"Responsável pela empresa","SignatarioResponsavel"},new String[]{"CNPJ","SignatarioCNPJ"},new String[]{"E-mail da empresa","SignatarioEmailEmpresa"},new String[]{"Contexto do acesso","SignatarioContextoAcesso"},new String[]{"E-mail","SignatarioEmail"},new String[]{"WhatsApp","SignatarioWhatsApp"},new String[]{"CPF","SignatarioCPF"},new String[]{"RG","SignatarioRG"},
+      new String[]{"IP","SignatarioIp"},new String[]{"Origem do IP","SignatarioOrigemIp"},new String[]{"Dispositivo","SignatarioDispositivo"},new String[]{"Localização informada","SignatarioGeolocalizacao"})) {
       String v=f[1].equals("_situacao")?(Boolean.TRUE.equals(p.get("SignatarioAssinou"))?"Assinado":"Assinatura pendente"):valor(p,f[1]);
+      if (Set.of("SignatarioResponsavel", "SignatarioCNPJ", "SignatarioEmailEmpresa", "SignatarioContextoAcesso").contains(f[1]) && v.isBlank()) continue;
+      if (f[1].equals("SignatarioOrigemIp")) v = ColetaDadosAssinatura.descreverOrigem(v);
+      if (f[1].equals("SignatarioGeolocalizacao")) v = ColetaDadosAssinatura.descreverLocalizacao(v);
       for(String l:quebrar(f[0]+": "+(v.isBlank()?"Não informado":v),normal,tamanho,w)) linhas.add(new Linha(l,false,false));
     }
     return linhas;

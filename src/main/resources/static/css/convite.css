@@ -1,0 +1,53 @@
+/* O convite usa as mesmas cores, faixas e painéis da criação de assinaturas. */
+.pagina-convite .convite-conteudo { max-width: 1120px; padding: 64px 40px 120px; }
+/* Os passos ficam na mesma barra inferior usada para criar a assinatura. */
+.passos-convite { list-style: none; margin: 0; }
+.passos-convite .concluido { border-color: var(--primary); color: var(--primary); }
+.pagina-convite footer { padding-bottom: 140px; }
+.saudacao-convite { margin: 24px 0; color: var(--muted-foreground); }
+.pagina-convite .etapa { box-shadow: 6px 6px 0 var(--secondary); margin-bottom: 28px; }
+#autenticacao-convite { width: 100%; margin: 0 auto 32px; }
+#autenticacao-convite .cabecalho-area { margin: -36px -40px 28px; }
+#autenticacao-convite h2 { font-size: clamp(22px, 3vw, 32px); margin-bottom: 16px; }
+#autenticacao-convite > p, #autenticacao-convite details { color: var(--muted-foreground); font-size: 14px; }
+#autenticacao-convite .campo { margin: 24px 0 16px; max-width: 360px; }
+#codigo-acesso { font-size: 24px; letter-spacing: .3em; }
+.pagina-convite .acao-principal-convite, #enviar-assinatura { background: var(--primary); color: var(--background); border: 2px solid var(--primary); padding: 15px 20px; font-weight: 800; }
+#autenticacao-convite details { padding-top: 20px; border-top: 1px solid var(--border); }
+#autenticacao-convite summary { cursor: pointer; color: var(--foreground); }
+#autenticacao-convite details p { margin-top: 12px; }
+#estado-codigo:empty { display: none; }
+#estado-codigo { margin-top: 18px; }
+.pagina-convite .apresentacao { padding: 28px 0 36px; }
+.pagina-convite .apresentacao h1 { font-size: clamp(32px, 5vw, 54px); }
+#encerrar-sessao { display: flex; margin-left: auto; }
+#documentos-convite { display: flex; flex-wrap: wrap; gap: 8px; }
+#baixar-original { margin-top: 24px; }
+.pagina-convite textarea { width: 100%; min-height: 100px; padding: 12px; background: var(--background); color: var(--foreground); border: 2px solid var(--border); font: inherit; resize: vertical; }
+#recusar-convite { margin-top: 16px; }
+#identificacao-convite, #versao-documento { overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .pagina-convite .convite-conteudo { padding: 28px 20px 40px; }
+  .pagina-convite .etapa { padding: 24px 20px; }
+  #autenticacao-convite .cabecalho-area { margin: -24px -20px 24px; padding: 12px 20px; font-size: 9px; }
+  .pagina-convite .topo { gap: 12px; padding: 20px; }
+  .pagina-convite .marca { font-size: 22px; }
+  .pagina-convite .topo-selo { font-size: 9px; }
+}
+
+/* A espera fica visível no painel, com as cores e a sombra da FIRMA. */
+.contador-reenvio { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 16px; margin: 20px 0; border: 2px solid var(--primary); background: var(--background); box-shadow: 4px 4px 0 var(--secondary); }
+.contador-reenvio > span { align-self: center; color: var(--muted-foreground); font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+.contador-reenvio strong { color: var(--primary); font: 28px 'Archivo Black', sans-serif; font-variant-numeric: tabular-nums; }
+.contador-reenvio progress { grid-column: 1 / -1; width: 100%; height: 6px; border: 0; background: var(--border); accent-color: var(--primary); }
+.contador-reenvio progress::-webkit-progress-bar { background: var(--border); }
+.contador-reenvio progress::-webkit-progress-value { background: var(--primary); }
+.contador-reenvio progress::-moz-progress-bar { background: var(--primary); }
+
+/* Depois de assinar, a confirmação vira o conteúdo principal do convite. */
+.pagina-convite #resultado { margin: 0 0 28px; padding: 40px; flex-direction: column; align-items: flex-start; gap: 24px; background: var(--card); box-shadow: 6px 6px 0 var(--secondary); }
+.pagina-convite #resultado h2 { margin: 16px 0; font-size: clamp(28px, 4vw, 46px); line-height: 1.12; }
+#documento-assinado-nome { overflow-wrap: anywhere; color: var(--foreground); font-weight: 800; margin-bottom: 12px; }
+.pagina-convite #baixar-final { margin: 0; }
+.documento-assinado footer { padding-bottom: 32px; }
+@media (max-width: 760px) { .pagina-convite #resultado { padding: 24px 20px; } }

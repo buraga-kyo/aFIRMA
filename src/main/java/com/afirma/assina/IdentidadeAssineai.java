@@ -18,6 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class IdentidadeAssineai {
 
+  @org.springframework.beans.factory.annotation.Autowired
+  private CertificadoConfiguradoEmpresa certificadoEmpresa;
   private final BancoAssineai banco;
   private final JwtDecoder atual;
   private final String segredo;
@@ -142,20 +144,23 @@ public class IdentidadeAssineai {
     );
   }
 
+  public Map<String, Object> empresaParaAdministrar(String identidade) {
+    if(identidade.startsWith("firma:")) {
+      var permissao=banco.um("SELECT count(*) n FROM firma_identidade.\"Permissao\" p JOIN firma_identidade.\"Usuario\" u ON u.\"RepositorioId\"=p.\"RepositorioId\" WHERE u.id=:id AND ((p.\"PermissaoNome\"='all' AND p.\"PermissaoAcao\"='manage') OR (p.\"PermissaoNome\"='clientedetail' AND p.\"PermissaoAcao\"='update')) AND (p.id IN(SELECT pp.\"PermissaoId\" FROM firma_identidade.\"PerfilPermissao\" pp WHERE pp.\"PerfilId\"=u.\"PerfilId\" AND pp.\"RepositorioId\"=u.\"RepositorioId\") OR p.id IN(SELECT up.\"PermissaoId\" FROM firma_identidade.\"UsuarioPermissao\" up WHERE up.\"UsuarioId\"=u.id AND up.\"RepositorioId\"=u.\"RepositorioId\"))",Map.of("id",Long.parseLong(identidade.substring(6))));
+      if(((Number)permissao.get("n")).longValue()==0)throw erro(HttpStatus.FORBIDDEN,"Seu perfil não permite editar a empresa");
+    }
+    return empresa(identidade);
+  }
+
   @Transactional
   public Map<String, Object> salvar(
     String identidade,
     Map<String, Object> entrada
   ) {
-    if(identidade.startsWith("firma:")) {
-      var permissao=banco.um("SELECT count(*) n FROM firma_identidade.\"Permissao\" p JOIN firma_identidade.\"Usuario\" u ON u.\"RepositorioId\"=p.\"RepositorioId\" WHERE u.id=:id AND ((p.\"PermissaoNome\"='all' AND p.\"PermissaoAcao\"='manage') OR (p.\"PermissaoNome\"='clientedetail' AND p.\"PermissaoAcao\"='update')) AND (p.id IN(SELECT pp.\"PermissaoId\" FROM firma_identidade.\"PerfilPermissao\" pp WHERE pp.\"PerfilId\"=u.\"PerfilId\" AND pp.\"RepositorioId\"=u.\"RepositorioId\") OR p.id IN(SELECT up.\"PermissaoId\" FROM firma_identidade.\"UsuarioPermissao\" up WHERE up.\"UsuarioId\"=u.id AND up.\"RepositorioId\"=u.\"RepositorioId\"))",Map.of("id",Long.parseLong(identidade.substring(6))));
-      if(((Number)permissao.get("n")).longValue()==0)throw erro(HttpStatus.FORBIDDEN,"Seu perfil não permite editar a empresa");
-    }
-    var empresa = empresa(identidade);
-    var dados = new LinkedHashMap<String, Object>();
+    var empresa = empresaParaAdministrar(identidade);
+    var dados = new LinkedHashMap<String, Object>(DadosResponsavelEmpresa.normalizar(entrada));
     for (String campo : List.of(
       "EmpresaNome",
-      "EmpresaCNPJ",
       "EmpresaEmail",
       "EmpresaTemaTelaAssinatura"
     )) {
@@ -182,6 +187,18 @@ public class IdentidadeAssineai {
         ) throw erro(HttpStatus.BAD_REQUEST, "Tema inválido");
         dados.put(campo, valor);
       }
+    }
+    if (entrada.containsKey("EmpresaAssinaturaAutomatica")) {
+      if (!(entrada.get("EmpresaAssinaturaAutomatica") instanceof Boolean automatica)) throw erro(HttpStatus.BAD_REQUEST, "Opção de assinatura da empresa inválida");
+      if (automatica && !Boolean.TRUE.equals(empresa.get("EmpresaAssinaturaAutomatica"))) {
+        if (!PoliticaDocumentosAssinatura.DECLARACAO_PODERES.equals(entrada.get("EmpresaAutorizacaoCertificado"))) {
+          throw erro(HttpStatus.BAD_REQUEST, "Confirme a autorização para assinar automaticamente pela empresa");
+        }
+        certificadoEmpresa.conferir(BancoAssineai.id(empresa, "EmpresaId"));
+        dados.put("EmpresaAutorizacaoCertificado", PoliticaDocumentosAssinatura.DECLARACAO_PODERES);
+        dados.put("EmpresaAutorizacaoCertificadoEm", java.time.OffsetDateTime.now());
+      }
+      dados.put("EmpresaAssinaturaAutomatica", automatica);
     }
     if (entrada.containsKey("EmpresaTemplates"))
       dados.put("EmpresaTemplates", TemplatesEmpresa.validar(entrada.get("EmpresaTemplates")));
@@ -306,6 +323,7 @@ public class IdentidadeAssineai {
   private Map<String, Object> publico(Map<String, Object> empresa) {
     var copia = new LinkedHashMap<>(empresa);
     copia.remove("EmpresaSenha");
+    copia.put("EmpresaTemplates", TemplatesEmpresa.biblioteca(copia.get("EmpresaTemplates")));
     return copia;
   }
 

@@ -1,8 +1,9 @@
-<!doctype html><html lang="pt-BR"><head>
+<!doctype html><html lang="pt-BR"><head><script src="/js/acesso-compartilhado.js"></script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Página de assinatura | AssineAI</title>
 <link rel="stylesheet" href="/css/assinatura.css"><link rel="stylesheet" href="/css/templates-empresa.css"><link rel="stylesheet" href="/css/mensagens-firma.css"><link rel="stylesheet" href="/css/trator-documentos.css">
 <script src="/js/mensagens-firma.js" defer></script><script src="/js/editor-templates.js" defer></script><script src="/js/trator-documentos.js" defer></script><script src="/js/editor-documentos-firma.js" defer></script><script src="/js/pagina-assinatura.js" defer></script>
+<script src="/js/politica-assinatura.js" defer></script>
 </head><body class="pagina-trator-documentos">
 <main id="trator-documentos" class="trator-documentos" aria-label="Trator de edição de documentos">
   <header class="documentos-cabecalho">
@@ -22,7 +23,7 @@
       <button type="button" data-documentos="diminuir" aria-label="Diminuir folha">−</button><output data-documentos-escala aria-live="polite">100%</output><button type="button" data-documentos="aumentar" aria-label="Aumentar folha">+</button><button type="button" data-documentos="encaixar">ENCAIXAR FOLHA</button>
     </div>
   </div>
-  <section id="documentos-vazio" class="documentos-vazio"><span aria-hidden="true">▤</span><h1>Prepare a folha da sua FIRMA.</h1><p>Conecte sua empresa no acesso abaixo para abrir os modelos e trabalhar na folha.</p></section>
+  <section id="documentos-vazio" class="documentos-vazio"><span aria-hidden="true">▤</span><h1>Prepare a folha da sua FIRMA.</h1><p>Use a conexão do trator para abrir os modelos e trabalhar na folha.</p></section>
 <section id="editor-templates" class="registro-editor" hidden>
   <div id="modelos-galeria" class="registro-galeria" aria-label="Designs da página de assinaturas"></div>
   <div class="registro-workspace">
@@ -93,8 +94,8 @@
           <button type="button" id="studio-recortar">Recortar área</button><button type="button" id="studio-ocultar">Ocultar área</button>
           <label>Adicionar PDFs<input id="studio-adicionar-pdf" type="file" multiple accept="application/pdf,.pdf"></label>
         </div></details>
-      </div><div class="registro-toolbar"><span>PRÉVIA DA FOLHA ADICIONADA AO PDF</span><button id="template-atualizar" type="button">Atualizar prévia</button><button id="template-baixar" type="button">Baixar amostra em PDF ↗</button></div>
-      <div class="registro-prancheta"><div id="template-canvas" class="registro-canvas"><img id="template-previa" alt="Prévia real da página de registro de assinaturas"><div id="template-alcas"></div><div id="studio-campos" hidden></div></div></div>
+      </div><div class="registro-toolbar"><span>PRÉVIA DO MODELO COM DADOS DE EXEMPLO</span><button id="template-atualizar" type="button">Atualizar prévia</button><button id="template-baixar" type="button">Baixar amostra em PDF ↗</button></div>
+      <div class="registro-prancheta"><div id="template-canvas" class="registro-canvas"><img id="template-previa" alt="Prévia do modelo de relatório com dados fictícios"><div id="template-alcas"></div><div id="studio-campos" hidden></div></div></div>
       <p class="registro-nota">Dados fictícios apenas nesta amostra. Na assinatura, o sistema insere os dados reais e acrescenta folhas de continuação quando necessário.</p>
 
     </div>

@@ -13,6 +13,8 @@ import org.springframework.data.repository.query.Param;
 public interface RepositorioSignatarioEnvelope extends JpaRepository<SignatarioEnvelope, UUID> {
 	List<SignatarioEnvelope> findByEnvelopeIdOrderByNome(UUID envelopeId);
 	Optional<SignatarioEnvelope> findByResumoConvite(String resumoConvite);
+	@Query("select signatario.envelopeId from SignatarioEnvelope signatario where signatario.resumoConvite = :resumo")
+	Optional<UUID> buscarEnvelopeDoConvite(@Param("resumo") String resumo);
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select signatario from SignatarioEnvelope signatario where signatario.resumoConvite = :resumo")
 	Optional<SignatarioEnvelope> buscarConviteParaAssinar(@Param("resumo") String resumo);

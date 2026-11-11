@@ -88,5 +88,6 @@
     await salvar();
   };
   porId('empresa-token').value = localStorage.getItem('assineai-token') || '';
+  document.addEventListener('firma:acesso-conectado', () => carregar().catch(falha => aviso(falha.message, true)));
   if (porId('empresa-token').value) carregar();
 })();

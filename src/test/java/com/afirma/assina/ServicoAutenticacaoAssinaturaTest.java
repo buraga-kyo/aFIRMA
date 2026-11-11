@@ -11,7 +11,7 @@ class ServicoAutenticacaoAssinaturaTest {
     private final RepositorioSignatarioEnvelope pessoas = mock(RepositorioSignatarioEnvelope.class);
     private final RepositorioEnvelopeAssinatura envelopes = mock(RepositorioEnvelopeAssinatura.class);
     private final RepositorioSignatarioHistorico historicos = mock(RepositorioSignatarioHistorico.class);
-    private final ServicoAutenticacaoAssinatura servico = new ServicoAutenticacaoAssinatura(pessoas, envelopes, desafios, entrega, historicos);
+    private final ServicoAutenticacaoAssinatura servico = new ServicoAutenticacaoAssinatura(pessoas, envelopes, desafios, entrega, historicos, mock(ServicoAutenticacaoConvites.class));
     private static String hash(String texto) throws Exception {
         return HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(texto.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
     }

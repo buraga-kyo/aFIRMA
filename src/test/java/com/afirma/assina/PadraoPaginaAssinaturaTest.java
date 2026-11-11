@@ -10,21 +10,22 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 class PadraoPaginaAssinaturaTest {
   @Test void assinaturaIndividualAplicaPadraoMesmoQuandoClienteTentaDesligarOuTrocar() throws Exception {
-    var servico = mock(ServicoAssinaturaPdf.class);
+    var servico = mock(ServicoAssinaturaDireta.class);
     var validador = mock(ValidadorPedidoAssinatura.class);
     var paginas = mock(PaginaAssinaturaEmpresa.class);
     var modelo = TemplatesEmpresa.catalogo().stream().filter(m -> m.get("id").equals("noir")).findFirst().orElseThrow();
     when(paginas.daRequisicao(any())).thenReturn(new PaginaAssinaturaEmpresa.Configuracao("Firma", modelo));
     when(validador.validar(any())).thenReturn(new ValidadorPedidoAssinatura.ArquivosValidados(new byte[]{1}, new byte[]{2}));
-    when(servico.assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(false), eq(true), eq("Firma"), isNull(), eq(modelo)))
-        .thenReturn(new byte[]{3});
-    var mvc = MockMvcBuilders.standaloneSetup(new ControleAssinaturaPdf(servico, validador, false, paginas)).build();
-    mvc.perform(multipart("/api/assineai/pdf/assinar")
-        .file(new MockMultipartFile("pdf", "teste.pdf", "application/pdf", new byte[]{1}))
-        .file(new MockMultipartFile("certificado", "teste.pfx", "application/octet-stream", new byte[]{2}))
-        .param("senha", "senha").param("paginaPersonalizada", "false").param("templatePagina", "modelo avulso"))
-        .andExpect(status().isOk());
-    verify(servico).assinar(any(byte[].class), any(byte[].class), any(char[].class), eq(false), eq(true), eq("Firma"), isNull(), eq(modelo));
+    when(servico.assinar(any(), any(), any(), anyBoolean(), anyString()))
+        .thenReturn(new ServicoAssinaturaDireta.Assinado(java.util.UUID.randomUUID(), new byte[]{9}));
+    when(validador.validar(any())).thenReturn(new ValidadorPedidoAssinatura.ArquivosValidados(new byte[]{1},new byte[]{2}));
+    var pedido = new PedidoAssinaturaPdf();
+    pedido.setSenha("senha");
+    var requisicao = new org.springframework.mock.web.MockHttpServletRequest();
+    new ControleAssinaturaPdf(servico, validador, false, paginas).assinar(pedido, requisicao, () -> "criador");
+    org.junit.jupiter.api.Assertions.assertTrue(pedido.isPaginaPersonalizada());
+    org.junit.jupiter.api.Assertions.assertEquals("Firma", pedido.getNomeEmpresa());
+
   }
 
   @Test void carteiraTambemUsaPadraoDaEmpresa() throws Exception {

@@ -129,6 +129,15 @@ class ServicoAssinaturaPdfTest {
 		}
 	}
 
+	@Test
+	void consultaCertificadoVencidoSomenteQuandoPermitido() throws Exception {
+		byte[] certificado = criarCertificado(true);
+		assertThrows(CertificateExpiredException.class,
+				() -> servico.consultarCertificado(certificado, "senha-teste".toCharArray()));
+		var dados = servico.consultarCertificado(certificado, "senha-teste".toCharArray(), true);
+		assertTrue(dados.validoAte().isBefore(Instant.now()));
+	}
+
 	private byte[] criarPdf() throws Exception {
 		ByteArrayOutputStream saida = new ByteArrayOutputStream();
 		Document documento = new Document();

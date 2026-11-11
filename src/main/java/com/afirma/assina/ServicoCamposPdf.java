@@ -18,13 +18,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class ServicoCamposPdf {
 
-  public record Marca(CampoAssinatura campo, SignatarioEnvelope signatario, byte[] imagem) {}
+  public record Marca(
+    CampoAssinatura campo,
+    SignatarioEnvelope signatario,
+    byte[] imagem
+  ) {}
 
   public int paginas(byte[] pdf) throws Exception {
     try (PDDocument documento = Loader.loadPDF(pdf)) {
       int quantidade = documento.getNumberOfPages();
       if (quantidade < 1 || quantidade > 100) {
-        throw new IllegalArgumentException("PDF deve ter entre 1 e 100 páginas");
+        throw new IllegalArgumentException(
+          "PDF deve ter entre 1 e 100 páginas"
+        );
       }
       for (int indice = 0; indice < quantidade; indice++) {
         var tamanho = documento.getPage(indice).getCropBox();
@@ -55,7 +61,10 @@ public class ServicoCamposPdf {
         "Dimensão da página inválida"
       );
       float escala = Math.min(1.5f, 1800f / maior);
-      BufferedImage imagem = new PDFRenderer(documento).renderImage(pagina - 1, escala);
+      BufferedImage imagem = new PDFRenderer(documento).renderImage(
+        pagina - 1,
+        escala
+      );
       ImageIO.write(imagem, "png", saida);
       return saida.toByteArray();
     }
@@ -92,7 +101,9 @@ public class ServicoCamposPdf {
         float largura = (float) (campo.getLargura() * tamanho.getWidth());
         float altura = (float) (campo.getAltura() * tamanho.getHeight());
         float y =
-          tamanho.getHeight() - (float) (campo.getPosicaoY() * tamanho.getHeight()) - altura;
+          tamanho.getHeight() -
+          (float) (campo.getPosicaoY() * tamanho.getHeight()) -
+          altura;
         imagem.scaleToFit(largura - 6, altura - 18);
         imagem.setAbsolutePosition(
           x + (largura - imagem.getScaledWidth()) / 2,
@@ -107,15 +118,22 @@ public class ServicoCamposPdf {
         conteudo.setColorFill(new java.awt.Color(201, 255, 61));
         conteudo.setFontAndSize(fonte, 7);
         conteudo.setTextMatrix(x + 4, y + 3);
-        String legenda = marca.signatario().getNome() + " · " + campo.getTipo().name();
-        while (fonte.getWidthPoint(legenda, 7) > largura - 8 && legenda.length() > 1) {
+        String legenda =
+          marca.signatario().getNome() + " · " + campo.getTipo().name();
+        while (
+          fonte.getWidthPoint(legenda, 7) > largura - 8 && legenda.length() > 1
+        ) {
           legenda = legenda.substring(0, legenda.length() - 1);
         }
         conteudo.showText(legenda);
         conteudo.endText();
       }
       editor.close();
-      return saida.toByteArray();
+      byte[] atualizado = saida.toByteArray();
+      if (atualizado.length > 50 * 1024 * 1024) throw new ErroAssinatura(
+        "PDF resultante excede 50 MB. Reduza o tamanho das imagens"
+      );
+      return atualizado;
     }
   }
 
@@ -127,13 +145,20 @@ public class ServicoCamposPdf {
   ) throws Exception {
     String valor = campo.getValor();
     if (valor == null || valor.isBlank()) return;
-    if (campo.getTipo() == CampoAssinatura.Tipo.SELECAO) valor = valor.equals("true") ? "X" : "";
+    if (campo.getTipo() == CampoAssinatura.Tipo.SELECAO) valor = valor.equals(
+      "true"
+    )
+      ? "X"
+      : "";
     Rectangle pagina = leitor.getPageSizeWithRotation(campo.getPagina());
     float x = (float) (campo.getPosicaoX() * pagina.getWidth()),
       largura = (float) (campo.getLargura() * pagina.getWidth()),
       altura = (float) (campo.getAltura() * pagina.getHeight());
     // A posição do editor parte do topo; o conteúdo PDF é desenhado a partir da base.
-    float y = pagina.getHeight() - (float) (campo.getPosicaoY() * pagina.getHeight()) - altura;
+    float y =
+      pagina.getHeight() -
+      (float) (campo.getPosicaoY() * pagina.getHeight()) -
+      altura;
     PdfContentByte conteudo = editor.getOverContent(campo.getPagina());
     // O recorte limita o texto ao campo e o estado gráfico é restaurado antes
     // de desenhar a próxima marca, para não afetar os demais elementos.
@@ -144,7 +169,8 @@ public class ServicoCamposPdf {
     conteudo.setColorFill(java.awt.Color.BLACK);
     conteudo.beginText();
     float tamanho = Math.min(12, Math.max(5, altura - 4));
-    while (tamanho > 5 && fonte.getWidthPoint(valor, tamanho) > largura - 4) tamanho -= .5f;
+    while (tamanho > 5 && fonte.getWidthPoint(valor, tamanho) > largura - 4)
+      tamanho -= .5f;
     conteudo.setFontAndSize(fonte, tamanho);
     conteudo.setTextMatrix(x + 2, y + Math.max(2, (altura - tamanho) / 2));
     conteudo.showText(valor.replace('\n', ' ').replace('\r', ' '));

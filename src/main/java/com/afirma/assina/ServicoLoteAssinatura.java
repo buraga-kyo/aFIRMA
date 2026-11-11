@@ -17,15 +17,21 @@ public class ServicoLoteAssinatura {
     private final ServicoEnvelopes envelopes;
     private final ValidadorPedidoAssinatura validador;
     private final ServicoCamposPdf pdfs;
+    private final ServicoAssinaturaPdf assinador;
     public ServicoLoteAssinatura(ServicoEnvelopes envelopes, ValidadorPedidoAssinatura validador,
-            ServicoCamposPdf pdfs) {
-        this.envelopes = envelopes; this.validador = validador; this.pdfs = pdfs;
+            ServicoCamposPdf pdfs, ServicoAssinaturaPdf assinador) {
+        this.assinador = assinador; this.envelopes = envelopes; this.validador = validador; this.pdfs = pdfs;
     }
     @Transactional(rollbackFor = Exception.class)
     public ServicoEnvelopes.Criado criar(List<MultipartFile> arquivos, Pedido pedido, String criador) throws Exception {
+        return criar(arquivos, pedido, criador, null, null);
+    }
+    @Transactional(rollbackFor = Exception.class)
+    public ServicoEnvelopes.Criado criar(List<MultipartFile> arquivos, Pedido pedido, String criador,
+            ColetaDadosAssinatura.Dados coletaEmpresa, String dispositivoEmpresa) throws Exception {
         if (pedido == null || pedido.documentos() == null || arquivos == null || arquivos.isEmpty()
                 || arquivos.size() > 10 || arquivos.size() != pedido.documentos().size()
-                || pedido.signatarios() == null || pedido.signatarios().isEmpty()
+                || pedido.signatarios() == null || (pedido.signatarios().isEmpty() && !pedido.empresaParticipante())
                 || pedido.nomeAssinatura() == null || pedido.nomeAssinatura().isBlank() || pedido.nomeAssinatura().length() > 255) throw erro("Informe de 1 a 10 documentos e os signatários");
         List<byte[]> originais = new ArrayList<>();
         List<Integer> inicios = new ArrayList<>();
@@ -37,6 +43,13 @@ public class ServicoLoteAssinatura {
             if (item == null || item.nome() == null || item.nome().isBlank() || item.nome().length() > 255)
                 throw erro("Informe o nome de cada documento (até 255 caracteres)");
             byte[] pdf = validador.validarPdf(arquivos.get(i));
+            assinador.validarDocumentoAntesDeAlterar(pdf);
+            if (arquivos.size() > 1) {
+                try (var leitor = new org.openpdf.text.pdf.PdfReader(pdf)) {
+                    if (!leitor.getAcroFields().getSignedFieldNames().isEmpty()) throw erro(
+                        "PDF já assinado não pode ser reunido a outros documentos; envie-o individualmente");
+                }
+            }
             bytes += pdf.length;
             if (bytes > 20L * 1024 * 1024) throw erro("O conjunto de documentos deve ter até 20 MB");
             int paginas = pdfs.paginas(pdf);
@@ -59,11 +72,12 @@ public class ServicoLoteAssinatura {
                     campo.posicaoX(), campo.posicaoY(), campo.largura(), campo.altura(), null,campo.nome(),campo.obrigatorio()));
             }
             pessoas.add(new ServicoEnvelopes.SignatarioNovo(pessoa.nome(), pessoa.email(), pessoa.cpf(), pessoa.whatsapp(),
-                pessoa.rg(), pessoa.qualificacao(), campos, pessoa.formaDeAutenticacao(), pessoa.formaDeNotificacao()));
+                pessoa.rg(), pessoa.qualificacao(), campos, pessoa.formaDeAutenticacao(), pessoa.formaDeNotificacao(), pessoa.papel(), pessoa.representado(), pessoa.fundamentoRepresentacao()));
         }
-        for (boolean usado : usados) if (!usado) throw erro("Cada documento precisa de ao menos um campo de assinatura");
+        for (boolean usado : usados) if (!usado && !pessoas.isEmpty()) throw erro("Cada documento precisa de ao menos um campo de assinatura");
         byte[] conjunto;
-        try (PDDocument destino = new PDDocument(); ByteArrayOutputStream saida = new ByteArrayOutputStream()) {
+        if (originais.size() == 1) conjunto = originais.getFirst();
+        else try (PDDocument destino = new PDDocument(); ByteArrayOutputStream saida = new ByteArrayOutputStream()) {
             PDFMergerUtility juntadorPdfs = new PDFMergerUtility();
             for (byte[] pdf : originais) {
                 try (PDDocument origem = Loader.loadPDF(pdf)) { juntadorPdfs.appendDocument(destino, origem); }
@@ -79,10 +93,15 @@ public class ServicoLoteAssinatura {
             fontes.add(documento);
         }
         return envelopes.criarComDocumentos(new Pdf(conjunto, pedido.nomeAssinatura().strip()),
-            new ServicoEnvelopes.PedidoCriacao(pedido.nomeEmpresa(), pedido.nomeAssinatura(), pessoas), criador, fontes);
+            new ServicoEnvelopes.PedidoCriacao(pedido.nomeEmpresa(), pedido.nomeAssinatura(), pessoas, pedido.tipoDocumento(), pedido.declaracaoFormalidades(), pedido.idRequisicao(), pedido.empresaParticipante()), criador, fontes, coletaEmpresa, dispositivoEmpresa);
     }
     private ResponseStatusException erro(String mensagem) { return new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem); }
-    public record Pedido(String nomeEmpresa, String nomeAssinatura, List<ServicoEnvelopes.SignatarioNovo> signatarios, List<DocumentoNovo> documentos) {}
+    public record Pedido(String nomeEmpresa, String nomeAssinatura, List<ServicoEnvelopes.SignatarioNovo> signatarios, List<DocumentoNovo> documentos, String tipoDocumento, String declaracaoFormalidades, UUID idRequisicao, boolean empresaParticipante) {
+        public Pedido(String nomeEmpresa, String nomeAssinatura, List<ServicoEnvelopes.SignatarioNovo> signatarios, List<DocumentoNovo> documentos,
+                String tipoDocumento, String declaracaoFormalidades, UUID idRequisicao) {
+            this(nomeEmpresa, nomeAssinatura, signatarios, documentos, tipoDocumento, declaracaoFormalidades, idRequisicao, false);
+        }
+    }
     public record DocumentoNovo(String nome) {}
     private record Pdf(byte[] conteudo, String nome) implements MultipartFile {
         public String getName() { return "pdf"; }

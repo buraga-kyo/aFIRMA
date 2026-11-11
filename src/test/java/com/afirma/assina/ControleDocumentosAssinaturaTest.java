@@ -21,9 +21,9 @@ class ControleDocumentosAssinaturaTest {
 		var envelopes = mock(RepositorioEnvelopeAssinatura.class);
 		var signatarios = mock(RepositorioSignatarioEnvelope.class);
 		var planos = mock(ServicoPlanoBuscaAssineAi.class);
-		var controle = new ControleDocumentosAssinatura(envelopes, signatarios, planos);
+		var controle = new ControleDocumentosAssinatura(envelopes, signatarios, planos, mock(ServicoEvidenciasAssinatura.class));
 		UUID id = UUID.randomUUID();
-		when(envelopes.findById(id)).thenReturn(Optional.of(new EnvelopeAssinatura(id, "Empresa",
+		when(envelopes.buscarParaFinalizar(id)).thenReturn(Optional.of(new EnvelopeAssinatura(id, "Empresa",
 				"contrato.pdf", "dono", new byte[] {1}, Instant.now(), Instant.now().plusSeconds(60))));
 		Principal intruso = () -> "outro";
 		var erro = assertThrows(ResponseStatusException.class,
@@ -36,9 +36,9 @@ class ControleDocumentosAssinaturaTest {
 	void impedeExcluirDocumentoDeOutroUsuario() {
 		var envelopes = mock(RepositorioEnvelopeAssinatura.class);
 		var controle = new ControleDocumentosAssinatura(envelopes,
-				mock(RepositorioSignatarioEnvelope.class), mock(ServicoPlanoBuscaAssineAi.class));
+				mock(RepositorioSignatarioEnvelope.class), mock(ServicoPlanoBuscaAssineAi.class), mock(ServicoEvidenciasAssinatura.class));
 		UUID id = UUID.randomUUID();
-		when(envelopes.findById(id)).thenReturn(Optional.of(new EnvelopeAssinatura(id, "Empresa",
+		when(envelopes.buscarParaFinalizar(id)).thenReturn(Optional.of(new EnvelopeAssinatura(id, "Empresa",
 				"contrato.pdf", "dono", new byte[] {1}, Instant.now(), Instant.now().plusSeconds(60))));
 		var erro = assertThrows(ResponseStatusException.class, () -> controle.excluir(id, () -> "outro"));
 		assertEquals(HttpStatus.NOT_FOUND, erro.getStatusCode());

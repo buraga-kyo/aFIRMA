@@ -18,6 +18,23 @@
       Authorization: `Bearer ${token}`
     } : {};
   }
+  function enderecoRegistro(item) {
+    return `${item.legado ? '/api/assineai/assinaturas' : '/api/envelopes/documentos'}/${item.id}`;
+  }
+  async function carregarAssinaturas(consulta, instancia) {
+    const fonte = porId('fonte-assinaturas').value;
+    const enderecos = fonte === 'todas'
+      ? ['/api/envelopes/documentos', '/api/assineai/assinaturas']
+      : [fonte === 'legado' ? '/api/assineai/assinaturas' : '/api/envelopes/documentos'];
+    // Cada API confere o acesso aos seus próprios registros; a tela reúne os resultados autorizados.
+    const listas = await Promise.all(enderecos.map(endereco => instancia.requisitar(endereco, {
+      signal: consulta.signal, cache: 'no-store'
+    })));
+    if (listas.some(lista => !Array.isArray(lista))) throw new Error('Não foi possível carregar a lista de assinaturas.');
+    return listas.flat().sort((primeiro, segundo) =>
+      (Date.parse(segundo.data) || 0) - (Date.parse(primeiro.data) || 0)
+      || String(segundo.id).localeCompare(String(primeiro.id)));
+  }
   let carregandoRegistros = false;
   let versaoHistorico = 0;
   const janelaHistorico = porId('modal-historico-assinatura');
@@ -104,6 +121,9 @@
           enviar.disabled = true;
           try {
             const corpo = new FormData();
+            const coleta = await coletarDadosAssinatura('/api/assineai/coleta-empresa');
+            corpo.append('localizacaoEmpresa', JSON.stringify(coleta.localizacao));
+            corpo.append('ipEmpresa', coleta.ipNavegador);
             corpo.append('certificado', arquivo.files[0]);
             corpo.append('senha', senha.value);
             const resposta = await fetch(`/api/assineai/assinaturas/${item.id}/certificar`, {
@@ -127,7 +147,12 @@
         });
         painel.append(formulario);
       }
-      for (const pessoa of dados.signatarios || []) {
+      const participantes = [...(dados.signatarios || [])];
+      if (!item.legado && dados.empresaParticipante) participantes.unshift({
+        nome: dados.nomeEmpresa, situacao: dados.empresaAssinouEm ? 'Assinado' : 'Assinatura pendente',
+        assinadoEm: dados.empresaAssinouEm, autenticadoVia: dados.empresaAssinouEm ? 'Certificado digital' : '', historicos: []
+      });
+      for (const pessoa of participantes) {
         const secao = adicionar(painel, 'section', '');
         adicionar(secao, 'h3', pessoa.nome);
         adicionar(secao, 'p', `${pessoa.situacao || 'Pendente'} · Acessos ao link: ${pessoa.acessos || '0'}`);
@@ -152,15 +177,13 @@
     }
   }
   async function conectar() {
-    const chave = porId('lista-chave').value.trim();
     const token = porId('lista-token').value.trim();
-    if (!token || porId('fonte-assinaturas').value === 'firma' && !chave) {
-      aviso('Informe o token. Para registros anteriores da Firma, informe também a chave da API.', true);
+    if (!token) {
+      aviso('Conecte pelo rodapé para carregar as assinaturas.', true);
       return;
     }
     aviso('Conectando...');
-    localStorage.setItem('assineai-chave', chave);
-    localStorage.setItem('assineai-token', token);
+
     await tabela.carregar();
     try {
       const salvas = JSON.parse(localStorage.getItem('assineai-documentos-larguras') || '{}');
@@ -180,7 +203,13 @@
       }
     } catch {}
   }
-  porId('lista-conectar').addEventListener('click', conectar);
+  document.addEventListener('firma:acesso-conectado', () => conectar().catch(erro => aviso(erro.message, true)));
+  document.addEventListener('firma:desconectado', () => {
+    versaoHistorico++;
+    if (janelaHistorico.open) janelaHistorico.close();
+    tabela.limparDados();
+    aviso('Conexão encerrada. Reconecte pelo rodapé.');
+  });
   const tabela = window.FirmaTrator.montar({
     elemento: '#tabela-montagem',
     rotulo: 'Documentos para assinatura',
@@ -192,7 +221,8 @@
     textos: {
       busca: 'FALAR COM O BURRO DE CARGA...'
     },
-    salvar: (item, alteracoes, instancia) => instancia.api(`/${item.id}`, {
+    carregarDados: carregarAssinaturas,
+    salvar: (item, alteracoes, instancia) => instancia.requisitar(enderecoRegistro(item), {
       method: 'PATCH',
       body: JSON.stringify({
         titulo: alteracoes.titulo
@@ -263,7 +293,7 @@
       const botaoEditar = FirmaTabela.botaoAcao('editar', 'Editar título do documento');
       const botaoVisualizar = FirmaTabela.botaoAcao('visualizar', 'Visualizar detalhes');
       const botaoExcluir = FirmaTabela.botaoAcao('remover', `Excluir ${item.titulo}`, () => {
-        return api(`/${item.id}`, {
+        return tabela.requisitar(enderecoRegistro(item), {
           method: 'DELETE'
         }).then(() => tabela.carregar()).catch(eventoAtual => aviso(eventoAtual.message, true));
       });
@@ -409,25 +439,8 @@
   avisoInicial.textContent = 'Conecte o token no rodapé para carregar os registros.';
   avisoInicial.hidden = false;
 
-  // preenchimento de credenciais salvas ou dados do perfil de teste local
-  const chaveGuardada = localStorage.getItem('assineai-chave');
-  const tokenGuardado = localStorage.getItem('assineai-token');
-  if (chaveGuardada) porId('lista-chave').value = chaveGuardada;
-  if (tokenGuardado) porId('lista-token').value = tokenGuardado;
-  const botaoTeste = porId('usar-credenciais-teste');
-  if (document.body.dataset.tokenTeste && document.body.dataset.chaveTeste) {
-    if (botaoTeste) {
-      botaoTeste.hidden = false;
-      botaoTeste.addEventListener('click', () => {
-        porId('lista-chave').value = document.body.dataset.chaveTeste;
-        porId('lista-token').value = document.body.dataset.tokenTeste;
-        conectar();
-      });
-    }
-    // se estiver vazio no ambiente de teste, preenche automaticamente
-    if (!porId('lista-chave').value && !porId('lista-token').value) {
-      porId('lista-chave').value = document.body.dataset.chaveTeste;
-      porId('lista-token').value = document.body.dataset.tokenTeste;
-    }
-  }
+  // Ao voltar da preparação pelo histórico do navegador, consulta os registros novamente.
+  window.addEventListener('pageshow', evento => {
+    if (evento.persisted && window.acessoFirma?.ativa()) conectar().catch(erro => aviso(erro.message, true));
+  });
 })();

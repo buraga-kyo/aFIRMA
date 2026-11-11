@@ -65,12 +65,14 @@
     lista();
     document.querySelectorAll('[data-modelo]').forEach(evento => evento.value = atual()[evento.dataset.modelo] ?? (evento.dataset.modelo === 'opacidade' ? 0.08 : ''));
     document.querySelectorAll('[data-cor]').forEach(evento => evento.value = atual().cores[evento.dataset.cor]);
+    document.querySelector('[data-modelo="tamanho"]').min = atual().design === 'assineai' ? 7 : 8;
+    porId('template-canvas').style.aspectRatio = atual().design === 'assineai' ? '595 / 840' : '595 / 842';
     medidas();
     alcas();
     agendar();
   }
   function alturaMinima(area) {
-    return area === 'signatarios' ? 180 : area === 'documento' ? 130 : area === 'cabecalho' ? (atual().design === 'classico' ? 40 : 110) : 60;
+    return area === 'signatarios' ? 180 : area === 'documento' ? (atual().design === 'assineai' ? 70 : 130) : area === 'cabecalho' ? (atual().design === 'assineai' ? 35 : atual().design === 'classico' ? 40 : 110) : 60;
   }
   function medidas() {
     const elementoDoRegistro = atual().areas[porId('template-area').value];
@@ -184,9 +186,9 @@
   }
   function posicionar(elementoLocal, registro) {
     elementoLocal.style.left = `${registro.x / 595 * 100}%`;
-    elementoLocal.style.top = `${registro.y / 842 * 100}%`;
+    elementoLocal.style.top = `${registro.y / (atual().design === 'assineai' ? 840 : 842) * 100}%`;
     elementoLocal.style.width = `${registro.w / 595 * 100}%`;
-    elementoLocal.style.height = `${registro.h / 842 * 100}%`;
+    elementoLocal.style.height = `${registro.h / (atual().design === 'assineai' ? 840 : 842) * 100}%`;
   }
   async function galeria() {
     const area = porId('modelos-galeria');

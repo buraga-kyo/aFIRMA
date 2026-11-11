@@ -14,6 +14,7 @@ public class SegurancaAssineai {
   SecurityFilterChain rotasCompativeis(HttpSecurity segurancaHttp, IdentidadeAssineai identidade,ChavesIntegracaoFirma chaves) throws Exception {
     return segurancaHttp
       .securityMatcher(
+        "/api/acesso/**",
         "/api/assineai/**",
         "/api/firma/**",
         "/API/v1/**",

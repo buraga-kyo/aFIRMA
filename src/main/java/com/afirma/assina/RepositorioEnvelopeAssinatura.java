@@ -14,13 +14,22 @@ public interface RepositorioEnvelopeAssinatura extends JpaRepository<EnvelopeAss
 	interface ResumoEnvelope {
 		UUID getId();
 		String getNomeDocumento();
+        String getNomeEmpresa();
+        Boolean getEmpresaParticipante();
+        java.time.Instant getEmpresaAssinouEm();
 		java.time.Instant getCriadoEm();
 		String getCriador();
         String getStatus();
 		java.time.Instant getFinalizadoEm();
 	}
 
-	List<ResumoEnvelope> findResumoByCriadorAndExcluidoEmIsNullOrderByCriadoEmDesc(String criador);
+    @Query(value = """
+        SELECT id, nome_documento AS "nomeDocumento", nome_empresa AS "nomeEmpresa", criado_em AS "criadoEm",
+               criador, status, finalizado_em AS "finalizadoEm", empresa_assinou_em AS "empresaAssinouEm",
+               COALESCE(CAST(CAST(configuracao_registro_assinatura AS jsonb)->>'empresaParticipante' AS boolean), TRUE) AS "empresaParticipante"
+        FROM envelope_assinatura WHERE criador=:criador AND excluido_em IS NULL ORDER BY criado_em DESC
+        """, nativeQuery = true)
+    List<ResumoEnvelope> findResumoByCriadorAndExcluidoEmIsNullOrderByCriadoEmDesc(@Param("criador") String criador);
 	
 	List<EnvelopeAssinatura> findByCriadorAndExcluidoEmIsNullOrderByCriadoEmDesc(String criador);
 	@Lock(LockModeType.PESSIMISTIC_WRITE)

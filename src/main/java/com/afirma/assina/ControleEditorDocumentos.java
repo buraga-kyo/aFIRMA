@@ -162,11 +162,12 @@ public class ControleEditorDocumentos {
   public ResponseEntity<byte[]> finalizar(
     @PathVariable UUID id,
     @RequestParam MultipartFile certificado,
-    @RequestParam String senha,
+    @RequestParam(value = "senha", required = false) String senha,
+    @RequestParam String declaracaoPoderes,
     HttpServletRequest requisicao
   ) throws Exception {
     return arquivo(
-      envelopes.finalizar(id, identidade.autenticar(requisicao), certificado, senha, true, null)
+      envelopes.finalizar(id, identidade.autenticar(requisicao), certificado, senha, true, null, declaracaoPoderes)
     );
   }
 
@@ -198,6 +199,9 @@ public class ControleEditorDocumentos {
     @RequestParam String nome,
     @RequestParam String campos,
     @RequestParam String participantes,
+    @RequestParam String tipoDocumento,
+    @RequestParam String declaracaoFormalidades,
+    @RequestParam UUID idRequisicao,
     HttpServletRequest requisicao
   ) throws Exception {
     String usuario = identidade.autenticar(requisicao);
@@ -218,7 +222,7 @@ public class ControleEditorDocumentos {
     String nomeEmpresa = Objects.toString(empresa.get("EmpresaNome"), "FIRMA");
     return envelopes.criar(
       pdf,
-      new ServicoEnvelopes.PedidoCriacao(nomeEmpresa, nome, novos),
+      new ServicoEnvelopes.PedidoCriacao(nomeEmpresa, nome, novos, tipoDocumento, declaracaoFormalidades, idRequisicao),
       usuario
     );
   }
@@ -250,7 +254,8 @@ public class ControleEditorDocumentos {
           pessoa.papel(),
           posicoes,
           List.of(),
-          List.of()
+          List.of(),
+          "EM_NOME_PROPRIO", null, null
         )
       );
     }

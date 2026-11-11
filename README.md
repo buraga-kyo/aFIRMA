@@ -148,7 +148,11 @@ O perfil exige PostgreSQL e Redis configurados no `.env`, mas dispensa o provedo
 ```text
 afirma-teste-local-2026-chave-api-exclusiva
 ```
-### TOKEN JWT
+### Conexão compartilhada
+
+Abra `/assineai/trator` e use **Conectar** ou **Credenciais de teste** no rodapé. O acesso é reaproveitado nas outras telas e expira em 30 minutos por padrão. Configure `APP_SESSAO_ACESSO_MINUTOS` no `.env` e reinicie para mudar o prazo. Navegar ou atualizar a página não renova a sessão. O prazo também respeita a expiração do JWT externo. Credenciais fixas antigas de teste foram substituídas pelo botão do rodapé.
+
+## TOKEN JWT
 ```text
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwODAvbG9jYWwtdGVzdCIsInN1YiI6InRlc3RlLWxvY2FsIiwiYXVkIjpbImFmaXJtYS5sb2NhbC10ZXN0Il0sImlhdCI6MTc5MjExOTYwMCwiZXhwIjoyMDk3MjczNjAwLCJzY29wZSI6InBkZi5zaWduIn0.n1fXvSU8qCLktT4SwVGcerEsfzXi8e7KVvTaT4XRSDU
 ```
@@ -178,3 +182,7 @@ curl -f 'http://localhost:8080/api/pdfs/assinar' \
 -F 'senha=123123' \
 -o documento-assinado.pdf
 ```
+
+## Revisão da assinatura digital
+
+A revisão de assinatura foi integrada à versão atual do GitHub. O trator, os lotes, o editor e os modelos da empresa permanecem como base. Consulte o [passo a passo](docs/como-usar-assinatura.md) e a [documentação da assinatura](docs/assinatura-digital.md). As credenciais de envio e a senha do certificado ficam exclusivamente no `.env`.

@@ -891,6 +891,9 @@
       email: grupo.querySelector('[data-pessoa=email]').value,
     }));
     form.append('participantes', JSON.stringify(pessoas));
+    const formalidades = await politicaAssinatura.solicitarRevisao();
+    for (const [nome, valor] of Object.entries(formalidades)) form.append(nome, valor);
+    form.append('idRequisicao', crypto.randomUUID());
     const resultado = await (await pedir('convites', form)).json();
     const lista = id('studio-convites');
     lista.replaceChildren();
@@ -968,9 +971,10 @@
     const chave = id('studio-envelopes').value,
       arquivo = id('studio-certificado').files[0],
       senha = id('studio-certificado-senha').value;
-    if (!chave || !arquivo || !senha)
+    if (!chave || !arquivo)
       throw Error('Selecione o documento, o certificado e informe a senha.');
     const form = new FormData();
+    form.append('declaracaoPoderes', await politicaAssinatura.solicitarRevisao(true));
     form.append('certificado', arquivo);
     form.append('senha', senha);
     try {

@@ -25,12 +25,14 @@ public class ControleDocumentosAssinatura {
 	private final RepositorioEnvelopeAssinatura envelopes;
 	private final RepositorioSignatarioEnvelope signatarios;
 	private final ServicoPlanoBuscaAssineAi planos;
+	private final ServicoEvidenciasAssinatura evidencias;
 
 	public ControleDocumentosAssinatura(RepositorioEnvelopeAssinatura envelopes,
-			RepositorioSignatarioEnvelope signatarios, ServicoPlanoBuscaAssineAi planos) {
+			RepositorioSignatarioEnvelope signatarios, ServicoPlanoBuscaAssineAi planos, ServicoEvidenciasAssinatura evidencias) {
 		this.envelopes = envelopes;
 		this.signatarios = signatarios;
 		this.planos = planos;
+		this.evidencias = evidencias;
 	}
 
 	@PostMapping("/plano-busca")
@@ -44,13 +46,15 @@ public class ControleDocumentosAssinatura {
 		return envelopes.findResumoByCriadorAndExcluidoEmIsNullOrderByCriadoEmDesc(usuario.getName()).stream()
 				.map(envelope -> {
 					var pessoas = signatarios.findByEnvelopeIdOrderByNome(envelope.getId());
-					long assinados = pessoas.stream().filter(p -> p.getAssinadoEm() != null).count();
-					String situacao = envelope.getFinalizadoEm() != null ? "Assinado"
-							: assinados > 0 || "Em Processo".equals(envelope.getStatus()) ? "Em Processo" : "Pendente";
-					return new DocumentoLista(envelope.getId(), envelope.getNomeDocumento(),
-							envelope.getCriadoEm(), envelope.getCriador(), situacao, pessoas.size(), assinados,
-							pessoas.stream().map(p -> new SignatarioLista(p.getNome(), p.getEmail(),
-									p.getAssinadoEm())).toList());
+                    var participantes = new java.util.ArrayList<>(pessoas.stream()
+                            .map(pessoa -> new SignatarioLista(pessoa.getNome(), pessoa.getEmail(), pessoa.getAssinadoEm())).toList());
+                    boolean empresaParticipante = !Boolean.FALSE.equals(envelope.getEmpresaParticipante());
+                    if (empresaParticipante) participantes.addFirst(new SignatarioLista(envelope.getNomeEmpresa(), "", envelope.getEmpresaAssinouEm()));
+                    long assinados = participantes.stream().filter(pessoa -> pessoa.assinadoEm() != null).count();
+                    String situacao = envelope.getFinalizadoEm() != null ? "Assinado"
+                            : assinados > 0 || "Em Processo".equals(envelope.getStatus()) ? "Em Processo" : "Pendente";
+                    return new DocumentoLista(envelope.getId(), envelope.getNomeDocumento(),
+                            envelope.getCriadoEm(), envelope.getCriador(), situacao, participantes.size(), assinados, participantes);
 				}).toList();
 	}
 
@@ -134,6 +138,7 @@ public class ControleDocumentosAssinatura {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Título deve ter entre 1 e 255 caracteres");
 		}
 		var envelope = proprio(id, usuario);
+		evidencias.registrar(id, null, "TITULO_ALTERADO", java.util.Map.of("criador", usuario.getName(), "anterior", envelope.getNomeDocumento(), "novo", titulo));
 		envelope.renomearDocumento(titulo);
 		return listar(usuario).stream().filter(d -> d.id().equals(id)).findFirst().orElseThrow();
 	}
@@ -141,11 +146,13 @@ public class ControleDocumentosAssinatura {
 	@DeleteMapping("/{id}")
 	@Transactional
 	public void excluir(@PathVariable UUID id, Principal usuario) {
-		proprio(id, usuario).excluir(Instant.now());
+		var envelope = proprio(id, usuario);
+		evidencias.registrar(id, null, "EXCLUSAO_LOGICA", java.util.Map.of("criador", usuario.getName()));
+		envelope.excluir(Instant.now());
 	}
 
 	private EnvelopeAssinatura proprio(UUID id, Principal usuario) {
-		var envelope = envelopes.findById(id)
+		var envelope = envelopes.buscarParaFinalizar(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 		if (envelope.getExcluidoEm() != null || !envelope.getCriador().equals(usuario.getName())) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);

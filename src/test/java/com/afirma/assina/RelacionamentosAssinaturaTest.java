@@ -19,7 +19,7 @@ class RelacionamentosAssinaturaTest {
     private final RepositorioSignatarioHistorico historicos = mock(RepositorioSignatarioHistorico.class);
     private final ValidadorPedidoAssinatura validador = mock(ValidadorPedidoAssinatura.class);
     private final ServicoEnvelopes servico = new ServicoEnvelopes(envelopes, pessoas, campos, validador, new ServicoCamposPdf(),
-        mock(ServicoAssinaturaPdf.class), mock(ArmazenamentoMinio.class), mock(ServicoAutenticacaoAssinatura.class), documentos, historicos, mock(PaginaAssinaturaEmpresa.class));
+        mock(ServicoAssinaturaPdf.class), mock(ArmazenamentoMinio.class), mock(ServicoAutenticacaoAssinatura.class), documentos, historicos, mock(PaginaAssinaturaEmpresa.class), mock(ServicoEvidenciasAssinatura.class), mock(ServicoAutenticacaoConvites.class), mock(PoliticaDocumentosAssinatura.class), mock(ServicoPedidosAssinatura.class), mock(ServicoRegistroParcial.class));
 
     private MockMultipartFile pdf() throws Exception {
         try (PDDocument pdf = new PDDocument(); ByteArrayOutputStream saida = new ByteArrayOutputStream()) {
@@ -31,7 +31,7 @@ class RelacionamentosAssinaturaTest {
     }
     @Test void apiDePdfUnicoTambemRegistraDocumentoCampoEHistorico() throws Exception {
         var pedido = new ServicoEnvelopes.PedidoCriacao("Firma", "Contrato", List.of(new ServicoEnvelopes.SignatarioNovo(
-            "Ana", "", null, null, null, "Empresa", List.of(new ServicoEnvelopes.CampoNovo(CampoAssinatura.Tipo.ASSINATURA, 1, .1, .2, .3, .1)))));
+            "Ana", "", null, null, null, "Empresa", List.of(new ServicoEnvelopes.CampoNovo(CampoAssinatura.Tipo.ASSINATURA, 1, .1, .2, .3, .1)))), "CONTRATO_PARTICULAR", PoliticaDocumentosAssinatura.DECLARACAO_FORMALIDADES, UUID.randomUUID());
         var criado = servico.criar(pdf(), pedido, "dono");
         var documento = ArgumentCaptor.forClass(DocumentoAssinatura.class);
         var campo = ArgumentCaptor.forClass(CampoAssinatura.class);

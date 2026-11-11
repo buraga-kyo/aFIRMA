@@ -1,23 +1,233 @@
 <!doctype html>
+
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head><link rel="stylesheet" href="/css/mensagens-firma.css"><script src="/js/mensagens-firma.js" defer></script>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="referrer" content="no-referrer">
-  <title>Convite para assinar</title>
-  <link rel="stylesheet" th:href="@{/css/assinatura.css}" href="/css/assinatura.css">
-  <link rel="stylesheet" th:href="@{/css/envelopes.css}" href="/css/envelopes.css">
-  <script th:src="@{/js/convite.js}" src="/js/convite.js" defer></script>
-</head>
-<body>
-  <header class="topo"><span class="marca" id="marca-empresa">SUA EMPRESA<span class="marca-ponto">.</span></span><span class="topo-selo">CONVITE PARA ASSINAR</span></header>
-  <main class="convite-conteudo">
-    <section class="apresentacao"><div><span class="sobretitulo"><span class="indicador"></span> ASSINATURA INDIVIDUAL</span><h1>LEIA. CONFIRA.<br><span>ASSINE.</span></h1><p id="saudacao">Carregando convite...</p></div></section>
-    <section class="etapa"><div class="etapa-titulo"><span class="numero">01</span><div><h2>DOCUMENTO</h2><p>O PDF é atualizado após cada assinatura. Campos atribuídos aparecem sobre a página.</p></div></div><div id="documentos-convite"></div><div class="paginacao"><button id="pagina-anterior" type="button">← ANTERIOR</button><span id="numero-pagina"></span><button id="pagina-seguinte" type="button">PRÓXIMA →</button></div><div id="visualizador" class="visualizador" hidden><img id="imagem-pagina" alt="Prévia da página do PDF"><div id="camada-campos" class="camada-campos"></div></div><a id="baixar-original" class="botao-carteira" href="#">BAIXAR PDF ATUAL</a></section>
-    <section id="area-assinatura" class="etapa" hidden><div class="etapa-titulo"><span class="numero">02</span><div><h2>SUAS MARCAS</h2><p>Desenhe assinatura e rubrica. Use câmera ou arquivo para selfie.</p></div></div><div id="codigos-autenticacao"></div><section id="preenchimento-convite" hidden><h3>Preencha seus campos</h3><p>Confira os campos antes de confirmar. Eles serão gravados no PDF.</p><div id="campos-preenchimento" class="campos"></div></section><div id="grupo-assinatura" class="grupo-desenho" hidden><label for="desenho-assinatura">ASSINATURA</label><p>Desenhe no quadro branco.</p><canvas id="desenho-assinatura" class="assinatura-desenho" width="800" height="240"></canvas><button type="button" data-limpar="desenho-assinatura">LIMPAR ASSINATURA</button></div><div id="grupo-rubrica" class="grupo-desenho" hidden><label for="desenho-rubrica">RUBRICA</label><p>Desenhe no quadro branco.</p><canvas id="desenho-rubrica" class="assinatura-desenho" width="800" height="240"></canvas><button type="button" data-limpar="desenho-rubrica">LIMPAR RUBRICA</button></div><div id="grupo-selfie" class="campo grupo-desenho" hidden><label for="arquivo-selfie">SELFIE</label><input id="arquivo-selfie" type="file" accept="image/png,image/jpeg" capture="user"><button id="abrir-camera" type="button">ABRIR CÂMERA</button><video id="video-selfie" autoplay playsinline hidden></video><button id="capturar-selfie" type="button" hidden>CAPTURAR FOTO</button><img id="previa-selfie" alt="Prévia da selfie" hidden></div><label class="escolha-pagina"><input id="aceite" type="checkbox">Li o documento e confirmo minhas marcas.</label><div class="rodape-formulario"><p>Seu convite é pessoal. Envio concluído apenas uma vez.</p><button id="enviar-assinatura" type="button">CONFIRMAR ASSINATURA ↗</button></div></section>
-    <section id="resultado" class="resultado" hidden><div class="resultado-icone">✓</div><div><h2>ASSINATURA REGISTRADA</h2><p id="estado-final">A empresa finalizará documento com certificado digital.</p></div><a id="baixar-final" class="botao-baixar" href="#" hidden>BAIXAR PDF FINAL ↗</a></section>
-    <div id="erro" class="erro" role="alert" hidden data-firma-mensagem></div>
-  </main>
-  <footer><span id="rodape-empresa">SUA EMPRESA</span><span>DOCUMENTOS ASSINADOS COM IDENTIDADE.</span></footer>
-</body>
+  <head>
+    <link href="/css/mensagens-firma.css" rel="stylesheet" />
+    <script src="/js/coleta-dados-assinatura.js" defer></script>
+    <script defer="" src="/js/mensagens-firma.js"></script>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <meta content="no-referrer" name="referrer" />
+    <title>Convite para assinar</title>
+    <link
+      href="/css/assinatura.css"
+      rel="stylesheet"
+      th:href="@{/css/assinatura.css}"
+    />
+    <link
+      href="/css/envelopes.css"
+      rel="stylesheet"
+      th:href="@{/css/envelopes.css}"
+    />
+    <script defer="" src="/js/convite.js" th:src="@{/js/convite.js}"></script>
+    <script
+      defer=""
+      src="/js/politica-assinatura.js"
+      th:src="@{/js/politica-assinatura.js}"
+    ></script>
+    <script
+      defer=""
+      src="/js/conferencia-assinatura.js"
+      th:src="@{/js/conferencia-assinatura.js}"
+    ></script>
+  <link href="/css/convite.css" rel="stylesheet" />
+  </head>
+  <body class="pagina-convite">
+    <header class="topo">
+      <span class="marca" id="marca-empresa"
+        >Consultando empresa<span class="marca-ponto">.</span></span
+      ><span class="topo-selo">CONVITE PARA ASSINAR</span>
+    </header>
+    <main class="convite-conteudo">
+      <div class="erro" data-firma-mensagem="" hidden="" id="erro" role="alert"></div>
+      <section class="etapa" id="autenticacao-convite">
+        <div class="cabecalho-area"><span>01 / ACESSO</span><span>CONFIRME SEU E-MAIL</span></div><h2>CONFIRME SEU ACESSO</h2>
+        <p id="destino-codigo">Consultando convite...</p>
+        <p>
+          O link não basta para acessar o documento. Enviaremos um código ao
+          e-mail cadastrado.
+        </p>
+        <button class="botao-carteira" id="solicitar-codigo" type="button">
+          ENVIAR CÓDIGO
+        </button>
+        <div class="contador-reenvio" id="contador-reenvio" hidden="">
+          <span>AGUARDE PARA REENVIAR</span><strong id="tempo-reenvio">01:00</strong>
+          <progress id="progresso-reenvio" max="60" value="60" aria-label="Tempo restante para reenviar"></progress>
+        </div>
+        <div class="campo">
+          <label for="codigo-acesso">CÓDIGO DE OITO DÍGITOS</label
+          ><input
+            autocomplete="one-time-code"
+            id="codigo-acesso"
+            inputmode="numeric"
+            maxlength="8"
+            pattern="[0-9]{8}"
+          />
+        </div>
+        <button class="botao-carteira acao-principal-convite" id="confirmar-codigo" type="button">
+          ACESSAR DOCUMENTO
+        </button>
+        <p id="estado-codigo" role="status"></p>
+        <details>
+          <summary>Como tratamos seus dados</summary>
+          <p data-aviso-privacidade=""></p>
+          <p>A localização do navegador e o IP são obrigatórios e serão registrados no PDF. Ao confirmar a assinatura, autorize o acesso à localização.</p>
+        </details>
+      </section>
+      <div hidden="True" id="conteudo-autenticado">
+        <section class="resultado" hidden="" id="resultado" role="status" tabindex="-1">
+          <div class="resultado-icone">✓</div>
+          <div>
+            <span class="sobretitulo">TUDO CERTO</span>
+            <h2>SEU DOCUMENTO FOI ASSINADO COM SUCESSO.</h2>
+            <p id="documento-assinado-nome"></p>
+            <p id="estado-final">
+              A empresa finalizará documento com certificado digital.
+            </p>
+          </div>
+          <a class="botao-baixar" hidden="" href="#" id="baixar-final"
+            >BAIXAR PDF FINAL ↗</a
+          >
+        </section>
+
+        <button class="botao-carteira" id="encerrar-sessao" type="button">
+          ENCERRAR ACESSO
+        </button>
+        <p class="saudacao-convite" id="saudacao">Carregando convite...</p>
+        <section class="etapa" id="documento-para-assinar">
+          <div class="etapa-titulo">
+            <span class="numero">01</span>
+            <div>
+              <h2>DOCUMENTO</h2>
+              <p>
+                O PDF é atualizado após cada assinatura. Campos atribuídos
+                aparecem sobre a página.
+              </p>
+            </div>
+          </div>
+          <div id="documentos-convite"></div>
+          <div class="paginacao">
+            <button id="pagina-anterior" type="button">← ANTERIOR</button
+            ><span id="numero-pagina"></span
+            ><button id="pagina-seguinte" type="button">PRÓXIMA →</button>
+          </div>
+          <div class="visualizador" hidden="" id="visualizador">
+            <img alt="Prévia da página do PDF" id="imagem-pagina" />
+            <div class="camada-campos" id="camada-campos"></div>
+          </div>
+          <a class="botao-carteira" href="#" id="baixar-original"
+            >BAIXAR PDF ATUAL</a
+          >
+        </section>
+        <section class="etapa" hidden="" id="area-assinatura">
+          <div class="etapa-titulo">
+            <span class="numero">02</span>
+            <div>
+              <h2>SUAS MARCAS</h2>
+              <p>
+                Desenhe assinatura e rubrica. Use câmera ou arquivo para selfie.
+              </p>
+            </div>
+          </div>
+          <div id="codigos-autenticacao"></div>
+          <section hidden="" id="preenchimento-convite">
+            <h3>Preencha seus campos</h3>
+            <p>
+              Confira os campos antes de confirmar. Eles serão gravados no PDF.
+            </p>
+            <div class="campos" id="campos-preenchimento"></div>
+          </section>
+          <div class="grupo-desenho" hidden="" id="grupo-assinatura">
+            <label for="desenho-assinatura">ASSINATURA</label>
+            <p>Desenhe no quadro branco.</p>
+            <canvas
+              class="assinatura-desenho"
+              height="240"
+              id="desenho-assinatura"
+              width="800"
+            ></canvas
+            ><button data-limpar="desenho-assinatura" type="button">
+              LIMPAR ASSINATURA
+            </button>
+          </div>
+          <div class="grupo-desenho" hidden="" id="grupo-rubrica">
+            <label for="desenho-rubrica">RUBRICA</label>
+            <p>Desenhe no quadro branco.</p>
+            <canvas
+              class="assinatura-desenho"
+              height="240"
+              id="desenho-rubrica"
+              width="800"
+            ></canvas
+            ><button data-limpar="desenho-rubrica" type="button">
+              LIMPAR RUBRICA
+            </button>
+          </div>
+          <div class="campo grupo-desenho" hidden="" id="grupo-selfie">
+            <label for="arquivo-selfie">SELFIE</label
+            ><input
+              accept="image/png,image/jpeg"
+              capture="user"
+              id="arquivo-selfie"
+              type="file"
+            /><button id="abrir-camera" type="button">ABRIR CÂMERA</button
+            ><video
+              autoplay=""
+              hidden=""
+              id="video-selfie"
+              playsinline=""
+            ></video
+            ><button hidden="" id="capturar-selfie" type="button">
+              CAPTURAR FOTO</button
+            ><img alt="Prévia da selfie" hidden="" id="previa-selfie" /><label
+              class="escolha-pagina"
+              ><input id="ciencia-inclusao-imagem" type="checkbox" />Estou
+              ciente de que a fotografia será incluída no PDF visível aos
+              participantes e no pacote de evidências, para a finalidade
+              informada no aviso.</label
+            >
+          </div>
+          <label class="escolha-pagina"
+            ><input id="aceite" type="checkbox" /><span id="texto-aceite"></span
+          ></label>
+          <div class="rodape-formulario">
+            <p>Seu convite é pessoal. Envio concluído apenas uma vez.</p>
+            <button id="enviar-assinatura" type="button">
+              CONFIRMAR ASSINATURA ↗
+            </button>
+          </div>
+        </section>
+        <p id="estado-sessao" role="status"></p>
+        <p id="identificacao-convite"></p>
+        <p class="nota-seguranca" id="versao-documento"></p>
+        <p id="leitura-paginas" role="status"></p>
+
+        <section
+          aria-live="polite"
+          class="etapa"
+          hidden=""
+          id="verificacao-assinatura"
+        ></section>
+        <section class="etapa" id="recusa-convite">
+          <h2>NÃO CONCORDA COM O DOCUMENTO?</h2>
+          <div class="campo">
+            <label for="motivo-recusa">MOTIVO DA RECUSA</label
+            ><textarea id="motivo-recusa" maxlength="500"></textarea>
+          </div>
+          <button class="botao-carteira" id="recusar-convite" type="button">
+            REGISTRAR RECUSA
+          </button>
+        </section>
+      </div>
+    </main>
+    <ol class="modulos-wizard passos-convite" aria-label="Etapas da assinatura">
+      <li class="modulo-wizard ativo" aria-current="step"><span class="modulo-icone">1</span><div class="modulo-texto"><strong>ACESSO</strong><small>CONFIRME SEU E-MAIL</small></div></li>
+      <li class="modulo-wizard inativo"><span class="modulo-icone">2</span><div class="modulo-texto"><strong>DOCUMENTO</strong><small>LEIA E CONFIRA</small></div></li>
+      <li class="modulo-wizard inativo"><span class="modulo-icone">3</span><div class="modulo-texto"><strong>ASSINATURA</strong><small>REGISTRE SUAS MARCAS</small></div></li>
+    </ol>
+    <footer>
+      <span id="rodape-empresa">Consultando empresa</span
+      ><span>DOCUMENTOS ASSINADOS COM IDENTIDADE.</span>
+    </footer>
+  </body>
 </html>

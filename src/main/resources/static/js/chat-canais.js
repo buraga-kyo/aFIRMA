@@ -229,3 +229,6 @@ if (document.body.dataset.tokenTeste && document.body.dataset.chaveTeste) {
     buscar('#form-acesso').requestSubmit();
   });
 }
+
+document.addEventListener('firma:acesso-conectado', () => buscar('#form-acesso').requestSubmit());
+document.addEventListener('firma:desconectado', () => { token = ''; chave = ''; });

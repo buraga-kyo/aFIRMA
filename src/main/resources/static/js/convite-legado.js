@@ -14,7 +14,6 @@ let transmissao = null;
 const desenhos = new Map();
 let documentos = [];
 let documentoAtual = null;
-let localizacao = null;
 let carregandoPagina = false;
 const canaisValidados = new Set();
 function erro(mensagem) {
@@ -206,9 +205,12 @@ document.getElementById("enviar-assinatura").addEventListener("click", async () 
     const selfie = selfieCapturada || document.getElementById("arquivo-selfie").files[0];
     if (tipos.has("SELFIE") && !selfie) throw new Error("Envie sua selfie.");
     if ((dadosConvite.formaDeAutenticacao || []).some(itemAtual => ["email", "whatsapp"].includes(itemAtual)) && !canaisValidados.size) throw new Error("Valide um código por e-mail ou WhatsApp.");
+    botao.disabled = true;
+    const coleta = await coletarDadosAssinatura(`/api/assineai/convites/${conviteToken}/coleta`);
     const dados = {
       aceite: true,
-      userLocation: localizacao
+      userLocation: coleta.localizacao,
+      ipNavegador: coleta.ipNavegador
     };
     if (tipos.has("ASSINATURA")) dados.SignatarioAssinaturaEscritaBase64 = document.getElementById("desenho-assinatura").toDataURL("image/png");
     if (tipos.has("RUBRICA")) dados.rubrica = document.getElementById("desenho-rubrica").toDataURL("image/png");
@@ -342,28 +344,6 @@ function prepararDocumentos() {
     }
   });
 }
-document.getElementById("compartilhar-localizacao").addEventListener("click", () => {
-  const estado = document.getElementById("estado-localizacao");
-  if (!navigator.geolocation) {
-    estado.textContent = "Localização indisponível. Você pode continuar.";
-    return;
-  }
-  estado.textContent = "Aguardando localização...";
-  navigator.geolocation.getCurrentPosition(posicao => {
-    localizacao = {
-      latitude: posicao.coords.latitude,
-      longitude: posicao.coords.longitude,
-      accuracy: posicao.coords.accuracy
-    };
-    estado.textContent = "Localização adicionada ao registro da assinatura.";
-  }, () => {
-    localizacao = null;
-    estado.textContent = "Localização não compartilhada. Você pode continuar.";
-  }, {
-    timeout: 10000,
-    maximumAge: 0
-  });
-});
 async function carregar() {
   const resposta = await verificar(await fetch(`/api/assineai/convites/${conviteToken}`, {
     cache: "no-store"

@@ -126,3 +126,31 @@ body[data-tema="caderno"] .etapa { border-bottom-style: dashed; }
 #documento-convite { margin-bottom: 20px; }
 
 #marca-empresa { max-width: min(70vw, 700px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.erro-validacao-pessoal { display: block; color: var(--vermelho, #b42318); font-size: .875rem; margin-top: .35rem; }
+.erro-validacao-pessoal[hidden] { display: none; }
+
+.lista-documentos[hidden] { display: none; }
+.lista-documentos button { cursor: pointer; }
+.lista-documentos button:disabled { cursor: default; opacity: .6; }
+.documento-wizard button[hidden] { display: none; }
+.adicionar-outro-pdf:disabled { cursor: default; }
+#documento-em-edicao { font-weight: 700; }
+
+/* As sugestões de qualificação acompanham o cartão, com as cores da FIRMA. */
+.qualificacao-firma { position: relative; }
+.lista-qualificacao-firma { position: absolute; top: 100%; left: 0; right: 0; z-index: 10; max-height: 240px; overflow-y: auto; margin: 4px 0 0; padding: 6px; list-style: none; border: 2px solid var(--primary); background: var(--background); box-shadow: 4px 4px 0 var(--accent); color: var(--foreground); letter-spacing: 0; }
+.lista-qualificacao-firma [role="option"] { padding: 12px 14px; border: 1px solid transparent; font-size: 14px; font-weight: 600; cursor: pointer; }
+.lista-qualificacao-firma [role="option"] + [role="option"] { border-top-color: var(--border); }
+.lista-qualificacao-firma [role="option"]:hover, .lista-qualificacao-firma [aria-selected="true"] { background: var(--primary); color: var(--background); border-color: var(--primary); }
+
+.seletor-atuacao-firma { width: 100%; min-height: 52px; padding: 12px 42px 12px 15px; position: relative; text-align: left; border: 2px solid var(--border); border-radius: 0; background: var(--background); color: var(--foreground); font: 500 14px/1.5 Inter, sans-serif; }
+.seletor-atuacao-firma::after { content: '⌄'; position: absolute; right: 16px; top: 12px; color: var(--primary); font-size: 20px; }
+.seletor-atuacao-firma:hover, .seletor-atuacao-firma[aria-expanded="true"] { border-color: var(--primary); }
+.lista-qualificacao-firma .opcao-em-foco { outline: 2px solid var(--primary); outline-offset: -2px; }
+
+/* A seta acompanha a entrada sem bloquear o clique nem a digitação. */
+.entrada-qualificacao-firma { position: relative; }
+.cartao-novo-assinante .entrada-qualificacao-firma input { padding-right: 42px; cursor: pointer; }
+.seta-qualificacao-firma { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 20px; line-height: 1; pointer-events: none; }
+.entrada-qualificacao-firma input:hover, .entrada-qualificacao-firma input[aria-expanded="true"] { border-color: var(--primary); }

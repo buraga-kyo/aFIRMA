@@ -17,19 +17,33 @@ public class ValidadorPedidoAssinatura {
 	private static final long TETO_PDF_BYTES = 20L * 1024 * 1024;
 	private static final long TETO_CERTIFICADO_BYTES = 2L * 1024 * 1024;
 	private final RepositorioConfiguracaoAssinatura configuracoes;
+	@org.springframework.beans.factory.annotation.Value("${ASSINEAI_CERTIFICADO_SENHA:}")
+	private String senhaCertificadoConfigurada = "";
+
+	public String resolverSenhaCertificado(String senhaInformada) {
+		String senha = senhaInformada == null || senhaInformada.isEmpty()
+				? senhaCertificadoConfigurada : senhaInformada;
+		if (senha == null || senha.isBlank() || senha.length() > 256) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Informe a senha do certificado (até 256 caracteres)");
+		}
+		return senha;
+	}
 
 	public ValidadorPedidoAssinatura(RepositorioConfiguracaoAssinatura configuracoes) {
 		this.configuracoes = configuracoes;
 	}
 
 	public ArquivosValidados validar(PedidoAssinaturaPdf pedido) {
+		pedido.setSenha(resolverSenhaCertificado(pedido.getSenha()));
 		byte[] dadosPdf = validarPdf(pedido.getPdf());
-		MultipartFile certificado = pedido.getCertificado();
+		return new ArquivosValidados(dadosPdf, validarCertificado(pedido.getCertificado()));
+	}
+
+	public byte[] validarCertificado(MultipartFile certificado) {
 		if (certificado == null || certificado.isEmpty()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Certificado é obrigatório");
 		}
-		byte[] dadosCertificado = lerComLimite(certificado, TETO_CERTIFICADO_BYTES);
-		return new ArquivosValidados(dadosPdf, dadosCertificado);
+		return lerComLimite(certificado, TETO_CERTIFICADO_BYTES);
 	}
 
 	public byte[] validarPdf(MultipartFile pdf) {
@@ -38,6 +52,10 @@ public class ValidadorPedidoAssinatura {
 
 	public byte[] validarPdfAssinado(MultipartFile pdf) {
 		return validarPdf(pdf, 16 * 1024);
+	}
+
+	public byte[] validarPdfParaVerificacao(MultipartFile pdf) {
+		return validarPdf(pdf, 2 * 1024 * 1024);
 	}
 
 	private byte[] validarPdf(MultipartFile pdf, int margem) {

@@ -16,9 +16,11 @@ public class ServicoAutenticacaoAssinatura {
     private final RepositorioDesafioAssinatura desafios;
     private final ServicoEntregaAssinatura entrega;
     private final RepositorioSignatarioHistorico historicos;
+    private final ServicoAutenticacaoConvites sessoes;
     private static final SecureRandom SORTEADOR = new SecureRandom();
     public ServicoAutenticacaoAssinatura(RepositorioSignatarioEnvelope pessoas, RepositorioEnvelopeAssinatura envelopes,
-            RepositorioDesafioAssinatura desafios, ServicoEntregaAssinatura entrega, RepositorioSignatarioHistorico historicos) {
+            RepositorioDesafioAssinatura desafios, ServicoEntregaAssinatura entrega, RepositorioSignatarioHistorico historicos, ServicoAutenticacaoConvites sessoes) {
+        this.sessoes = sessoes;
         this.pessoas = pessoas; this.envelopes = envelopes; this.desafios = desafios; this.entrega = entrega; this.historicos = historicos;
     }
     public void configurar(SignatarioEnvelope pessoa, List<String> autenticacao, List<String> notificacao) {
@@ -28,7 +30,7 @@ public class ServicoAutenticacaoAssinatura {
                 || avisos.stream().anyMatch(a -> a == null || !Set.of("email", "whatsapp").contains(a))) throw erro("Método inválido");
         if ((autenticacaoAtual.contains("email") || avisos.contains("email")) && pessoa.getEmail().isBlank()) throw erro("Informe e-mail para o canal selecionado");
         if ((autenticacaoAtual.contains("whatsapp") || avisos.contains("whatsapp")) && (pessoa.getWhatsapp() == null
-                || !pessoa.getWhatsapp().replaceAll("[^0-9]", "").matches("[0-9]{10,15}"))) throw erro("Informe WhatsApp válido para o canal selecionado");
+                || DadosPessoaisSignatario.whatsapp(pessoa.getWhatsapp()).isEmpty())) throw erro("Informe WhatsApp válido para o canal selecionado");
         if ((!avisos.isEmpty() || autenticacaoAtual.contains("email") || autenticacaoAtual.contains("whatsapp")) && !entrega.disponivel())
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Configure o serviço de entrega antes de selecionar códigos ou notificações");
         pessoa.setFormaDeAutenticacao(List.copyOf(autenticacaoAtual)); pessoa.setFormaDeNotificacao(List.copyOf(avisos));
@@ -77,9 +79,23 @@ public class ServicoAutenticacaoAssinatura {
         return valido;
     }
     public void exigirVerificacao(SignatarioEnvelope pessoa) {
+        exigirCanais(pessoa, Set.of());
+    }
+
+    public void exigirVerificacaoComAcessoConfirmado(SignatarioEnvelope pessoa,
+            ServicoAutenticacaoConvites.Sessao sessao) {
+        // A sessão do convite já comprova o e-mail. Só reaproveita essa confirmação
+        // depois de conferir no banco o participante, o prazo e a revogação da sessão.
+        sessoes.conferirSessaoParaAceite(pessoa.getId(), sessao);
+        exigirCanais(pessoa, Set.of("email"));
+    }
+
+    private void exigirCanais(SignatarioEnvelope pessoa, Set<String> confirmadosNoAcesso) {
         for (String canal : pessoa.getFormaDeAutenticacao() == null ? List.<String>of() : pessoa.getFormaDeAutenticacao()) {
-            if (Set.of("email", "whatsapp").contains(canal) && !desafios.findById(pessoa.getId() + ":" + canal).map(DesafioAssinatura::valido).orElse(false))
+            if (Set.of("email", "whatsapp").contains(canal) && !confirmadosNoAcesso.contains(canal)
+                    && !desafios.findById(pessoa.getId() + ":" + canal).map(DesafioAssinatura::valido).orElse(false)) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Valide o código por " + canal + " antes de assinar");
+            }
         }
     }
     @Transactional
