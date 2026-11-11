@@ -10,6 +10,19 @@ spring:
     import: optional:file:./.env[.properties]
   application:
     name: assina
+  mail:
+    host: ${ASSINEAI_SMTP_HOST:}
+    port: ${ASSINEAI_SMTP_PORT:587}
+    username: ${ASSINEAI_SMTP_USUARIO:}
+    password: ${ASSINEAI_SMTP_SENHA:}
+    properties:
+      mail.smtp.auth: ${ASSINEAI_SMTP_AUTENTICAR:true}
+      mail.smtp.starttls.enable: ${ASSINEAI_SMTP_STARTTLS:true}
+      mail.smtp.starttls.required: ${ASSINEAI_SMTP_STARTTLS:true}
+      mail.smtp.ssl.checkserveridentity: true
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 15000
+      mail.smtp.writetimeout: 15000
   servlet:
     multipart:
       max-file-size: 21MB
@@ -26,6 +39,7 @@ spring:
       repositories:
         enabled: false
 server:
+  forward-headers-strategy: none
   max-http-request-header-size: 8KB
   tomcat:
     connection-timeout: 5s

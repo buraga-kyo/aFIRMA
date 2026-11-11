@@ -22,7 +22,7 @@ public class PaginaComprovante {
       personalizado.put("logo","data:image/"+formato+";base64,"+Base64.getEncoder().encodeToString(imagemEmpresa));
     }
     String agora=OffsetDateTime.now(ZoneId.of("America/Sao_Paulo")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss XXX"));
-    var pessoa=new LinkedHashMap<String,Object>();pessoa.put("SignatarioNome",identificacao);pessoa.put("SignatarioAssinou",true);
+    var pessoa=new LinkedHashMap<String,Object>();pessoa.put("SignatarioNome",nomeEmpresa);pessoa.put("SignatarioQualificacao","Empresa");pessoa.put("SignatarioAssinou",true);
     pessoa.put("SignatarioFirmadoVia",tipo);pessoa.put("SignatarioDataAssinatura",agora);
     return PaginaRegistroAssinaturas.acrescentar(pdf,personalizado,new PaginaRegistroAssinaturas.Dados(nomeEmpresa,"Documento assinado",UUID.randomUUID().toString(),
       HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(pdf)),"",agora,List.of(pessoa)));

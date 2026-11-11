@@ -1,0 +1,1 @@
+ALTER TABLE firma_assineai_controle ADD COLUMN dados_assinatura_empresa JSONB;

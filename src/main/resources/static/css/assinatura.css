@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap');
+@font-face { font-family: 'Archivo Black'; src: url('/fonts/archivo-black.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('/fonts/inter-variable.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
 
 :root {
   --background: #0E2117;
@@ -123,3 +124,18 @@ footer { padding: 0 40px 30px; display: flex; justify-content: space-between; ga
   html { scroll-behavior: auto; }
   * { transition: none !important; }
 }
+
+#verificacao-assinatura, #dados-certificado, #dados-certificado-final, #versao-documento {
+  overflow-wrap: anywhere;
+}
+#verificacao-assinatura p { margin: 0 0 14px; }
+#verificacao-assinatura p:last-child { margin-bottom: 0; }
+
+textarea { min-width: 0; width: 100%; min-height: 90px; padding: 12px 15px; border: 2px solid var(--border); background: var(--background); color: var(--foreground); font: inherit; }
+details { margin: 16px 0; }
+summary { cursor: pointer; font-weight: 700; }
+details p { margin: 12px 0; line-height: 1.6; }
+#autenticacao-convite h1 { font-size: clamp(28px, 6vw, 46px); }
+#autenticacao-convite .campo { margin: 18px 0; }
+#gestao-evidencias button { margin: 12px 12px 12px 0; }
+#gestao-evidencias input, #gestao-evidencias textarea { max-width: 100%; }

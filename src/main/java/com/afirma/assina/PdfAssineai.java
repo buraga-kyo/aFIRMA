@@ -165,6 +165,12 @@ public class PdfAssineai {
 
   public byte[] aplicar(Map<String,Object> documento,List<Map<String,Object>> pessoas,
       List<Map<String,Object>> posicoes,Map<Long,byte[]> rubricas,Map<String,Object> modelo,String nomeEmpresa) throws Exception {
+    return aplicar(documento, pessoas, posicoes, rubricas, modelo, nomeEmpresa, null);
+  }
+
+  public byte[] aplicar(Map<String,Object> documento,List<Map<String,Object>> pessoas,
+      List<Map<String,Object>> posicoes,Map<Long,byte[]> rubricas,Map<String,Object> modelo,String nomeEmpresa,
+      Map<String,Object> registroEmpresa) throws Exception {
     byte[] original = (byte[]) documento.get("DocumentoBuffer");
     var marcas = new ArrayList<ServicoCamposPdf.Marca>();
     for (var pessoa : pessoas) {
@@ -216,10 +222,14 @@ public class PdfAssineai {
       }
     }
     byte[] marcado = campos.aplicar(original, marcas);
+    var registros = new ArrayList<Map<String,Object>>();
+    if (registroEmpresa != null) registros.add(registroEmpresa);
+    registros.addAll(pessoas);
     var dados = new PaginaRegistroAssinaturas.Dados(nomeEmpresa,
       BancoAssineai.texto(documento,"DocumentoTitulo"), BancoAssineai.texto(documento,"DocumentoToken"),
       BancoAssineai.texto(documento,"DocumentoHashDoPDFOriginal"),BancoAssineai.texto(documento,"DocumentoLinkAutenticacao"),
-      java.time.OffsetDateTime.now(java.time.ZoneId.of("America/Sao_Paulo")).format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss XXX")), pessoas);
+      (documento.get("createdAt") instanceof java.sql.Timestamp criado ? criado.toInstant().toString()
+        : Objects.toString(documento.get("createdAt"), java.time.Instant.now().toString())), registros);
     return PaginaRegistroAssinaturas.acrescentar(marcado, modelo, dados);
   }
 

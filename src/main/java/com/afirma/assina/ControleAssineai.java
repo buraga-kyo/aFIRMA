@@ -12,6 +12,9 @@ import tools.jackson.databind.ObjectMapper;
 @RestController
 public class ControleAssineai {
 
+  @org.springframework.beans.factory.annotation.Autowired
+  private ColetaDadosAssinatura coleta;
+
   private final ServicoAssineai servico;
   private final IdentidadeAssineai identidade;
   private final ObjectMapper json;
@@ -65,6 +68,12 @@ public class ControleAssineai {
   @GetMapping("/api/assineai/recursos")
   public Object recursos(HttpServletRequest r) {
     return servico.recursos(usuario(r));
+  }
+
+  @GetMapping("/api/assineai/coleta-empresa")
+  public ColetaDadosAssinatura.Conexao coletaEmpresa(HttpServletRequest requisicao) {
+    usuario(requisicao);
+    return coleta.conexao(requisicao);
   }
 
   @GetMapping("/api/assineai/empresa")
@@ -164,7 +173,7 @@ public class ControleAssineai {
     @RequestPart("dados") ServicoLoteAssinatura.Pedido dados,
     HttpServletRequest r
   ) throws Exception {
-    return servico.criarFirma(pdfs, dados, usuario(r), origem(r));
+    return servico.criarFirma(pdfs, dados, usuario(r), origem(r), coleta.receberEmpresa(r), r.getHeader("User-Agent"));
   }
 
   @SuppressWarnings("unchecked")
@@ -195,7 +204,7 @@ public class ControleAssineai {
       (List<Map<String, Object>>) signatarios.get("dadosDoSignatario"),
       Objects.toString(assinatura.get("assinaturaNome"), ""),
       usuario(r),
-      origem(r)
+      origem(r), coleta.receberEmpresa(r), r.getHeader("User-Agent"), Boolean.parseBoolean(r.getParameter("empresaParticipante"))
     );
   }
 
@@ -205,7 +214,9 @@ public class ControleAssineai {
     var saida = new ArrayList<Map<String, Object>>();
     for (var a : servico.listar(u)) {
       long id = id(a, "AssinaturaId");
-      var ps = servico.pessoas(id);
+      var ps = new ArrayList<>(servico.pessoas(id));
+      var empresa = servico.participanteEmpresa(id);
+      if (empresa != null) ps.addFirst(empresa);
       saida.add(
         Map.of(
           "id",
@@ -396,12 +407,13 @@ public class ControleAssineai {
 
   @org.springframework.web.bind.annotation.ResponseStatus(HttpStatus.NO_CONTENT)
   @PatchMapping("/api/assineai/assinaturas/{id}")
-  public void renomear(
+  public ResponseEntity<Void> renomear(
     @PathVariable long id,
     @RequestBody Map<String, Object> dados,
     HttpServletRequest r
   ) {
     servico.renomear(id, usuario(r), Objects.toString(dados.get("titulo"), ""));
+    return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/api/assineai/assinaturas/{id}/notificar")
@@ -419,7 +431,7 @@ public class ControleAssineai {
     @RequestParam String senha,
     HttpServletRequest r
   ) throws Exception {
-    servico.certificar(id, usuario(r), pfx, senha);
+    servico.certificar(id, usuario(r), pfx, senha, coleta.receberEmpresa(r), r.getHeader("User-Agent"));
   }
 
   @GetMapping("/api/assineai/convites/{token}")
@@ -581,14 +593,20 @@ public class ControleAssineai {
     for (var documento : servico.assinar(
       token,
       dados,
-      r.getRemoteAddr(),
-      r.getHeader("User-Agent")
+      r.getHeader("User-Agent"),
+      coleta.receber(r, dados.get("userLocation"), Objects.toString(dados.get("ipNavegador"), ""))
     )) {
       var meta = servico.metadados(documento);
       meta.put("paginas", servico.quantidadePaginas(documento));
       saida.add(meta);
     }
     return saida;
+  }
+
+  @GetMapping("/api/assineai/convites/{token}/coleta")
+  public ColetaDadosAssinatura.Conexao coleta(@PathVariable String token, HttpServletRequest requisicao) {
+    servico.validarConvite(token);
+    return coleta.conexao(requisicao);
   }
 
   @PostMapping("/AssineAi_AssinarDocumentoViaAPI")
@@ -614,8 +632,8 @@ public class ControleAssineai {
     var documentosAtual = servico.assinar(
       token,
       entrada,
-      r.getRemoteAddr(),
-      r.getHeader("User-Agent")
+      r.getHeader("User-Agent"),
+      coleta.receber(r, entrada.get("userLocation"), Objects.toString(entrada.get("ipNavegador"), ""))
     );
     return ResponseEntity.ok(
       documentosAtual

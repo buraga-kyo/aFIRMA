@@ -18,6 +18,13 @@ import tools.jackson.databind.ObjectMapper;
 @Service
 public class ServicoAssineai {
 
+  @org.springframework.beans.factory.annotation.Autowired
+  private ColetaDadosAssinatura coleta;
+  @org.springframework.beans.factory.annotation.Autowired
+  private DadosResponsavelEmpresa responsavelEmpresa;
+
+  @org.springframework.beans.factory.annotation.Autowired
+  private CertificadoConfiguradoEmpresa certificadoEmpresa;
   private final BancoAssineai banco;
   private final IdentidadeAssineai identidades;
   private final ObjectMapper json;
@@ -27,6 +34,8 @@ public class ServicoAssineai {
   private final ServicoAssinaturaPdf certificado;
   private final ServicoEntregaAssinatura entrega;
   private final String caminhoCertificado, senhaCertificado;
+  @Value("${APP_PERMITIR_CERTIFICADO_VENCIDO:false}")
+  private boolean permitirCertificadoVencido;
   private static final SecureRandom SORTEADOR = new SecureRandom();
 
   public ServicoAssineai(
@@ -39,7 +48,7 @@ public class ServicoAssineai {
     ServicoAssinaturaPdf certificado,
     ServicoEntregaAssinatura entrega,
     @Value("${APP_ASSINEAI_CERTIFICADO_PATH:}") String caminho,
-    @Value("${APP_ASSINEAI_CERTIFICADO_SENHA:}") String senha
+    @Value("${APP_ASSINEAI_CERTIFICADO_SENHA:${ASSINEAI_CERTIFICADO_SENHA:}}") String senha
   ) {
     this.banco = banco;
     this.identidades = identidades;
@@ -52,6 +61,8 @@ public class ServicoAssineai {
     this.caminhoCertificado = caminho;
     this.senhaCertificado = senha;
   }
+
+  public void validarConvite(String token) { pessoa(token); }
 
   public int paginas(MultipartFile pdf) throws Exception {
     return paginas.paginas(validador.validarPdf(pdf));
@@ -81,6 +92,12 @@ public class ServicoAssineai {
     String identidade,
     String origem
   ) throws Exception {
+    return criarFirma(arquivos, pedido, identidade, origem, null, null);
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public Map<String, Object> criarFirma(List<MultipartFile> arquivos, ServicoLoteAssinatura.Pedido pedido,
+      String identidade, String origem, ColetaDadosAssinatura.Dados coletaEmpresa, String dispositivoEmpresa) throws Exception {
     if (
       pedido == null ||
       pedido.documentos() == null ||
@@ -167,7 +184,7 @@ public class ServicoAssineai {
       pessoas,
       pedido.nomeAssinatura(),
       identidade,
-      origem
+      origem, coletaEmpresa, dispositivoEmpresa, pedido.empresaParticipante()
     );
     var convites = new ArrayList<Map<String, Object>>();
     for (var p : pessoas)
@@ -209,6 +226,19 @@ public class ServicoAssineai {
     String identidade,
     String origem
   ) throws Exception {
+    return criar(arquivos, documentos, pessoas, nome, identidade, origem, null, null);
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public long criar(List<MultipartFile> arquivos, List<Map<String, Object>> documentos, List<Map<String, Object>> pessoas,
+      String nome, String identidade, String origem, ColetaDadosAssinatura.Dados coletaEmpresa, String dispositivoEmpresa) throws Exception {
+    return criar(arquivos, documentos, pessoas, nome, identidade, origem, coletaEmpresa, dispositivoEmpresa, false);
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public long criar(List<MultipartFile> arquivos, List<Map<String, Object>> documentos, List<Map<String, Object>> pessoas,
+      String nome, String identidade, String origem, ColetaDadosAssinatura.Dados coletaEmpresa, String dispositivoEmpresa,
+      boolean empresaParticipante) throws Exception {
     if (
       nome == null ||
       nome.isBlank() ||
@@ -216,11 +246,12 @@ public class ServicoAssineai {
       arquivos.isEmpty() ||
       arquivos.size() > 10 ||
       arquivos.size() != documentos.size() ||
-      pessoas.isEmpty() ||
+      (pessoas.isEmpty() && !empresaParticipante) ||
       pessoas.size() > 20
     ) throw erro(
       "Informe nome da assinatura, de 1 a 10 PDFs e de 1 a 20 signatários"
     );
+    pessoas = pessoas.stream().map(pessoa -> pessoa == null ? null : new LinkedHashMap<String, Object>(pessoa)).map(pessoa -> (Map<String, Object>) pessoa).toList();
     var identificadoresUnicos = new HashSet<String>();
     for (var p : pessoas) {
       validarPessoa(p);
@@ -286,8 +317,8 @@ public class ServicoAssineai {
       )
     );
     banco.executar(
-      "INSERT INTO firma_assineai_controle(assinatura_id,criador,empresa_id) VALUES(:a,:i,:e)",
-      Map.of("a", assinatura, "i", identidade, "e", empresaId)
+      "INSERT INTO firma_assineai_controle(assinatura_id,criador,empresa_id,assinatura_automatica,empresa_participante) VALUES(:a,:i,:e,:automatica,:participante)",
+      Map.of("a", assinatura, "i", identidade, "e", empresaId, "automatica", !empresaParticipante || Boolean.TRUE.equals(identidades.empresa(identidade).get("EmpresaAssinaturaAutomatica")), "participante", empresaParticipante)
     );
     for (int i = 0; i < arquivos.size(); i++) {
       String token = UUID.randomUUID().toString();
@@ -349,11 +380,15 @@ public class ServicoAssineai {
       );
       evento(signatario, "naoabriulink", "convite_criado", null, null);
     }
+    gerarDocumentos(assinatura, null, null, coletaEmpresa, dispositivoEmpresa, identidade);
     return assinatura;
   }
 
   private void validarPessoa(Map<String, Object> p) {
     if (p == null) throw erro("Signatário inválido");
+    p.put("CPF", DadosPessoaisSignatario.cpf(Objects.toString(p.get("CPF"), "")));
+    p.put("RG", DadosPessoaisSignatario.rg(Objects.toString(p.get("RG"), "")));
+    p.put("WhatsApp", DadosPessoaisSignatario.whatsapp(Objects.toString(p.get("WhatsApp"), "")));
     String nome = Objects.toString(p.get("Nome"), "").strip(),
       email = Objects.toString(p.get("Email"), "").strip(),
       whats = Objects.toString(p.get("WhatsApp"), "").replaceAll("[^0-9]", "");
@@ -374,7 +409,7 @@ public class ServicoAssineai {
     ) throw erro("Informe e-mail para o canal escolhido");
     if (
       (autenticacao.contains("whatsapp") || avisos.contains("whatsapp")) &&
-      !whats.matches("[0-9]{10,15}")
+      whats.isEmpty()
     ) throw erro("Informe WhatsApp com DDD");
     for (String campo : List.of("CPF", "RG", "WhatsApp", "Qualificacao"))
       if (Objects.toString(p.get(campo), "").length() > 255) throw erro(
@@ -464,6 +499,13 @@ public class ServicoAssineai {
     return a;
   }
 
+  @Transactional(readOnly = true)
+  public Map<String, Object> participanteEmpresa(long assinatura) {
+    var empresa = banco.um("SELECT e.\"EmpresaNome\",c.empresa_participante,(SELECT min(d.\"DocumentoEmpresaAssinouEm\") FROM \"AssinaturaDocumentos\" d WHERE d.\"AssinaturaId\"=c.assinatura_id) AS assinou_em FROM firma_assineai_controle c JOIN \"Empresas\" e ON e.\"EmpresaId\"=c.empresa_id WHERE c.assinatura_id=:id", Map.of("id", assinatura));
+    if (empresa == null || !Boolean.TRUE.equals(empresa.get("empresa_participante"))) return null;
+    return Map.of("SignatarioNome", texto(empresa, "EmpresaNome"), "SignatarioEmail", "", "SignatarioAssinou", empresa.get("assinou_em") != null);
+  }
+
   @Transactional
   public List<Map<String, Object>> listar(String identidade) {
     long empresaId = id(identidades.empresa(identidade), "EmpresaId");
@@ -484,6 +526,7 @@ public class ServicoAssineai {
     var d = new LinkedHashMap<>(documento);
     d.remove("DocumentoBuffer");
     d.remove("DocumentoAssinadoBuffer");
+    d.remove("DocumentoBaseEmpresa");
     return d;
   }
 
@@ -775,6 +818,14 @@ public class ServicoAssineai {
     String ip,
     String dispositivo
   ) throws Exception {
+    return assinar(token, dados, dispositivo, coleta.receber(ip, dados.get("userLocation"), Objects.toString(dados.get("ipNavegador"), "")));
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public List<Map<String, Object>> assinar(String token, Map<String, Object> dados, String dispositivo,
+      ColetaDadosAssinatura.Dados coletados) throws Exception {
+    coletados.exigirRecente();
+    String ip = coletados.endereco();
     var p = pessoa(token);
     long assinatura = id(p, "AssinaturaId");
     bloquear(assinatura);
@@ -835,30 +886,9 @@ public class ServicoAssineai {
       "SignatarioSelfieBase64",
       selfie == null ? null : Base64.getEncoder().encodeToString(selfie)
     );
-    Object geo = dados.get("userLocation");
-    if (
-      geo instanceof Map<?, ?> g &&
-      g.get("latitude") instanceof Number lat &&
-      g.get("longitude") instanceof Number lon
-    ) {
-      if (
-        !Double.isFinite(lat.doubleValue()) ||
-        !Double.isFinite(lon.doubleValue()) ||
-        Math.abs(lat.doubleValue()) > 90 ||
-        Math.abs(lon.doubleValue()) > 180
-      ) throw erro("Localização inválida");
-      valores.put(
-        "SignatarioGeolocalizacao",
-        json.writeValueAsString(
-          Map.of(
-            "type",
-            "Point",
-            "coordinates",
-            List.of(lon.doubleValue(), lat.doubleValue())
-          )
-        )
-      );
-    }
+    valores.put("SignatarioGeolocalizacao", coleta.serializar(coletados));
+    valores.put("SignatarioIpConexao", coletados.ipConexao());
+    valores.put("SignatarioOrigemIp", coletados.origemIp());
     banco.atualizar(
       "AssinaturaSignatarios",
       "SignatarioId",
@@ -882,8 +912,13 @@ public class ServicoAssineai {
 
   private void gerarDocumentos(long assinatura, byte[] pfx, char[] senha)
     throws Exception {
+    gerarDocumentos(assinatura, pfx, senha, null, null, null);
+  }
+
+  private void gerarDocumentos(long assinatura, byte[] pfx, char[] senha, ColetaDadosAssinatura.Dados coletaEmpresa,
+      String dispositivoEmpresa, String operador) throws Exception {
     var ps = pessoas(assinatura);
-    var empresa = banco.um("SELECT e.* FROM \"Empresas\" e JOIN firma_assineai_controle c ON c.empresa_id=e.\"EmpresaId\" WHERE c.assinatura_id=:id", Map.of("id",assinatura));
+    var empresa = banco.um("SELECT e.*,c.assinatura_automatica,c.dados_assinatura_empresa,c.empresa_participante FROM \"Empresas\" e JOIN firma_assineai_controle c ON c.empresa_id=e.\"EmpresaId\" WHERE c.assinatura_id=:id", Map.of("id",assinatura));
     var modelo = TemplatesEmpresa.ativo(empresa == null ? null : empresa.get("EmpresaTemplates"));
     String nomeEmpresa = empresa == null ? "Sua empresa" : Objects.toString(empresa.get("EmpresaNome"),"Sua empresa");
     var rubricas = new HashMap<Long, byte[]>();
@@ -899,25 +934,65 @@ public class ServicoAssineai {
     }
     byte[] chave = pfx;
     char[] segredo = senha;
-    if (chave == null && !caminhoCertificado.isBlank()) {
-      chave = Files.readAllBytes(Path.of(caminhoCertificado));
-      segredo = senhaCertificado.toCharArray();
+    CertificadoConfiguradoEmpresa.Material materialConfigurado = null;
+    boolean basesPreservadas = documentos(assinatura).stream().allMatch(documento -> documento.get("DocumentoBaseEmpresa") != null);
+    if (chave == null && (!basesPreservadas || ps.stream().allMatch(pessoa -> Boolean.TRUE.equals(pessoa.get("SignatarioAssinou"))))
+        && empresa != null && Boolean.TRUE.equals(empresa.get("assinatura_automatica"))) {
+      materialConfigurado = certificadoEmpresa.carregar(id(empresa, "EmpresaId"));
+      chave = materialConfigurado.dados();
+      segredo = materialConfigurado.senha();
     }
+    boolean empresaParticipante = empresa != null && Boolean.TRUE.equals(empresa.get("empresa_participante"));
+    var registroEmpresa = new LinkedHashMap<String, Object>();
+    if (empresa != null && empresa.get("dados_assinatura_empresa") instanceof Map<?, ?> preservados)
+      preservados.forEach((campo, valor) -> registroEmpresa.put(campo.toString(), valor));
+    registroEmpresa.remove("operador");
+    registroEmpresa.put("SignatarioNome", nomeEmpresa);
+    registroEmpresa.put("SignatarioQualificacao", "Empresa");
+    registroEmpresa.put("SignatarioAssinou", chave != null);
+    registroEmpresa.put("SignatarioDataAssinatura", chave == null ? "Pendente" : java.time.OffsetDateTime.now().toString());
+    registroEmpresa.put("SignatarioFirmadoVia", chave == null ? "Assinatura da empresa pendente" : "Certificado digital");
     try {
+      if (chave != null && !basesPreservadas && empresaParticipante) {
+        if (empresa == null) throw new ErroAssinatura("Vincule a empresa e seu responsável antes de assinar este documento");
+        var dados = responsavelEmpresa.preparar(id(empresa, "EmpresaId"), coletaEmpresa, dispositivoEmpresa, operador, "Criação ou assinatura manual dos documentos");
+        banco.executar("UPDATE firma_assineai_controle SET dados_assinatura_empresa=CAST(:dados AS jsonb) WHERE assinatura_id=:id",
+            Map.of("dados", json.writeValueAsString(dados), "id", assinatura));
+        registroEmpresa.putAll(dados);
+      }
+      registroEmpresa.remove("operador");
       for (var d : documentos(assinatura)) {
+        byte[] base = (byte[]) d.get("DocumentoBaseEmpresa");
+        if (base == null && chave != null) {
+          var titular = certificado.consultarCertificado(chave, segredo, permitirCertificadoVencido);
+          base = certificado.assinar((byte[]) d.get("DocumentoBuffer"), chave, segredo, permitirCertificadoVencido);
+          var dadosBase = new LinkedHashMap<String, Object>();
+          dadosBase.put("DocumentoBaseEmpresa", base);
+          dadosBase.put("DocumentoEmpresaAssinouEm", java.time.OffsetDateTime.now());
+          dadosBase.put("DocumentoEmpresaTitular", titular.titular());
+          banco.atualizar("AssinaturaDocumentos", "DocumentoId", id(d, "DocumentoId"), dadosBase);
+          d.putAll(dadosBase);
+        }
+        var fonte = new LinkedHashMap<>(d);
+        if (base != null) fonte.put("DocumentoBuffer", base);
+        registroEmpresa.put("SignatarioAssinou", base != null);
+        registroEmpresa.put("SignatarioDataAssinatura", Objects.toString(d.get("DocumentoEmpresaAssinouEm"), "Pendente"));
+        registroEmpresa.put("SignatarioFirmadoVia", base == null ? "Assinatura da empresa pendente"
+            : "Certificado digital");
         byte[] pdf = pdfs.aplicar(
-          d,
+          fonte,
           ps,
           lista(d.get("DocumentoColecaoDeDivArrastavel")),
           rubricas,
           modelo,
-          nomeEmpresa
+          nomeEmpresa,
+          empresaParticipante ? registroEmpresa : null
         );
         if (chave != null) pdf = certificado.assinar(
           pdf,
           chave,
           segredo,
-          false
+          permitirCertificadoVencido
         );
         banco.atualizar(
           "AssinaturaDocumentos",
@@ -962,7 +1037,8 @@ public class ServicoAssineai {
           );
       }
     } finally {
-      if (segredo != senha && segredo != null) Arrays.fill(segredo, '\0');
+      if (materialConfigurado != null) materialConfigurado.close();
+      else if (segredo != senha && segredo != null) Arrays.fill(segredo, '\0');
     }
   }
 
@@ -973,27 +1049,27 @@ public class ServicoAssineai {
     MultipartFile pfx,
     String senha
   ) throws Exception {
+    certificar(assinatura, identidade, pfx, senha, null, null);
+  }
+
+  @Transactional(rollbackFor = Exception.class)
+  public void certificar(long assinatura, String identidade, MultipartFile pfx, String senha,
+      ColetaDadosAssinatura.Dados coletaEmpresa, String dispositivoEmpresa) throws Exception {
     dono(assinatura, identidade);
     bloquear(assinatura);
     if (
-      pessoas(assinatura)
-        .stream()
-        .anyMatch(p -> !Boolean.TRUE.equals(p.get("SignatarioAssinou")))
-    ) throw new ResponseStatusException(
-      HttpStatus.CONFLICT,
-      "Há assinaturas pendentes"
-    );
-    if (
       pfx == null ||
       pfx.isEmpty() ||
-      pfx.getSize() > 2 * 1024 * 1024 ||
-      senha == null
+      pfx.getSize() > 2 * 1024 * 1024
     ) throw erro("Informe certificado e senha");
-    char[] segredo = senha.toCharArray();
+    byte[] dadosCertificado = validador.validarCertificado(pfx);
+    char[] segredo = null;
     try {
-      gerarDocumentos(assinatura, pfx.getBytes(), segredo);
+      segredo = validador.resolverSenhaCertificado(senha).toCharArray();
+      gerarDocumentos(assinatura, dadosCertificado, segredo, coletaEmpresa, dispositivoEmpresa, identidade);
     } finally {
-      Arrays.fill(segredo, '\0');
+      if (segredo != null) Arrays.fill(segredo, '\0');
+      Arrays.fill(dadosCertificado, (byte) 0);
     }
   }
 

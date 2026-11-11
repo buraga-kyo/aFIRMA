@@ -20,6 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api")
 public class ControleEnvelopes {
 
+  @org.springframework.beans.factory.annotation.Autowired
+  private ColetaDadosAssinatura coleta;
+
   private final ServicoEnvelopes servico;
   private final ServicoLoteAssinatura lotes;
   private final ServicoAutenticacaoAssinatura autenticacao;
@@ -37,6 +40,36 @@ public class ControleEnvelopes {
     this.entrega = entrega;
   }
 
+  @GetMapping("/envelopes/coleta-empresa")
+  public ColetaDadosAssinatura.Conexao coletaEmpresa(HttpServletRequest requisicao) {
+    return coleta.conexao(requisicao);
+  }
+
+  @GetMapping("/convites/{token}/coleta")
+  public ColetaDadosAssinatura.Conexao coleta(@PathVariable String token, HttpServletRequest requisicao) {
+    return coleta.conexao(requisicao);
+  }
+
+  @PostMapping("/envelopes/{id}/sincronizar-empresa")
+  public ResponseEntity<Void> sincronizarEmpresa(@PathVariable UUID id, Principal usuario) throws Exception {
+    servico.sincronizarAssinaturaEmpresa(id, usuario.getName());
+    return ResponseEntity.noContent().header(HttpHeaders.CACHE_CONTROL, "no-store").build();
+  }
+
+  @PostMapping("/envelopes/{id}/concluir-automaticamente")
+  public ResponseEntity<Void> concluirAutomaticamente(@PathVariable UUID id, Principal usuario) throws Exception {
+    servico.concluirAutomaticamente(id, usuario.getName());
+    return ResponseEntity.noContent().header(HttpHeaders.CACHE_CONTROL, "no-store").build();
+  }
+
+  @PostMapping(value = "/envelopes/{id}/assinar-empresa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_PDF_VALUE)
+  public ResponseEntity<byte[]> assinarEmpresa(@PathVariable UUID id, Principal usuario,
+      @RequestParam(value = "certificado", required = false) MultipartFile certificado,
+      @RequestParam(value = "senha", required = false) String senha,
+      @RequestParam String declaracaoPoderes, HttpServletRequest requisicao) throws Exception {
+    return pdf(servico.assinarPelaEmpresa(id, usuario.getName(), certificado, senha, declaracaoPoderes, coleta.receberEmpresa(requisicao), requisicao.getHeader("User-Agent")));
+  }
+
   @PostMapping(
     value = "/envelopes/previsualizar",
     consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -49,18 +82,26 @@ public class ControleEnvelopes {
     return imagem(servico.previsualizar(pdf, pagina));
   }
 
-  @PostMapping(value = "/envelopes/paginas", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public NumeroPaginas paginas(@RequestParam("pdf") MultipartFile pdf) throws Exception {
+  @PostMapping(
+    value = "/envelopes/paginas",
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
+  public NumeroPaginas paginas(@RequestParam("pdf") MultipartFile pdf)
+    throws Exception {
     return new NumeroPaginas(servico.paginas(pdf));
   }
 
-  @PostMapping(value = "/envelopes", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(
+    value = "/envelopes",
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
   public ServicoEnvelopes.Criado criar(
     @RequestParam("pdf") MultipartFile pdf,
     @RequestPart("dados") ServicoEnvelopes.PedidoCriacao dados,
+    HttpServletRequest requisicao,
     Principal usuario
   ) throws Exception {
-    return servico.criar(pdf, dados, usuario.getName());
+    return servico.criarComDocumentos(pdf, dados, usuario.getName(), null, coleta.receberEmpresa(requisicao), requisicao.getHeader("User-Agent"));
   }
 
   @GetMapping("/envelopes/recursos")
@@ -73,13 +114,17 @@ public class ControleEnvelopes {
     );
   }
 
-  @PostMapping(value = "/envelopes/lote", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(
+    value = "/envelopes/lote",
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
   public ServicoEnvelopes.Criado criarLote(
     @RequestParam("pdfs") java.util.List<MultipartFile> pdfs,
     @RequestPart("dados") ServicoLoteAssinatura.Pedido dados,
+    HttpServletRequest requisicao,
     Principal usuario
   ) throws Exception {
-    return lotes.criar(pdfs, dados, usuario.getName());
+    return lotes.criar(pdfs, dados, usuario.getName(), coleta.receberEmpresa(requisicao), requisicao.getHeader("User-Agent"));
   }
 
   @PostMapping("/envelopes/{id}/notificar")
@@ -136,7 +181,10 @@ public class ControleEnvelopes {
   public record Codigo(String codigo) {}
 
   @GetMapping("/envelopes/{id}")
-  public ServicoEnvelopes.EstadoEnvelope consultar(@PathVariable UUID id, Principal usuario) {
+  public ServicoEnvelopes.EstadoEnvelope consultar(
+    @PathVariable UUID id,
+    Principal usuario
+  ) {
     return servico.consultar(id, usuario.getName());
   }
 
@@ -147,13 +195,18 @@ public class ControleEnvelopes {
   )
   public ResponseEntity<byte[]> finalizar(
     @PathVariable UUID id,
-    @RequestParam("certificado") MultipartFile certificado,
-    @RequestParam("senha") String senha,
+    @RequestParam(value = "certificado", required = false) MultipartFile certificado,
+    @RequestParam(value = "senha", required = false) String senha,
     @RequestParam(
       value = "paginaPersonalizada",
       defaultValue = "false"
     ) boolean paginaPersonalizada,
-    @RequestParam(value = "imagemEmpresa", required = false) MultipartFile imagemEmpresa,
+    @RequestParam(
+      value = "imagemEmpresa",
+      required = false
+    ) MultipartFile imagemEmpresa,
+    @RequestParam("declaracaoPoderes") String declaracaoPoderes,
+    HttpServletRequest requisicao,
     Principal usuario
   ) throws Exception {
     return pdf(
@@ -163,14 +216,20 @@ public class ControleEnvelopes {
         certificado,
         senha,
         paginaPersonalizada,
-        imagemEmpresa
+        imagemEmpresa,
+        declaracaoPoderes, coleta.receberEmpresa(requisicao), requisicao.getHeader("User-Agent")
       )
     );
   }
 
-  @GetMapping(value = "/envelopes/{id}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
-  public ResponseEntity<byte[]> documentoFinal(@PathVariable UUID id, Principal usuario)
-    throws Exception {
+  @GetMapping(
+    value = "/envelopes/{id}/pdf",
+    produces = MediaType.APPLICATION_PDF_VALUE
+  )
+  public ResponseEntity<byte[]> documentoFinal(
+    @PathVariable UUID id,
+    Principal usuario
+  ) throws Exception {
     return pdf(servico.documentoFinal(id, usuario.getName()));
   }
 
@@ -188,41 +247,82 @@ public class ControleEnvelopes {
     return dados;
   }
 
-  @GetMapping(value = "/convites/{token}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
-  public ResponseEntity<byte[]> documentoConvite(@PathVariable String token) throws Exception {
-    return pdf(servico.documentoConvite(token));
+  @GetMapping(
+    value = "/convites/{token}/pdf",
+    produces = MediaType.APPLICATION_PDF_VALUE
+  )
+  public ResponseEntity<byte[]> documentoConvite(
+    @PathVariable String token,
+    @RequestParam(
+      value = "resumoDocumento",
+      required = false
+    ) String resumoDocumento
+  ) throws Exception {
+    return pdf(servico.documentoConvite(token, resumoDocumento));
   }
 
-  @GetMapping(value = "/convites/{token}/paginas/{pagina}", produces = MediaType.IMAGE_PNG_VALUE)
-  public ResponseEntity<byte[]> paginaConvite(@PathVariable String token, @PathVariable int pagina)
-    throws Exception {
-    return imagem(servico.previsualizarConvite(token, pagina));
+  @GetMapping(
+    value = "/convites/{token}/paginas/{pagina}",
+    produces = MediaType.IMAGE_PNG_VALUE
+  )
+  public ResponseEntity<byte[]> paginaConvite(
+    @PathVariable String token,
+    @PathVariable int pagina,
+    @RequestParam(
+      value = "resumoDocumento",
+      required = false
+    ) String resumoDocumento
+  ) throws Exception {
+    return imagem(servico.previsualizarConvite(token, pagina, resumoDocumento));
   }
 
-  @GetMapping(value = "/convites/{token}/final", produces = MediaType.APPLICATION_PDF_VALUE)
-  public ResponseEntity<byte[]> documentoFinalConvite(@PathVariable String token) {
+  @GetMapping(
+    value = "/convites/{token}/final",
+    produces = MediaType.APPLICATION_PDF_VALUE
+  )
+  public ResponseEntity<byte[]> documentoFinalConvite(
+    @PathVariable String token
+  ) throws Exception {
     return pdf(servico.documentoFinalConvite(token));
   }
 
-  @PostMapping(value = "/convites/{token}/assinar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(
+    value = "/convites/{token}/assinar",
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
   public ResponseEntity<Void> assinar(
     @PathVariable String token,
-    @RequestParam(value = "assinatura", required = false) MultipartFile assinatura,
+    @RequestParam(
+      value = "assinatura",
+      required = false
+    ) MultipartFile assinatura,
     @RequestParam(value = "rubrica", required = false) MultipartFile rubrica,
     @RequestParam(value = "selfie", required = false) MultipartFile selfie,
     @RequestParam(value = "aceite", defaultValue = "false") boolean aceite,
     @RequestParam(value = "valores", defaultValue = "{}") String valores,
+    @RequestParam("resumoDocumento") String resumoDocumento,
+    @RequestParam("textoAceite") String textoAceite,
+    @RequestParam("localizacao") String localizacao,
+    @RequestParam(value = "ipNavegador", defaultValue = "") String ipNavegador,
+    @RequestParam(
+      value = "cienciaInclusaoImagem",
+      defaultValue = "false"
+    ) boolean cienciaInclusaoImagem,
     HttpServletRequest requisicao
   ) throws Exception {
     java.util.Map<String, String> campos;
     try {
       if (valores.length() > 250000) throw new IllegalArgumentException();
-      var bruto = new tools.jackson.databind.ObjectMapper().readValue(valores, java.util.Map.class);
+      var bruto = new tools.jackson.databind.ObjectMapper().readValue(
+        valores,
+        java.util.Map.class
+      );
       campos = new java.util.HashMap<>();
       for (var entrada : bruto.entrySet()) {
         var item = (java.util.Map.Entry<?, ?>) entrada;
         if (
-          !(item.getKey() instanceof String chave) || !(item.getValue() instanceof String valor)
+          !(item.getKey() instanceof String chave) ||
+          !(item.getValue() instanceof String valor)
         ) throw new IllegalArgumentException();
         campos.put(chave, valor);
       }
@@ -232,6 +332,9 @@ public class ControleEnvelopes {
         "Valores dos campos inválidos"
       );
     }
+    if (localizacao.length() > 2000) throw new ErroAssinatura("Localização inválida");
+    var dadosColetados = coleta.receber(requisicao,
+        new tools.jackson.databind.ObjectMapper().readValue(localizacao, java.util.Map.class), ipNavegador);
     servico.assinarConvite(
       token,
       assinatura,
@@ -241,15 +344,24 @@ public class ControleEnvelopes {
       requisicao.getRemoteAddr(),
       requisicao.getHeader("User-Agent"),
       campos,
-      anexos(requisicao)
+      anexos(requisicao),
+      resumoDocumento,
+      textoAceite,
+      cienciaInclusaoImagem,
+      (ServicoAutenticacaoConvites.Sessao) requisicao.getAttribute(
+        FiltroAcessoConvite.ATRIBUTO_SESSAO
+      ), dadosColetados
     );
-    return ResponseEntity.noContent().header(HttpHeaders.CACHE_CONTROL, "no-store").build();
+    return ResponseEntity.noContent()
+      .header(HttpHeaders.CACHE_CONTROL, "no-store")
+      .build();
   }
 
   private java.util.Map<String, MultipartFile> anexos(HttpServletRequest r) {
     var resultado = new java.util.HashMap<String, MultipartFile>();
     if (
-      r instanceof org.springframework.web.multipart.MultipartHttpServletRequest multipart
+      r instanceof
+        org.springframework.web.multipart.MultipartHttpServletRequest multipart
     ) multipart.getFileMap().forEach((nome, arquivo) -> {
       if (nome.startsWith("anexo_")) resultado.put(nome.substring(6), arquivo);
     });
@@ -257,7 +369,10 @@ public class ControleEnvelopes {
   }
 
   @GetMapping("/convites/{token}/anexos/{id}")
-  public ResponseEntity<byte[]> anexo(@PathVariable String token, @PathVariable UUID id) {
+  public ResponseEntity<byte[]> anexo(
+    @PathVariable String token,
+    @PathVariable UUID id
+  ) {
     var campo = servico.anexoConvite(token, id);
     return ResponseEntity.ok()
       .contentType(MediaType.parseMediaType(campo.getAnexoTipo()))
@@ -265,20 +380,42 @@ public class ControleEnvelopes {
       .header(
         HttpHeaders.CONTENT_DISPOSITION,
         ContentDisposition.attachment()
-          .filename(campo.getAnexoNome(), java.nio.charset.StandardCharsets.UTF_8)
+          .filename(
+            campo.getAnexoNome(),
+            java.nio.charset.StandardCharsets.UTF_8
+          )
           .build()
           .toString()
       )
       .body(campo.getAnexo());
   }
 
+  @GetMapping("/envelopes/{id}/verificacao")
+  public VerificadorAssinaturasPdf.Resultado verificarEnvelope(
+    @PathVariable UUID id,
+    Principal usuario
+  ) throws Exception {
+    return servico.verificarEnvelope(id, usuario.getName());
+  }
+
+  @GetMapping("/convites/{token}/verificacao")
+  public VerificadorAssinaturasPdf.Resultado verificarConvite(
+    @PathVariable String token
+  ) throws Exception {
+    return servico.verificarConvite(token);
+  }
+
   private ResponseEntity<byte[]> pdf(byte[] dados) {
     return ResponseEntity.ok()
       .header(HttpHeaders.CACHE_CONTROL, "no-store")
       .header("Referrer-Policy", "no-referrer")
+      .header("X-Content-Type-Options", "nosniff")
       .header(
         HttpHeaders.CONTENT_DISPOSITION,
-        ContentDisposition.attachment().filename("documento.pdf").build().toString()
+        ContentDisposition.attachment()
+          .filename("documento.pdf")
+          .build()
+          .toString()
       )
       .contentType(MediaType.APPLICATION_PDF)
       .body(dados);

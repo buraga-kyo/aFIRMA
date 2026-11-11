@@ -233,3 +233,8 @@ setInterval(() => {
   if (!token || document.hidden) return;
   atualizarFila().then(() => selecionado && abrir(selecionado)).catch(erro => aviso(erro.message));
 }, 10000);
+
+document.addEventListener('firma:acesso-conectado', () => porId('#entrar').click());
+document.addEventListener('firma:desconectado', () => {
+  token = ''; chave = ''; porId('#aplicacao').hidden = true;
+});

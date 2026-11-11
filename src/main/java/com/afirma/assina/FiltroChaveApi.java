@@ -26,7 +26,7 @@ public class FiltroChaveApi extends OncePerRequestFilter {
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest requisicao) {
 		String caminho = requisicao.getServletPath();
-		return !"/api/pdfs/assinar".equals(caminho)
+		return !caminho.startsWith("/api/pdfs/")
 				&& !caminho.startsWith("/api/advai/")
 				&& !caminho.startsWith("/api/envelopes")
 				&& !caminho.startsWith("/api/relacionamento/")

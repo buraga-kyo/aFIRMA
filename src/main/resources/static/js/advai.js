@@ -193,3 +193,5 @@ for (const id of ['chave-api', 'token']) {
   });
 }
 atualizarPrevia();
+
+document.addEventListener('firma:acesso-conectado', () => carregarCatalogo().catch(falha => mostrarErro(falha.message)));

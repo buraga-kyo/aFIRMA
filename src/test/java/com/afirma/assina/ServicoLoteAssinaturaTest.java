@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 class ServicoLoteAssinaturaTest {
     private final ServicoEnvelopes envelopes = mock(ServicoEnvelopes.class);
     private final ValidadorPedidoAssinatura validador = mock(ValidadorPedidoAssinatura.class);
-    private final ServicoLoteAssinatura servico = new ServicoLoteAssinatura(envelopes, validador, new ServicoCamposPdf());
+    private final ServicoLoteAssinatura servico = new ServicoLoteAssinatura(envelopes, validador, new ServicoCamposPdf(), mock(ServicoAssinaturaPdf.class));
     private MultipartFile arquivo(int paginas) throws Exception {
         try (PDDocument pdf = new PDDocument(); ByteArrayOutputStream saida = new ByteArrayOutputStream()) {
             for (int i = 0; i < paginas; i++) pdf.addPage(new PDPage());
@@ -31,7 +31,7 @@ class ServicoLoteAssinaturaTest {
     private ServicoLoteAssinatura.Pedido pedido(List<ServicoEnvelopes.CampoNovo> campos) {
         return new ServicoLoteAssinatura.Pedido("Firma", "Contrato e anexo", List.of(new ServicoEnvelopes.SignatarioNovo(
             "Ana", "", null, null, null, "Associado", campos)),
-            List.of(new ServicoLoteAssinatura.DocumentoNovo("Contrato"), new ServicoLoteAssinatura.DocumentoNovo("Anexo")));
+            List.of(new ServicoLoteAssinatura.DocumentoNovo("Contrato"), new ServicoLoteAssinatura.DocumentoNovo("Anexo")), "CONTRATO_PARTICULAR", PoliticaDocumentosAssinatura.DECLARACAO_FORMALIDADES, UUID.randomUUID());
     }
     @Test void conservaOriginaisEConvertePaginasLocaisSemMisturarDocumentos() throws Exception {
         var primeiro = arquivo(2); var segundo = arquivo(1);

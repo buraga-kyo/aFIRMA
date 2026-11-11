@@ -14,3 +14,14 @@
 @media(max-width:600px){#firma-mensagens{left:calc(50% + 9px);top:calc(50% - 23px);width:calc(100vw - 30px);max-height:75dvh}#firma-mensagens .firma-mensagem{padding:19px 51px 20px 17px;font-size:13px}}
 @media(prefers-reduced-motion:reduce){#firma-mensagens .firma-mensagem,#firma-mensagens .firma-mensagem:nth-child(even){transform:none}}
 @media print{#firma-mensagens{display:none!important}}
+
+#firma-mensagens .firma-mensagem[data-tipo=processando]{padding-right:24px}
+.firma-loading-roca{display:block;width:120px;margin:8px 0 14px;color:var(--primary,#C9FF3D)}
+.firma-loading-roca svg{display:block;width:100%;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:square;stroke-linejoin:miter}
+.firma-loading-roca .trator-roda{transform-box:fill-box;transform-origin:center;animation:firma-roda-roca 1.2s steps(8,end) infinite}
+.firma-loading-roca .trator-chassi{animation:firma-solavanco-roca .7s steps(2,end) infinite}
+.firma-loading-roca .trator-chao{stroke:var(--accent,#E8792B);stroke-dasharray:8 6;animation:firma-chao-roca .7s linear infinite}
+@keyframes firma-roda-roca{to{transform:rotate(360deg)}}
+@keyframes firma-solavanco-roca{50%{transform:translateY(-2px)}}
+@keyframes firma-chao-roca{to{stroke-dashoffset:14}}
+@media(prefers-reduced-motion:reduce){.firma-loading-roca .trator-roda,.firma-loading-roca .trator-chassi,.firma-loading-roca .trator-chao{animation:none}}

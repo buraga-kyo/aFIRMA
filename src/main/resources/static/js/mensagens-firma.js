@@ -60,12 +60,19 @@
     botao.setAttribute('aria-label', 'Fechar mensagem');
     botao.title = 'Fechar mensagem';
     botao.onclick = () => fechar(id);
-    no.append(marca, conteudo, botao);
+    if (tipo === 'processando') {
+      marca.textContent = 'TRABALHANDO NA ROÇA.';
+      no.setAttribute('aria-busy', 'true');
+      const carregando = document.createElement('span');
+      carregando.className = 'firma-loading-roca'; carregando.setAttribute('aria-hidden', 'true');
+      carregando.innerHTML = '<svg viewBox="0 0 120 56"><path class="trator-chassi" d="M18 32h66v-7H61V9H36v23M37 10h23M45 10v21M83 18v-8M27 36H14v-9h20"/><g class="trator-roda trator-roda-grande"><circle cx="38" cy="39" r="13"/><path d="M38 26v26M25 39h26M29 30l18 18M29 48l18-18"/></g><g class="trator-roda trator-roda-pequena"><circle cx="83" cy="42" r="9"/><path d="M83 33v18M74 42h18"/></g><path class="trator-chao" d="M8 54h104"/></svg>';
+      botao.hidden = true; no.append(marca, carregando, conteudo);
+    } else no.append(marca, conteudo, botao);
     const item = {
         no,
         timer: null
       },
-      duracao = opcoes.duracao ?? (tipo === 'erro' ? 0 : 8000);
+      duracao = opcoes.duracao ?? (tipo === 'erro' || tipo === 'processando' ? 0 : 8000);
     const agendar = () => {
       if (duracao > 0) item.timer = setTimeout(() => fechar(id), duracao);
     };

@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 @Service
 public class ServicoEntregaAssinatura {
+    @org.springframework.beans.factory.annotation.Autowired
+    private EnviadorCodigoConvite email;
     private final String endereco;
     private final String segredo;
     private final ObjectMapper json;
@@ -16,9 +18,13 @@ public class ServicoEntregaAssinatura {
             @Value("${APP_ASSINATURAS_ENTREGA_SEGREDO:}") String segredo, ObjectMapper json) {
         this.endereco = endereco; this.segredo = segredo; this.json = json;
     }
-    public boolean disponivel() { return !endereco.isBlank(); }
+    public boolean disponivel() { return !endereco.isBlank() || email.configurado(); }
     public void enviar(String canal, String destino, String tipo, String conteudo) {
-        if (!disponivel()) throw new IllegalStateException("Serviço de entrega de e-mail e WhatsApp não configurado");
+        if ("email".equals(canal) && email.configurado()) {
+            email.enviarMensagem(destino, "codigo".equals(tipo) ? "Código de assinatura daFIRMA" : "Convite para assinatura daFIRMA", conteudo);
+            return;
+        }
+        if (endereco.isBlank()) throw new IllegalStateException("Serviço de entrega de e-mail e WhatsApp não configurado");
         try {
             var pedido = HttpRequest.newBuilder(URI.create(endereco)).timeout(Duration.ofSeconds(10))
                 .header("Content-Type", "application/json");

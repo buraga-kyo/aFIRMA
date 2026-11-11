@@ -13,7 +13,6 @@ public class PedidoAssinaturaPdf {
 	@NotNull
 	private MultipartFile certificado;
 
-	@NotBlank
 	@Size(max = 256)
 	private String senha;
 
@@ -28,6 +27,27 @@ public class PedidoAssinaturaPdf {
 	private String nomeEmpresa;
 
 	private MultipartFile imagemEmpresa;
+
+	@NotNull
+	private java.util.UUID idRequisicao;
+	public java.util.UUID getIdRequisicao() { return idRequisicao; }
+	public void setIdRequisicao(java.util.UUID valor) { idRequisicao = valor; }
+
+	@NotBlank
+	private String tipoDocumento;
+	@NotBlank
+	@Size(max = 1000)
+	private String declaracaoFormalidades;
+	@NotBlank
+	@Size(max = 1000)
+	private String declaracaoPoderes;
+
+	public String getTipoDocumento() { return tipoDocumento; }
+	public void setTipoDocumento(String valor) { tipoDocumento = valor; }
+	public String getDeclaracaoFormalidades() { return declaracaoFormalidades; }
+	public void setDeclaracaoFormalidades(String valor) { declaracaoFormalidades = valor; }
+	public String getDeclaracaoPoderes() { return declaracaoPoderes; }
+	public void setDeclaracaoPoderes(String valor) { declaracaoPoderes = valor; }
 
 	public MultipartFile getPdf() {
 		return pdf;
