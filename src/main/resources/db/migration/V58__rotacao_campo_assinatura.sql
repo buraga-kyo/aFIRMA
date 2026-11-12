@@ -1,0 +1,1 @@
+ALTER TABLE campo_assinatura ADD COLUMN rotacao INTEGER NOT NULL DEFAULT 0;

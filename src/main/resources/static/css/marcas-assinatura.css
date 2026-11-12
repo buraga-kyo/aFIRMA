@@ -1,0 +1,36 @@
+@font-face { font-family: 'Firma Great Vibes'; src: url('/fonts/great-vibes.ttf') format('truetype'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'Firma Dancing Script'; src: url('/fonts/dancing-script.ttf') format('truetype'); font-weight: 400 700; font-display: block; }
+.editor-marca { border-top: 2px solid var(--border); margin-top: 12px; padding-top: 12px; }
+.marca-modos { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.grupo-desenho .marca-modos button { flex: 1; min-height: 44px; font-weight: 800; }
+.grupo-desenho .marca-modos button[aria-pressed="true"] { background: var(--primary); color: var(--background); border-color: var(--primary); box-shadow: 3px 3px 0 var(--accent); }
+.editor-marca label { display: block; margin: 12px 0 8px; font-size: 12px; font-weight: 800; }
+.editor-marca input:not([type="checkbox"]):not([type="range"]), .editor-marca select { box-sizing: border-box; width: 100%; padding: 12px; min-height: 44px; border: 2px solid var(--border); border-radius: 0; background: var(--background); color: var(--foreground); font: inherit; }
+.editor-marca input[type="range"] { width: 100%; accent-color: var(--primary); min-height: 32px; }
+.editor-marca .marca-checkbox { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.marca-checkbox input { width: 20px; height: 20px; accent-color: var(--primary); flex: none; }
+.editor-marca .marca-estado { margin: 12px 0; font-size: 13px; }
+.editor-marca .marca-previa-titulo { font-weight: 800; font-size: 12px; margin-top: 16px; }
+.grupo-desenho .marca-previa { box-sizing: border-box; object-fit: contain; padding: 12px; background-color: #fff; background-image: conic-gradient(#e4e8e4 25%, #fff 0 50%, #e4e8e4 0 75%, #fff 0); background-size: 20px 20px; }
+.marca-manual { box-sizing: border-box; }
+@media (max-width: 520px) { .marca-modos { flex-direction: column; } }
+
+.marca-recorte-janela { height: 300px; width: 100%; box-sizing: border-box; overflow: auto; border: 2px solid var(--border); background: #202822; touch-action: none; cursor: grab; }
+.marca-recorte-espaco { display: grid; place-items: center; min-width: 100%; min-height: 100%; width: max-content; padding: 16px; box-sizing: border-box; }
+.marca-recorte-area { position: relative; flex: none; }
+.marca-recorte-imagem { display: block; width: 100%; height: 100%; }
+.marca-recorte-selecao { position: absolute; box-sizing: border-box; border: 2px dashed #c9ff3d; box-shadow: 0 0 0 4000px #0009; cursor: move; touch-action: none; }
+.marca-recorte-grade { display: block; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, transparent 32.8%, #ffffff70 33%, #ffffff70 33.4%, transparent 33.6%, transparent 66%, #ffffff70 66.2%, #ffffff70 66.6%, transparent 66.8%), linear-gradient(to bottom, transparent 32.8%, #ffffff70 33%, #ffffff70 33.4%, transparent 33.6%, transparent 66%, #ffffff70 66.2%, #ffffff70 66.6%, transparent 66.8%); }
+.grupo-desenho .marca-recorte-selecao button { position: absolute; width: 28px; height: 28px; padding: 0; border: 0; background: transparent; touch-action: none; z-index: 1; }
+.marca-recorte-selecao button::after { content: ''; position: absolute; inset: 7px; border: 2px solid #0e2117; background: #c9ff3d; }
+.marca-recorte-selecao [data-alca="n"] { left: calc(50% - 14px); top: -14px; cursor: ns-resize; }
+.marca-recorte-selecao [data-alca="s"] { left: calc(50% - 14px); bottom: -14px; cursor: ns-resize; }
+.marca-recorte-selecao [data-alca="w"] { left: -14px; top: calc(50% - 14px); cursor: ew-resize; }
+.marca-recorte-selecao [data-alca="e"] { right: -14px; top: calc(50% - 14px); cursor: ew-resize; }
+.marca-recorte-selecao [data-alca="nw"] { left: -14px; top: -14px; cursor: nwse-resize; }
+.marca-recorte-selecao [data-alca="ne"] { right: -14px; top: -14px; cursor: nesw-resize; }
+.marca-recorte-selecao [data-alca="sw"] { left: -14px; bottom: -14px; cursor: nesw-resize; }
+.marca-recorte-selecao [data-alca="se"] { right: -14px; bottom: -14px; cursor: nwse-resize; }
+.marca-recorte-ferramentas { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+.marca-recorte-ferramentas input[type="range"] { flex: 1; min-width: 100px; width: auto; }
+.marca-recorte-selecao:focus-visible { outline: 3px solid #fff; outline-offset: -5px; }

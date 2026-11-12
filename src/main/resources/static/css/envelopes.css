@@ -154,3 +154,10 @@ body[data-tema="caderno"] .etapa { border-bottom-style: dashed; }
 .cartao-novo-assinante .entrada-qualificacao-firma input { padding-right: 42px; cursor: pointer; }
 .seta-qualificacao-firma { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 20px; line-height: 1; pointer-events: none; }
 .entrada-qualificacao-firma input:hover, .entrada-qualificacao-firma input[aria-expanded="true"] { border-color: var(--primary); }
+
+.campo-posicionado { overflow: visible; }
+.campo-posicionado > span:first-child { pointer-events: none; }
+.controles-campo { display: none; position: absolute; left: 0; bottom: 100%; z-index: 5; flex-direction: column; width: min(260px, 65vw); gap: 4px; padding-bottom: 4px; }
+.campo-posicionado:focus-within .controles-campo, .campo-posicionado:hover .controles-campo { display: flex; }
+.campo-posicionado .controles-campo button { position: static; width: auto; height: auto; padding: 5px 8px; font-size: 11px; white-space: normal; }
+.campo-posicionado:focus-within, .campo-posicionado:hover { z-index: 10; }

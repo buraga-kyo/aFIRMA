@@ -1,9 +1,8 @@
 # o contexto do build e a raiz do repositorio (infra/compose.prod.yml).
 # Atencao: aqui um padrao sem ** e ancorado na raiz do contexto (regra do
 # Docker, diferente do .gitignore); por isso o ** em tudo que pode aparecer
-# em subpasta, inclusive os worktrees em .claude.
+# em subpasta.
 .git
-.claude
 **/node_modules
 **/dist
 **/coverage

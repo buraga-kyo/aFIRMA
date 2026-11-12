@@ -51,6 +51,9 @@ public class CampoAssinatura {
   @Column(nullable = false)
   private double altura;
 
+  @Column(nullable = false)
+  private int rotacao;
+
   @Column(nullable = false, length = 80)
   private String nome = "";
 
@@ -190,6 +193,10 @@ public class CampoAssinatura {
   public double getLargura() {
     return largura;
   }
+
+  public int getRotacao() { return rotacao; }
+
+  public void setRotacao(int rotacao) { this.rotacao = rotacao; }
 
   public double getAltura() {
     return altura;
