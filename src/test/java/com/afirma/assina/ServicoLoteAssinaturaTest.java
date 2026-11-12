@@ -26,7 +26,7 @@ class ServicoLoteAssinaturaTest {
         }
     }
     private ServicoEnvelopes.CampoNovo campo(int documento, int pagina) {
-        return new ServicoEnvelopes.CampoNovo(CampoAssinatura.Tipo.ASSINATURA, pagina, .1, .2, .3, .1, documento);
+        return new ServicoEnvelopes.CampoNovo(CampoAssinatura.Tipo.ASSINATURA, pagina, .1, .2, .3, .1, documento, null, true, 90);
     }
     private ServicoLoteAssinatura.Pedido pedido(List<ServicoEnvelopes.CampoNovo> campos) {
         return new ServicoLoteAssinatura.Pedido("Firma", "Contrato e anexo", List.of(new ServicoEnvelopes.SignatarioNovo(
@@ -36,15 +36,16 @@ class ServicoLoteAssinaturaTest {
     @Test void conservaOriginaisEConvertePaginasLocaisSemMisturarDocumentos() throws Exception {
         var primeiro = arquivo(2); var segundo = arquivo(1);
         UUID id = UUID.randomUUID();
-        when(envelopes.criarComDocumentos(any(), any(), eq("criador"), anyList())).thenReturn(new ServicoEnvelopes.Criado(id, 3, List.of()));
+        when(envelopes.criarComDocumentos(any(), any(), eq("criador"), anyList(), isNull(), isNull())).thenReturn(new ServicoEnvelopes.Criado(id, 3, List.of()));
         servico.criar(List.of(primeiro, segundo), pedido(List.of(campo(0, 2), campo(1, 1))), "criador");
         var dados = ArgumentCaptor.forClass(ServicoEnvelopes.PedidoCriacao.class);
         var pdf = ArgumentCaptor.forClass(MultipartFile.class);
         @SuppressWarnings("unchecked")
         var fontes = ArgumentCaptor.forClass((Class<List<DocumentoAssinatura>>) (Class<?>) List.class);
-        verify(envelopes).criarComDocumentos(pdf.capture(), dados.capture(), eq("criador"), fontes.capture());
+        verify(envelopes).criarComDocumentos(pdf.capture(), dados.capture(), eq("criador"), fontes.capture(), isNull(), isNull());
         try (PDDocument conjunto = Loader.loadPDF(pdf.getValue().getBytes())) { assertEquals(3, conjunto.getNumberOfPages()); }
         assertEquals(List.of(2, 3), dados.getValue().signatarios().getFirst().campos().stream().map(ServicoEnvelopes.CampoNovo::pagina).toList());
+        assertTrue(dados.getValue().signatarios().getFirst().campos().stream().allMatch(c -> c.rotacao() == 90));
         assertArrayEquals(primeiro.getBytes(), fontes.getValue().getFirst().getBuffer());
         assertEquals("Anexo", fontes.getValue().getLast().getTitulo());
         assertEquals(3, fontes.getValue().getLast().getPaginaInicio());

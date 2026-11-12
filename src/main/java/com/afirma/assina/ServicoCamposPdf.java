@@ -104,12 +104,21 @@ public class ServicoCamposPdf {
           tamanho.getHeight() -
           (float) (campo.getPosicaoY() * tamanho.getHeight()) -
           altura;
-        imagem.scaleToFit(largura - 6, altura - 18);
-        imagem.setAbsolutePosition(
-          x + (largura - imagem.getScaledWidth()) / 2,
-          y + 14 + (altura - 18 - imagem.getScaledHeight()) / 2
-        );
         PdfContentByte conteudo = editor.getOverContent(campo.getPagina());
+        if (campo.getTipo() != CampoAssinatura.Tipo.SELFIE) {
+          // A mesma caixa do editor, sem margens ou legenda sobre a marca.
+          double angulo = Math.toRadians(-campo.getRotacao());
+          float c = (float) Math.cos(angulo), s = (float) Math.sin(angulo);
+          float w = campo.getRotacao() % 180 == 0 ? largura : altura;
+          float h = campo.getRotacao() % 180 == 0 ? altura : largura;
+          conteudo.addImage(imagem, w * c, w * s, -h * s, h * c,
+            x + largura / 2 - w * c / 2 + h * s / 2,
+            y + altura / 2 - w * s / 2 - h * c / 2);
+          continue;
+        }
+        imagem.scaleToFit(largura - 6, altura - 18);
+        imagem.setAbsolutePosition(x + (largura - imagem.getScaledWidth()) / 2,
+          y + 14 + (altura - 18 - imagem.getScaledHeight()) / 2);
         conteudo.addImage(imagem);
         conteudo.setColorFill(new java.awt.Color(14, 33, 23));
         conteudo.rectangle(x, y, largura, 13);
@@ -180,12 +189,13 @@ public class ServicoCamposPdf {
 
   public void validar(CampoAssinatura campo, int paginas) {
     if (
+      !java.util.Set.of(0, 90, 180, 270).contains(campo.getRotacao()) ||
       campo.getPagina() < 1 ||
       campo.getPagina() > paginas ||
       !dentro(campo.getPosicaoX(), 0, 1) ||
       !dentro(campo.getPosicaoY(), 0, 1) ||
-      !dentro(campo.getLargura(), campo.preenchivel() ? 0.015 : 0.05, 1) ||
-      !dentro(campo.getAltura(), campo.preenchivel() ? 0.015 : 0.03, 1) ||
+      !dentro(campo.getLargura(), campo.preenchivel() || campo.getRotacao() % 180 != 0 ? 0.015 : 0.05, 1) ||
+      !dentro(campo.getAltura(), campo.preenchivel() || campo.getRotacao() % 180 != 0 ? 0.015 : 0.03, 1) ||
       campo.getPosicaoX() + campo.getLargura() > 1.000001 ||
       campo.getPosicaoY() + campo.getAltura() > 1.000001
     ) {

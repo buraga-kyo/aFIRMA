@@ -874,6 +874,7 @@ function adicionarCampo(x, y) {
     id: crypto.randomUUID(),
     tipo,
     pagina: paginaAtual,
+    rotacao: 0,
     documento: documentoAtual.id,
     posicaoX: Math.max(0, Math.min(1 - largura, x - largura / 2)),
     posicaoY: Math.max(0, Math.min(1 - altura, y - altura / 2)),
@@ -908,11 +909,12 @@ function desenharCampos() {
     )) {
       const caixa = document.createElement("div");
       caixa.className = "campo-posicionado";
+      caixa.dataset.campo = campo.id;
       caixa.dataset.tipo = campo.tipo;
       caixa.tabIndex = 0;
       caixa.setAttribute(
         "aria-label",
-        `${nomeTipos[campo.tipo]} de ${signatario.nome}, página ${campo.pagina}. Use as setas para mover.`,
+        `${nomeTipos[campo.tipo]} de ${signatario.nome}, página ${campo.pagina}, rotação ${campo.rotacao || 0} graus. Use as setas para mover.`,
       );
       caixa.classList.toggle(
         "campo-ativo",
@@ -923,6 +925,7 @@ function desenharCampos() {
       caixa.style.width = `${campo.largura * 100}%`;
       caixa.style.height = `${campo.altura * 100}%`;
       const texto = document.createElement("span");
+      texto.style.transform = `rotate(${campo.rotacao || 0}deg)`;
       texto.textContent = `${nomeTipos[campo.tipo]} · ${signatario.nome.trim() || "Signatário"}`;
       const remover = document.createElement("button");
       remover.type = "button";
@@ -937,7 +940,55 @@ function desenharCampos() {
       const alca = document.createElement("span");
       alca.className = "alca-redimensionar";
       alca.setAttribute("aria-hidden", "true");
-      caixa.append(texto, remover, alca);
+      const controles = document.createElement("div");
+      controles.className = "controles-campo";
+      if (campo.posicaoX > .5) {
+        controles.style.left = "auto";
+        controles.style.right = "0";
+      }
+      for (const [titulo, acao] of [
+        ["Girar 90°", () => {
+          const pagina = camadaCampos.getBoundingClientRect();
+          const largura = campo.altura * pagina.height / pagina.width;
+          const altura = campo.largura * pagina.width / pagina.height;
+          if (largura > 1 || altura > 1)
+            return mostrarErro("Reduza o campo antes de girar para que ele caiba na página.");
+          campo.posicaoX = Math.max(0, Math.min(1 - largura, campo.posicaoX + (campo.largura - largura) / 2));
+          campo.posicaoY = Math.max(0, Math.min(1 - altura, campo.posicaoY + (campo.altura - altura) / 2));
+          campo.largura = largura;
+          campo.altura = altura;
+          campo.rotacao = ((campo.rotacao || 0) + 90) % 360;
+          desenharCampos();
+          camadaCampos.querySelector(`[data-campo="${campo.id}"]`)?.focus({ preventScroll: true });
+        }],
+        ["Duplicar esse campo em todas as páginas", () => {
+          const paginas = Array.from({ length: totalPaginas }, (_, indice) => indice + 1)
+            .filter(pagina => pagina !== campo.pagina && !signatario.campos.some(outro =>
+              outro.documento === campo.documento && outro.pagina === pagina && outro.tipo === campo.tipo &&
+              outro.posicaoX === campo.posicaoX && outro.posicaoY === campo.posicaoY &&
+              outro.largura === campo.largura && outro.altura === campo.altura &&
+              (outro.rotacao || 0) === (campo.rotacao || 0)));
+          const quantidade = paginas.length;
+          const total = signatarios.reduce((soma, pessoa) => soma + pessoa.campos.length, 0);
+          if (total + quantidade > 100)
+            return mostrarErro("A duplicação ultrapassa o limite de 100 campos por assinatura.");
+          for (const pagina of paginas)
+            signatario.campos.push({ ...campo, id: crypto.randomUUID(), pagina });
+          atualizarSignatarios();
+          desenharCampos();
+        }],
+      ]) {
+        if (titulo === "Girar 90°" && !["ASSINATURA", "RUBRICA"].includes(campo.tipo)) continue;
+        const botao = document.createElement("button");
+        botao.type = "button";
+        botao.textContent = titulo;
+        botao.addEventListener("click", (evento) => {
+          evento.stopPropagation();
+          acao();
+        });
+        controles.append(botao);
+      }
+      caixa.append(texto, remover, alca, controles);
       const atualizarGeometria = () => {
         caixa.style.left = `${campo.posicaoX * 100}%`;
         caixa.style.top = `${campo.posicaoY * 100}%`;
@@ -967,7 +1018,7 @@ function desenharCampos() {
         atualizarGeometria();
       });
       caixa.addEventListener("pointerdown", (evento) => {
-        if (evento.target === remover || evento.button !== 0) return;
+        if (evento.target.closest("button") || evento.button !== 0) return;
         evento.preventDefault();
         caixa.focus({
           preventScroll: true,
@@ -1089,6 +1140,7 @@ document
                   fundamentoRepresentacao: pessoa.fundamentoRepresentacao || "",
                   campos: pessoa.campos.map(({ id, documento, ...campo }) => ({
                     ...campo,
+                    rotacao: campo.rotacao || 0,
                     documento: documentos.findIndex(
                       (item) => item.id === documento,
                     ),

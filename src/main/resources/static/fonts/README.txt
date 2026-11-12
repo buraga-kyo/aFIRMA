@@ -6,3 +6,9 @@ https://github.com/google/fonts/tree/main/ofl/archivoblack
 https://github.com/google/fonts/tree/main/ofl/inter
 
 Os arquivos são servidos localmente para que as páginas de assinatura não dependam de requisições a um provedor de fontes externo.
+
+As fontes cursivas Great Vibes e Dancing Script também são distribuídas sob a SIL Open Font License.
+Licenças: LICENSE-great-vibes.txt e LICENSE-dancing-script.txt.
+Origem dos arquivos locais:
+https://github.com/google/fonts/tree/main/ofl/greatvibes
+https://github.com/google/fonts/tree/main/ofl/dancingscript

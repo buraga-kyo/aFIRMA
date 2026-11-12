@@ -107,58 +107,8 @@ async function verificar(resposta) {
   const dados = await resposta.json().catch(() => null);
   throw new Error(dados?.mensagem || `Operação recusada (${resposta.status}).`);
 }
-function prepararDesenho(id) {
-  const tela = document.getElementById(id);
-  const contexto = tela.getContext("2d");
-  contexto.fillStyle = "white";
-  contexto.fillRect(0, 0, tela.width, tela.height);
-  contexto.strokeStyle = "#0E2117";
-  contexto.lineWidth = 4;
-  contexto.lineCap = "round";
-  contexto.lineJoin = "round";
-  desenhos.set(id, false);
-  let desenhando = false;
-  function ponto(evento) {
-    const caixa = tela.getBoundingClientRect();
-    return {
-      x: ((evento.clientX - caixa.left) * tela.width) / caixa.width,
-      y: ((evento.clientY - caixa.top) * tela.height) / caixa.height,
-    };
-  }
-  tela.addEventListener("pointerdown", (evento) => {
-    evento.preventDefault();
-    desenhando = true;
-    tela.setPointerCapture(evento.pointerId);
-    const inicio = ponto(evento);
-    contexto.beginPath();
-    contexto.moveTo(inicio.x, inicio.y);
-    contexto.lineTo(inicio.x + 0.1, inicio.y + 0.1);
-    contexto.stroke();
-    desenhos.set(id, true);
-  });
-  tela.addEventListener("pointermove", (evento) => {
-    if (!desenhando) return;
-    const atual = ponto(evento);
-    contexto.lineTo(atual.x, atual.y);
-    contexto.stroke();
-  });
-  tela.addEventListener("pointerup", () => {
-    desenhando = false;
-  });
-  tela.addEventListener("pointercancel", () => {
-    desenhando = false;
-  });
-}
-for (const id of ["desenho-assinatura", "desenho-rubrica"]) prepararDesenho(id);
-for (const botao of document.querySelectorAll("[data-limpar]")) {
-  botao.addEventListener("click", () => {
-    const id = botao.dataset.limpar;
-    const tela = document.getElementById(id);
-    const contexto = tela.getContext("2d");
-    contexto.fillStyle = "white";
-    contexto.fillRect(0, 0, tela.width, tela.height);
-    desenhos.set(id, false);
-  });
+for (const id of ["desenho-assinatura", "desenho-rubrica"]) {
+  FirmaMarcas.preparar(id, pronta => desenhos.set(id, pronta));
 }
 function blobDesenho(id) {
   return new Promise((resolver) =>
@@ -303,9 +253,9 @@ document
         throw new Error("Confirme leitura e aceite do documento.");
       const tipos = tiposSolicitados();
       if (tipoObrigatorio("ASSINATURA") && !desenhos.get("desenho-assinatura"))
-        throw new Error("Desenhe sua assinatura.");
+        throw new Error("Crie sua assinatura: desenhe, digite ou envie uma imagem.");
       if (tipoObrigatorio("RUBRICA") && !desenhos.get("desenho-rubrica"))
-        throw new Error("Desenhe sua rubrica.");
+        throw new Error("Crie sua rubrica: desenhe, digite ou envie uma imagem.");
       const selfie =
         selfieCapturada || document.getElementById("arquivo-selfie").files[0];
       if (tipoObrigatorio("SELFIE") && !selfie)

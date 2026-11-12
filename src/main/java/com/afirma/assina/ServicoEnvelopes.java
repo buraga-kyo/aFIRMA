@@ -352,6 +352,7 @@ public class ServicoEnvelopes {
           campo.largura(),
           campo.altura()
         );
+        entidade.setRotacao(campo.rotacao());
         try {
           pdfs.validar(entidade, paginas);
         } catch (IllegalArgumentException falha) {
@@ -522,7 +523,8 @@ public class ServicoEnvelopes {
           campo.getId(),
           campo.getNome(),
           campo.isObrigatorio(),
-          campo.getValor()
+          campo.getValor(),
+          campo.getRotacao()
         )
       )
       .toList();
@@ -1624,8 +1626,18 @@ public class ServicoEnvelopes {
     double altura,
     Integer documento,
     String nome,
-    Boolean obrigatorio
+    Boolean obrigatorio,
+    Integer rotacao
   ) {
+    public CampoNovo {
+      rotacao = rotacao == null ? 0 : rotacao;
+    }
+
+    public CampoNovo(CampoAssinatura.Tipo tipo, int pagina, double x, double y,
+      double largura, double altura, Integer documento, String nome, Boolean obrigatorio) {
+      this(tipo, pagina, x, y, largura, altura, documento, nome, obrigatorio, 0);
+    }
+
     public CampoNovo(
       CampoAssinatura.Tipo tipo,
       int pagina,
@@ -1720,7 +1732,8 @@ public class ServicoEnvelopes {
     UUID id,
     String nome,
     boolean obrigatorio,
-    String valor
+    String valor,
+    int rotacao
   ) {
     public CampoResposta(
       CampoAssinatura.Tipo tipo,
@@ -1730,7 +1743,7 @@ public class ServicoEnvelopes {
       double largura,
       double altura
     ) {
-      this(tipo, pagina, x, y, largura, altura, null, "", true, null);
+      this(tipo, pagina, x, y, largura, altura, null, "", true, null, 0);
     }
   }
 
