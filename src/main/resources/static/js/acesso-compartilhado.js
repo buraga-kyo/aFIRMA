@@ -1,5 +1,5 @@
 (() => {
-  const paginaRestrita = ['/preparar-assinaturas', '/assinatura', '/assineai/pagina-assinatura', '/advai'].includes(location.pathname);
+  const paginaRestrita = ['/preparar-assinaturas', '/assinatura', '/assineai/pagina-assinatura', '/assineai/inventor', '/assineai/inventor/configuracao', '/advai'].includes(location.pathname);
   if (paginaRestrita) document.documentElement.style.visibility = 'hidden';
   const chaveArmazenamento = 'afirma-acesso-compartilhado';
   const requisitar = window.fetch.bind(window);
@@ -171,7 +171,7 @@
     const link = evento.target.closest('a[href]');
     if (!link || evento.defaultPrevented || evento.button !== 0 || evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey) return;
     const endereco = new URL(link.href, location.href);
-    if (endereco.origin !== location.origin || !['/preparar-assinaturas', '/assinatura', '/assineai/pagina-assinatura', '/advai'].includes(endereco.pathname)) return;
+    if (endereco.origin !== location.origin || !['/preparar-assinaturas', '/assinatura', '/assineai/pagina-assinatura', '/assineai/inventor', '/assineai/inventor/configuracao', '/advai'].includes(endereco.pathname)) return;
     evento.preventDefault();
     if (link.dataset.abrindoAcesso) return;
     link.dataset.abrindoAcesso = 'true';

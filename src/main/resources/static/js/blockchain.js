@@ -1,6 +1,4 @@
-const botaoModoCertificado = document.getElementById('modo-certificado');
-const botaoModoBlockchain = document.getElementById('modo-blockchain');
-const formularioCertificado = document.getElementById('formulario-assinatura');
+(() => {
 const areaBlockchain = document.getElementById('area-blockchain');
 const entradaPdfBlockchain = document.getElementById('pdf-blockchain');
 const zonaPdfBlockchain = document.getElementById('zona-pdf-blockchain');
@@ -14,8 +12,6 @@ const andamentoBlockchain = document.getElementById('andamento-blockchain');
 const erroBlockchain = document.getElementById('erro-blockchain');
 const resultadoBlockchain = document.getElementById('resultado-blockchain');
 const baixarBlockchain = document.getElementById('baixar-blockchain');
-const resultadoCertificado = document.getElementById('resultado');
-const erroCertificado = document.getElementById('erro');
 const chavePendente = 'afirmaAssinaturaPendente';
 const destinoRegistro = '0x000000000000000000000000000000000000dEaD';
 let provedorCarteira = null;
@@ -23,17 +19,9 @@ let carteiraConectada = null;
 let enderecoPdfBlockchain = null;
 let operacaoInterrompida = false;
 
-function escolherModo(blockchain) {
-  botaoModoCertificado.setAttribute('aria-pressed', String(!blockchain));
-  botaoModoBlockchain.setAttribute('aria-pressed', String(blockchain));
-  formularioCertificado.hidden = blockchain;
-  areaBlockchain.hidden = !blockchain;
-  resultadoCertificado.hidden = true;
-  erroCertificado.hidden = true;
+function escolherModo() {
+  document.querySelector('[data-inventor="ethereum"]')?.click();
 }
-
-botaoModoCertificado.addEventListener('click', () => escolherModo(false));
-botaoModoBlockchain.addEventListener('click', () => escolherModo(true));
 
 function limparResultadoBlockchain() {
   resultadoBlockchain.hidden = true;
@@ -194,11 +182,11 @@ assinarBlockchain.addEventListener('click', async () => {
   try {
     const dados = new FormData();
     dados.append('pdf', arquivo);
-    adicionarPersonalizacao(dados);
+    dados.append('paginaPersonalizada', 'true');
     const carteira = await conectarMetaMask();
     andamentoBlockchain.textContent = 'Preparando PDF...';
     dados.append('carteira', carteira);
-    const tokenFirma = document.getElementById('token').value.trim() || localStorage.getItem('assineai-token') || '';
+    const tokenFirma = (document.getElementById('token')?.value || '').trim() || localStorage.getItem('assineai-token') || '';
     if (!tokenFirma) throw new Error('Entre na conta da empresa para usar a página de assinatura padrão.');
     const resposta = await fetch('/api/assineai/blockchain/preparar', { method: 'POST', headers: {Authorization: `Bearer ${tokenFirma}`}, body: dados, cache: 'no-store' });
     if (!resposta.ok) throw new Error(await mensagemResposta(resposta));
@@ -280,3 +268,5 @@ if (assinaturaPendente?.identificador && assinaturaPendente?.assinatura && assin
 window.addEventListener('pagehide', () => {
   if (enderecoPdfBlockchain) URL.revokeObjectURL(enderecoPdfBlockchain);
 });
+
+})();

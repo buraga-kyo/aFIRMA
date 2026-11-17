@@ -13,3 +13,6 @@ legado
 design
 Arquivos
 docs
+
+**/.venv
+**/__pycache__

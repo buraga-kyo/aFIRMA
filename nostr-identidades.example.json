@@ -1,0 +1,12 @@
+{
+  "identidades": [
+    {
+      "empresaId": 1,
+      "referencia": "firma-principal",
+      "chavePublica": "CHAVE_PUBLICA_HEXADECIMAL_DO_PERFIL_DA_EMPRESA",
+      "chaveCliente": "",
+      "bunker": "bunker://ENDERECO_FORNECIDO_PELO_ASSINADOR_REMOTO",
+      "relays": ["wss://SEU_RELAY_PUBLICO_1", "wss://SEU_RELAY_PUBLICO_2"]
+    }
+  ]
+}

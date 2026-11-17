@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer">
+  <title>Conexões | O Inventor | aFIRMA</title>
+  <script src="/js/acesso-compartilhado.js"></script>
+  <link rel="stylesheet" href="/css/assinatura.css"><link rel="stylesheet" href="/css/inventor.css">
+  <script src="/js/inventor-configuracao.js" defer></script>
+<link rel="stylesheet" href="/css/documentos-assinatura.css"><link rel="stylesheet" href="/css/trator-firma.css">
+</head>
+<body class="sistema-trator trator-inventor">
+
+<section th:fragment="conteudo" class="inventor-conteudo">
+
+<section class="apresentacao inventor-abertura"><div class="apresentacao-texto"><span class="sobretitulo">O INVENTOR / CONEXÕES DA EMPRESA</span><h1>AS <span>CONEXÕES.</span></h1><p>Configure o perfil que publica as provas e o nó que confere a anterioridade.</p></div></section>
+<section class="area-trabalho" aria-label="Configuração blockchain">
+  <div class="cabecalho-area"><span>O INVENTOR / CONFIGURAÇÕES</span><a href="/assineai/inventor">VOLTAR À BANCADA ↗</a></div>
+  <div class="etapa"><p id="conexoes-estado" role="status" aria-live="polite">Carregando o acesso de administrador.</p><p>As configurações são exclusivas desta empresa e entram em uso ao salvar. Credenciais ficam protegidas no servidor e não são exibidas novamente.</p><button type="button" class="botao-carteira" id="conexoes-atualizar">ATUALIZAR CONFIGURAÇÕES</button></div>
+  <form class="etapa" id="conexao-nostr" autocomplete="off">
+    <h2>01 / ASSINADOR NOSTR</h2><p>A chave principal do perfil fica no seu assinador remoto. Informe a chave pública e o endereço de conexão fornecido por ele. Não informe uma nsec ou frase de recuperação.</p>
+    <fieldset class="inventor-config-campos" disabled>
+      <label for="conexao-referencia">NOME DA CONEXÃO</label><input id="conexao-referencia" maxlength="80" pattern="[a-zA-Z0-9_-]{1,80}" value="firma-principal" required placeholder="firma-principal">
+      <label for="conexao-publica">CHAVE PÚBLICA DO PERFIL (HEXADECIMAL)</label><input id="conexao-publica" required maxlength="64" pattern="[a-fA-F0-9]{64}" spellcheck="false" placeholder="64 caracteres hexadecimais">
+      <label for="conexao-bunker">CONEXÃO DO ASSINADOR REMOTO</label><input type="password" id="conexao-bunker" maxlength="4096" autocomplete="new-password" spellcheck="false" placeholder="bunker://…"><small id="conexao-bunker-ajuda">Cole o endereço bunker completo, incluindo o relay de conexão.</small>
+      <label for="conexao-relays">RELAYS DE PUBLICAÇÃO</label><textarea id="conexao-relays" rows="4" required maxlength="5000" spellcheck="false" placeholder="wss://relay1.exemplo.com&#10;wss://relay2.exemplo.com"></textarea><small>De dois a cinco endereços públicos wss, um por linha. Estes são os relays onde os comprovantes serão publicados.</small>
+      <button type="submit" class="inventor-acao">SALVAR CONEXÃO NOSTR ↗</button>
+      <p id="conexao-cliente" class="inventor-resumo"></p><button type="button" class="botao-carteira" id="conexao-cliente-copiar" hidden>COPIAR CHAVE PÚBLICA DO CLIENTE</button><button type="button" class="botao-carteira" id="conexao-nostr-testar">CONFERIR ASSINADOR</button>
+    </fieldset>
+    <p id="conexao-nostr-estado" role="status" aria-live="polite"></p>
+  </form>
+  <div class="etapa"><h2>02 / PERFIL E PUBLICAÇÃO</h2><p>Depois de salvar, autorize a chave pública do cliente exibida acima no seu assinador remoto, com permissão para perfil e publicações (kinds 0 e 1). Confira a conexão e configure o nome, a descrição e a autorização de publicação da empresa.</p><p>Salvar alterações na conexão Nostr pausa as publicações. A autorização precisa ser conferida novamente antes de retomá-las.</p><a class="botao-carteira" href="/firma#cadastro-nostr-empresa">CONFIGURAR PERFIL E AUTORIZAR PUBLICAÇÕES ↗</a></div>
+  <form class="etapa" id="conexao-bitcoin" autocomplete="off">
+    <h2>03 / BITCOIN CORE</h2><p>Este nó consulta a rede Bitcoin e confere os carimbos OpenTimestamps. Não precisa de carteira, saldo ou chave privada. Sem ele, a prova fica aguardando verificação.</p>
+    <fieldset class="inventor-config-campos" disabled>
+      <label for="conexao-rpc">ENDEREÇO RPC</label><input type="url" id="conexao-rpc" required maxlength="2048" placeholder="https://bitcoin.suaempresa.com"><small>Use HTTPS. HTTP local é aceito apenas no endereço previamente liberado na instalação.</small>
+      <label for="conexao-rpc-usuario">USUÁRIO RPC</label><input id="conexao-rpc-usuario" maxlength="256" autocomplete="off">
+      <label for="conexao-rpc-senha">SENHA RPC</label><input type="password" id="conexao-rpc-senha" maxlength="1024" autocomplete="new-password"><small id="conexao-senha-ajuda">A senha não será exibida depois de salva.</small>
+      <button type="submit" class="inventor-acao">SALVAR BITCOIN CORE ↗</button><button type="button" class="botao-carteira" id="conexao-bitcoin-testar">TESTAR BITCOIN CORE</button><button type="button" class="botao-carteira" id="conexao-bitcoin-remover">REMOVER CONFIGURAÇÃO DESTA EMPRESA</button>
+    </fieldset>
+    <p id="conexao-bitcoin-estado" role="status" aria-live="polite"></p>
+  </form>
+  <div class="etapa"><h2>PROTEÇÃO DAS CREDENCIAIS</h2><p>O bunker e a senha RPC são campos de gravação: deixe em branco ao editar para manter o valor salvo. A chave de comunicação Nostr é gerada pela FIRMA e sua parte privada não sai do servidor. O cadastro da conexão não autoriza publicações automaticamente.</p><p>A proteção usa o cofre de evidências já configurado na instalação. A chave mestra desse cofre e as permissões de rede continuam sob responsabilidade da instalação, fora deste formulário.</p></div>
+</section>
+</section>
+</body>
+</html>
