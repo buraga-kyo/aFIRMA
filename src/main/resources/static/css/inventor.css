@@ -1,0 +1,38 @@
+.inventor-navegacao { display: flex; gap: 8px; padding: 12px max(20px, calc((100vw - 1200px) / 2)); overflow-x: auto; border-bottom: 2px solid var(--border); }
+.inventor-navegacao a { flex: none; }
+.inventor-navegacao [aria-current="page"] { background: var(--primary); color: var(--background); }
+.area-trabalho input:not([type="checkbox"]) { box-sizing: border-box; max-width: 100%; width: 100%; padding: 12px; border: 2px solid var(--border); background: var(--background); color: var(--foreground); font: inherit; }
+.area-trabalho label:not(.escolha-pagina):not(.zona-arquivo) { display: block; margin: 16px 0 8px; font-weight: 800; font-size: 12px; }
+.inventor-resumo { overflow-wrap: anywhere; white-space: pre-wrap; }
+.inventor-resultado { padding: 20px; border: 2px solid var(--primary); margin-top: 20px; }
+.inventor-resultado .botao-carteira { display: inline-block; margin: 8px 8px 0 0; }
+.inventor-erro { color: #ffb5b5; }
+#area-nostr button, #inventor-ethereum button { max-width: 100%; margin: 8px 0; }
+@media (max-width: 600px) { .cabecalho-area { flex-wrap: wrap; gap: 12px; } .modos-assinatura { flex-wrap: wrap; } }
+.inventor-navegacao .trator-aba { padding: 12px 16px; border: 2px solid var(--border); font-size: 13px; font-weight: 800; text-decoration: none; }
+.inventor-navegacao .trator-aba:hover { border-color: var(--primary); }
+.area-trabalho p { overflow-wrap: anywhere; }
+.area-trabalho, .apresentacao-texto { min-width: 0; }
+
+.inventor-acao { min-height: 48px; padding: 12px 18px; border: 2px solid var(--primary); background: var(--primary); color: var(--background); font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 3px 3px 0 var(--accent); }
+.inventor-acao:disabled { opacity: .55; cursor: wait; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+
+.inventor-config-campos { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 12px; }
+.inventor-config-campos small { color: var(--foreground); opacity: .8; line-height: 1.5; }
+.inventor-config-campos textarea { width: 100%; box-sizing: border-box; resize: vertical; font: inherit; padding: 12px; border: 2px solid var(--border); background: var(--background); color: var(--foreground); }
+.inventor-config-campos:disabled { opacity: .6; }
+
+/* O conteúdo ocupa o painel do trator; a barra e o acesso continuam sendo os da lista. */
+#pagina-documentos.com-inventor .tabela-scroll,
+#pagina-documentos.com-inventor .tabela-estado,
+#pagina-documentos.com-inventor .chips-filtros { display:none; }
+#pagina-documentos.com-inventor .inventor-conteudo { padding:24px; min-width:0; }
+#pagina-documentos.com-inventor .apresentacao { display:block; min-height:0; padding:12px 0 24px; }
+#pagina-documentos.com-inventor .apresentacao h1 { font-size:clamp(28px,4vw,48px); line-height:1.1; margin:12px 0; }
+#pagina-documentos.com-inventor .apresentacao p { max-width:760px; }
+#pagina-documentos.com-inventor .area-trabalho { margin:0; max-width:none; box-shadow:none; }
+#pagina-documentos.com-inventor #exportar-dados,
+#pagina-documentos.com-inventor #importar-dados,
+#pagina-documentos.com-inventor .origem-rodape { display:none; }
+@media(max-width:700px) { #pagina-documentos.com-inventor .inventor-conteudo { padding:12px; } }

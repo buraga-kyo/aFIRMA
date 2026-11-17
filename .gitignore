@@ -50,3 +50,6 @@ chat-arquivos/
 /artifacts/
 
 /docs/
+
+# Dependências da biblioteca Nostr local
+scripts/nostr/node_modules/

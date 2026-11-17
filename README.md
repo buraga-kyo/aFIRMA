@@ -186,3 +186,5 @@ curl -f 'http://localhost:8080/api/pdfs/assinar' \
 ## Revisão da assinatura digital
 
 A revisão de assinatura foi integrada à versão atual do GitHub. O trator, os lotes, o editor e os modelos da empresa permanecem como base. Consulte o [passo a passo](docs/como-usar-assinatura.md) e a [documentação da assinatura](docs/assinatura-digital.md). As credenciais de envio e a senha do certificado ficam exclusivamente no `.env`.
+
+Configuração das publicações Nostr e das provas de anterioridade: [NOSTR.md](NOSTR.md).

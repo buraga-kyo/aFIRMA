@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="referrer" content="no-referrer">
+  <title>O Inventor | aFIRMA</title>
+  <script src="/js/acesso-compartilhado.js"></script>
+  <link rel="stylesheet" href="/css/assinatura.css"><link rel="stylesheet" href="/css/inventor.css">
+  <script src="/js/vendor/nostr.js" defer></script><script src="/js/inventor.js" defer></script><script src="/js/blockchain.js" defer></script>
+<link rel="stylesheet" href="/css/documentos-assinatura.css"><link rel="stylesheet" href="/css/trator-firma.css">
+</head>
+<body class="sistema-trator trator-inventor">
+
+<section th:fragment="conteudo" class="inventor-conteudo">
+
+<section class="apresentacao inventor-abertura"><div class="apresentacao-texto"><span class="sobretitulo">experimentos em serie</span><h1>O <span>INVENTOR.</span></h1><p>tentando aprender oque não sei nesse breve momento que ainda estou aqui</p></div></section>
+<p><a class="botao-carteira" href="/assineai/inventor/configuracao">NOSTR ↗</a></p>
+<section class="area-trabalho" aria-label="Provas de documentos">
+  <div class="cabecalho-area"><span>caralho</span><a href="/assinatura">ASSINAR COM CERTIFICADO ↗</a></div>
+  <div class="modos-assinatura" role="group" aria-label="Experimento">
+    <button type="button" data-inventor="nostr" aria-pressed="true">NOSTR</button>
+    <button type="button" data-inventor="ethereum" aria-pressed="false">ETHEREUM</button>
+  </div>
+  <section id="area-nostr" aria-label="Assinatura com Nostr">
+    <div class="etapa"><h2>ACEITE COM NOSTR</h2><p>Assine o aceite do PDF com uma extensão Nostr compatível. O PDF permanece neste navegador. Quando a publicação automática da empresa está ativa, a prova do aceite é enviada à FIRMA e um compromisso criptográfico é publicado pelo perfil da empresa, sem expor o PDF ou os dados do participante.</p>
+      <label for="nostr-pdf">DOCUMENTO PDF (ATÉ 20 MB)</label><input type="file" id="nostr-pdf" accept=".pdf,application/pdf">
+      <label for="nostr-papel">SEU PAPEL NO DOCUMENTO</label><input type="text" id="nostr-papel" value="Signatário" maxlength="80">
+      <p id="nostr-documento" role="status" class="inventor-resumo">Escolha o PDF que deseja assinar.</p>
+      <p id="nostr-chave" class="inventor-resumo">Conecte sua chave pública Nostr.</p>
+      <button type="button" class="botao-carteira" id="nostr-conectar">CONECTAR NOSTR</button>
+      <label class="escolha-pagina"><input type="checkbox" id="nostr-aceite">Li este PDF e concordo com o seu conteúdo. Autorizo registrar meu aceite com esta chave Nostr e com o papel informado.</label>
+      <button type="button" class="inventor-acao" id="nostr-assinar">ASSINAR ACEITE E GERAR PROVA ↗</button>
+      <p id="nostr-estado" role="status" aria-live="polite"></p>
+      <div id="nostr-resultado" class="inventor-resultado" hidden><h3>PROVA CRIADA E CONFERIDA</h3><p>Guarde os dois arquivos juntos. A prova é separada do PDF, que permanece com os mesmos bytes. A chave pública identifica quem assinou; o nome civil e os poderes de representação não são confirmados por este experimento.</p>
+        <a id="nostr-baixar-prova" class="botao-carteira">BAIXAR PROVA JSON ↗</a><a id="nostr-baixar-pdf" class="botao-carteira">BAIXAR PDF ORIGINAL ↗</a>
+      </div>
+    </div>
+    <div class="etapa" id="nostr-publicacoes"><h2>PUBLICAÇÕES DA FIRMA E ANTERIORIDADE</h2><p id="nostr-publicacao-config" role="status">Consultando o perfil Nostr da empresa.</p><a class="botao-carteira" href="/firma#cadastro-nostr-empresa">CADASTRAR PERFIL DA FIRMA ↗</a><button class="botao-carteira" type="button" id="nostr-publicacoes-atualizar">ATUALIZAR PUBLICAÇÕES</button><button class="botao-carteira" type="button" id="nostr-publicacao-reenviar" hidden>REENVIAR PROVA PARA PUBLICAÇÃO</button><p id="nostr-publicacao-estado" role="status" aria-live="polite"></p><div id="nostr-publicacoes-lista"></div></div>
+    <div class="etapa"><h2>CONFERIR UMA PROVA NOSTR</h2><p>Escolha o PDF original e a prova JSON. A conferência funciona sem consultar relays. A data do evento é declarada pelo assinante e não é um carimbo de tempo independente.</p>
+      <label for="nostr-verificar-pdf">PDF ORIGINAL</label><input id="nostr-verificar-pdf" type="file" accept=".pdf,application/pdf">
+      <label for="nostr-verificar-prova">PROVA OU PACOTE PRIVADO JSON</label><input id="nostr-verificar-prova" type="file" accept=".json,application/json">
+      <label for="nostr-chave-esperada">CHAVE PÚBLICA ESPERADA (OPCIONAL, HEXADECIMAL)</label><input id="nostr-chave-esperada" type="text" maxlength="64" spellcheck="false" autocomplete="off" placeholder="64 caracteres hexadecimais">
+      <label for="nostr-chave-firma-esperada">CHAVE PÚBLICA ESPERADA DA FIRMA (OPCIONAL)</label><input id="nostr-chave-firma-esperada" type="text" maxlength="64" spellcheck="false" autocomplete="off">
+      <button class="inventor-acao" id="nostr-verificar" type="button">CONFERIR ASSINATURA E PDF ↗</button><p id="nostr-verificacao" role="status" aria-live="polite" class="inventor-resumo"></p>
+    </div>
+  </section>
+  <section id="inventor-ethereum" aria-label="Experimento Ethereum" hidden>
+    <div class="etapa"><h2>ETHEREUM SEPOLIA</h2><p>O fluxo existente assina uma declaração EIP-712 e registra uma transação na rede Sepolia. A rede exige saldo para taxas. Nostr permite comparar o aceite sem essa etapa.</p><p id="ethereum-politica" role="status">Consultando disponibilidade das operações Ethereum.</p></div>
+        <section
+          aria-label="Assinatura com carteira"
+          hidden=""
+          id="area-blockchain"
+        >
+          <div class="etapa">
+            <div class="etapa-titulo">
+              <span class="numero">01</span>
+              <div>
+                <h2>SEU DOCUMENTO</h2>
+                <p>Escolha um PDF de até 20 MB.</p>
+              </div>
+            </div>
+            <label
+              class="zona-arquivo"
+              for="pdf-blockchain"
+              id="zona-pdf-blockchain"
+            >
+              <span aria-hidden="true" class="icone-arquivo">↥</span>
+              <strong id="nome-pdf-blockchain"
+                >Clique para escolher seu PDF</strong
+              >
+              <span>Ou arraste o arquivo para cá</span>
+              <input
+                accept=".pdf,application/pdf"
+                id="pdf-blockchain"
+                type="file"
+              />
+            </label>
+            <div class="arquivo-acoes">
+              <button
+                class="botao-remover"
+                hidden=""
+                id="remover-pdf-blockchain"
+                type="button"
+              >
+                REMOVER PDF</button
+              ><span
+                aria-live="polite"
+                data-firma-mensagem=""
+                id="estado-pdf-blockchain"
+                role="status"
+              ></span>
+            </div>
+          </div>
+          <div class="etapa">
+            <div class="etapa-titulo">
+              <span class="numero">02</span>
+              <div>
+                <h2>SUA CARTEIRA</h2>
+                <p>Conecte MetaMask na rede Ethereum Sepolia.</p>
+              </div>
+            </div>
+            <button class="botao-carteira" id="conectar-carteira" type="button">
+              CONECTAR METAMASK
+            </button>
+            <p
+              aria-live="polite"
+              class="nota-seguranca"
+              id="estado-carteira"
+              role="status"
+            >
+              Nenhuma carteira conectada.
+            </p>
+          </div>
+          <div class="rodape-formulario">
+            <p>Assinatura EIP-712 com registro de transação na Sepolia. Requer saldo para a taxa da rede.</p>
+            <button id="assinar-blockchain" type="button">
+              ASSINAR COM CARTEIRA ↗
+            </button>
+          </div>
+          <p
+            aria-live="polite"
+            class="andamento-blockchain"
+            data-firma-mensagem=""
+            id="andamento-blockchain"
+            role="status"
+          ></p>
+          <div class="resultado" hidden="" id="resultado-blockchain">
+            <div aria-hidden="true" class="resultado-icone">✓</div>
+            <div>
+              <h2>DOCUMENTO PRONTO</h2>
+              <p>Prova da carteira incluída no PDF.</p>
+            </div>
+            <a
+              class="botao-baixar"
+              download="documento-blockchain.pdf"
+              id="baixar-blockchain"
+              >BAIXAR PDF ↗</a
+            >
+          </div>
+          <div
+            class="erro"
+            data-firma-mensagem=""
+            hidden=""
+            id="erro-blockchain"
+            role="alert"
+          ></div>
+        </section>
+    <div class="etapa"><h2>CONFERIR PDF COM PROVA ETHEREUM</h2><label for="ethereum-verificar-pdf">PDF COM COMPROVANTE</label><input type="file" id="ethereum-verificar-pdf" accept=".pdf,application/pdf"><button type="button" class="inventor-acao" id="ethereum-verificar">CONFERIR PROVA ↗</button><p id="ethereum-verificacao" role="status" class="inventor-resumo"></p></div>
+  </section>
+</section>
+</section><footer><span>aFIRMA</span><span>O INVENTOR</span></footer>
+</body></html>

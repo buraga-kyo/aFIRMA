@@ -1,5 +1,7 @@
 (() => {
   const porId = id => document.getElementById(id);
+  const painelInventor = porId('painel-inventor-trator');
+  if (painelInventor) porId('pagina-documentos').classList.add('com-inventor');
   function aviso(mensagemAtual, erro = false) {
     const caixa = porId('lista-toast');
     if (caixa) {
@@ -177,6 +179,7 @@
     }
   }
   async function conectar() {
+    if (painelInventor) { aviso(''); return; }
     const token = porId('lista-token').value.trim();
     if (!token) {
       aviso('Conecte pelo rodapé para carregar as assinaturas.', true);
@@ -213,6 +216,7 @@
   const tabela = window.FirmaTrator.montar({
     elemento: '#tabela-montagem',
     rotulo: 'Documentos para assinatura',
+    recursos: painelInventor ? {buscaIA:false,selecionarColunas:false,paginacao:false,persistencia:false} : {},
     slots: {
       abasFinais: porId('tabela-telas').content.cloneNode(true),
       comandos: porId('tabela-comandos').content.cloneNode(true),
@@ -239,6 +243,10 @@
     credenciais: obterCredenciais,
     toast: aviso,
     onRender: instancia => {
+      if (painelInventor) {
+        const painel = instancia.raiz.querySelector('.tabela-painel');
+        if (painelInventor.parentElement !== painel) painel.prepend(painelInventor);
+      }
       const carregando = instancia.getEstado().carregando;
       if (carregando && !carregandoRegistros) {
         const caixa = porId('lista-toast');
@@ -437,7 +445,7 @@
   const avisoInicial = porId('lista-toast');
   avisoInicial.dataset.firmaTipo = 'info';
   avisoInicial.textContent = 'Conecte o token no rodapé para carregar os registros.';
-  avisoInicial.hidden = false;
+  avisoInicial.hidden = !!painelInventor;
 
   // Ao voltar da preparação pelo histórico do navegador, consulta os registros novamente.
   window.addEventListener('pageshow', evento => {

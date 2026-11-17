@@ -66,6 +66,7 @@ public class SegurancaApi {
             "/assinatura",
             "/assineai/trator",
             "/assineai/pagina-assinatura",
+            "/assineai/inventor", "/assineai/inventor/configuracao",
             "/assinatura/documentos",
             "/preparar-assinaturas",
             "/convite/**",

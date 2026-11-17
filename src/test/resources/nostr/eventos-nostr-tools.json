@@ -1,0 +1,58 @@
+[
+  {
+    "kind": 1,
+    "created_at": 1700000000,
+    "tags": [
+      [
+        "p",
+        "publicação"
+      ]
+    ],
+    "content": "João assinou: 😀",
+    "pubkey": "1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+    "id": "c3e42244e13f9bfcbd39ca9bc59dc33d14442201ca6815df8011b5d858fd92ce",
+    "sig": "155129ddf53e9e0d2aa89cf2b6167ea32b7702062116acd3c04ec664676f3cdd6aa85c85de058298c502601a6871742f42673c61c20bcbbff1014f7f588d4067"
+  },
+  {
+    "kind": 1,
+    "created_at": 1700000000,
+    "tags": [
+      [
+        "p",
+        "publicação"
+      ]
+    ],
+    "content": "controle\u000b\u001f\b\f\n\r\t",
+    "pubkey": "1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+    "id": "a6c89f3c9b30b6c089c7e6c162e38ea1cdf7f30ce5d5b0cd635128e9b08cde5f",
+    "sig": "d28d426ee239e9216f63dd2f387db1fe9da14a2618c9b75c3a5316df105cc137891c36e21c3bb203831138c4f3973363fa6bd371b12391d9200cc5e4a01fa915"
+  },
+  {
+    "kind": 1,
+    "created_at": 1700000000,
+    "tags": [
+      [
+        "p",
+        "publicação"
+      ]
+    ],
+    "content": "separadores  ",
+    "pubkey": "1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+    "id": "ed4a21714f21726a29a2efc67c12abb1435d3b4618e2b8a925c299b0ee709aa5",
+    "sig": "8f50fa6caa0f0e361ea001cf6e9e1bb3fb32dd480d2c3a0213b7e26ae2fba66fbe8038b2fdcbc991be909ddd9c3278a0c5d88df6cd09dc1111b17b6bfd9e0bfe"
+  },
+  {
+    "kind": 1,
+    "created_at": 1700000000,
+    "tags": [
+      [
+        "p",
+        "publicação"
+      ]
+    ],
+    "content": "isolado\ud800fim",
+    "pubkey": "1b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f",
+    "id": "a5ad698304cdb114ffd04cde3fe8334dd74d87c7269bd30f55a39e662a71a619",
+    "sig": "559652319e8de95f9b6b9d89d3f00c59828c0f16377ccdfcb648bf8b14edd9e8ea978d699ccf49e04e709a0755c6d2440fa174d057d8ae4a4ad1fa1f78fea341"
+  }
+]

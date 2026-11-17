@@ -17,6 +17,15 @@ public class ControlePaginaAssinatura {
     return "pagina-assinatura";
   }
 
+  @GetMapping("/assineai/inventor")
+  public String inventor(Model modeloPagina) {
+    modeloPagina.addAttribute("telaTrator", "inventor");
+    return "documentos-assinatura";
+  }
+
+  @GetMapping("/assineai/inventor/configuracao")
+  public String configurarInventor(Model modeloPagina) { modeloPagina.addAttribute("telaTrator", "conexoes"); return "documentos-assinatura"; }
+
   @GetMapping("/assinatura")
   public String assinatura() {
     return "assinatura";

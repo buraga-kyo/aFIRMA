@@ -3,32 +3,40 @@
 <head><script src="/js/acesso-compartilhado.js"></script><link rel="stylesheet" href="/css/mensagens-firma.css"><script src="/js/mensagens-firma.js" defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Documentos · AssineAi</title>
+  <title th:text="${telaTrator == 'inventor'} ? 'O Inventor · Trator do AssineAI' : (${telaTrator == 'conexoes'} ? 'Conexões do Inventor · Trator do AssineAI' : 'Documentos · AssineAi')">Documentos · AssineAi</title>
   <link rel="stylesheet" href="/css/assinatura.css">
   <link rel="stylesheet" href="/css/tabela-core.css">
   <link rel="stylesheet" href="/css/documentos-assinatura.css">
   <script src="/js/tabela-core.js" defer></script><script src="/js/trator-firma.js" defer></script>
   <script src="/js/coleta-dados-assinatura.js" defer></script><script src="/js/documentos-assinatura.js" defer></script>
   <link rel="stylesheet" href="/css/trator-firma.css">
+<link th:if="${telaTrator != null and telaTrator != 'documentos'}" rel="stylesheet" href="/css/inventor.css">
+  <th:block th:if="${telaTrator == 'inventor'}"><script src="/js/vendor/nostr.js" defer></script><script src="/js/inventor.js" defer></script><script src="/js/blockchain.js" defer></script></th:block>
+  <script th:if="${telaTrator == 'conexoes'}" src="/js/inventor-configuracao.js" defer></script>
 </head>
 <body class="sistema-trator" th:attr="data-token-teste=${tokenTeste},data-chave-teste=${chaveTeste}">
 
 <main id="pagina-documentos" class="lista-documentos" data-largura="total">
   <div id="tabela-montagem"></div>
+  <section th:if="${telaTrator == 'inventor' or telaTrator == 'conexoes'}" id="painel-inventor-trator" aria-label="O Inventor">
+    <th:block th:if="${telaTrator == 'inventor'}" th:insert="~{inventor :: conteudo}"></th:block>
+    <th:block th:if="${telaTrator == 'conexoes'}" th:insert="~{inventor-configuracao :: conteudo}"></th:block>
+  </section>
   <template id="tabela-comandos">
     <nav class="trator-firma" aria-label="Módulos do Trator da Firma">
-  <a class="trator-aba trator-marca" href="/firma" aria-label="aFIRMA, perfil da empresa">aFIRMA<span>.</span></a>
-  <a class="trator-aba" href="/assineai/trator" aria-current="page">AssineAI</a>
-  <a class="trator-aba" href="/chat">Zapiou</a>
-  <a class="trator-aba" href="/advai">ADVai</a>
-</nav>
+      <a class="trator-aba trator-marca" href="/firma" aria-label="aFIRMA, perfil da empresa">aFIRMA<span>.</span></a>
+      <a class="trator-aba" href="/assineai/trator" aria-current="page">AssineAI</a>
+      <a class="trator-aba" href="/chat">Zapiou</a>
+      <a class="trator-aba" href="/advai">ADVai</a>
+    </nav>
     <a class="acao primaria" href="/preparar-assinaturas">+ Assinatura</a>
     <button id="exportar-dados" type="button">↑ EXPORTAR</button>
     <button id="importar-dados" type="button">↓ IMPORTAR</button>
   </template>
-  <template id="tabela-telas"><a class="trator-aba" href="/assineai/pagina-assinatura">A Gráfica</a></template>
+
+  <template id="tabela-telas"><a class="trator-aba" href="/assineai/pagina-assinatura">A Gráfica</a><a class="trator-aba" href="/assineai/inventor" th:attr="aria-current=${telaTrator == 'inventor' or telaTrator == 'conexoes'} ? 'page' : null">O Inventor</a></template>
   <template id="tabela-rodape">
-    <h1 class="titulo-trator">TRATOR DE <em>ASSINATURA.</em></h1>
+    <h1 class="titulo-trator">TRATOR DE <em th:text="${telaTrator == 'inventor' or telaTrator == 'conexoes'} ? 'ASSINATURA / O INVENTOR.' : 'ASSINATURA.'">ASSINATURA.</em></h1>
     <button id="alternar-largura" type="button" class="acao">▤ TELA INTEIRA</button>
   </template>
   <div id="lista-toast" class="lista-toast" role="alert" hidden data-firma-mensagem></div>

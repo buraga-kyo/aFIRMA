@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "scripts": { "build": "esbuild entrada.js --bundle --minify --format=iife --global-name=FirmaNostrCrypto --legal-comments=eof --outfile=../../src/main/resources/static/js/vendor/nostr.js" },
+  "devDependencies": { "esbuild": "0.28.2", "nostr-tools": "2.26.0" }
+}

@@ -15,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class FiltroCabecalhosAssinatura extends OncePerRequestFilter {
 	@Override protected boolean shouldNotFilter(HttpServletRequest requisicao) {
 		String caminho = requisicao.getServletPath();
-		return !(caminho.equals("/assinatura") || caminho.equals("/preparar-assinaturas") || caminho.startsWith("/convite/") || caminho.startsWith("/assineai/convite/") || caminho.startsWith("/web-panels/assinar-documentos/"));
+		return !(caminho.equals("/assinatura") || caminho.equals("/assineai/inventor") || caminho.equals("/assineai/inventor/configuracao") || caminho.equals("/preparar-assinaturas") || caminho.startsWith("/convite/") || caminho.startsWith("/assineai/convite/") || caminho.startsWith("/web-panels/assinar-documentos/"));
 	}
 	@Override protected void doFilterInternal(HttpServletRequest requisicao, HttpServletResponse resposta, FilterChain cadeia)
 			throws ServletException, IOException {

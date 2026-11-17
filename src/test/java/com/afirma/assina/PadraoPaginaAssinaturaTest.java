@@ -36,7 +36,9 @@ class PadraoPaginaAssinaturaTest {
     pedido.setRequestURI("/api/assineai/blockchain/preparar");
     when(paginas.daRequisicao(pedido)).thenReturn(new PaginaAssinaturaEmpresa.Configuracao("Firma", modelo));
     var pdf = new MockMultipartFile("pdf", new byte[]{1});
-    new ControleAssinaturaBlockchain(servico, paginas).preparar(pdf, "carteira", false, "outro nome", null, "avulso", pedido);
+    var controle = new ControleAssinaturaBlockchain(servico, paginas);
+    org.springframework.test.util.ReflectionTestUtils.setField(controle, "habilitada", true);
+    controle.preparar(pdf, "carteira", false, "outro nome", null, "avulso", pedido);
     verify(servico).preparar(pdf, "carteira", true, "Firma", null, modelo);
   }
 }
