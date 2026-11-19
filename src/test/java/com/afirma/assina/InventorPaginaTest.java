@@ -46,7 +46,7 @@ class InventorPaginaTest {
     var resposta = new MockHttpServletResponse();
     var cadeia = mock(FilterChain.class);
     new FiltroPaginaComAcesso(acessos).doFilter(pedido(), resposta, cadeia);
-    assertEquals("/assineai/trator?acesso=necessario", resposta.getRedirectedUrl());
+    assertEquals("/afirma/trator?acesso=necessario", resposta.getRedirectedUrl());
     verifyNoInteractions(cadeia);
   }
 

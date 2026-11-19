@@ -64,6 +64,7 @@ public class SegurancaApi {
             HttpMethod.GET,
             "/",
             "/assinatura",
+            "/afirma/trator",
             "/assineai/trator",
             "/assineai/pagina-assinatura",
             "/assineai/inventor", "/assineai/inventor/configuracao",

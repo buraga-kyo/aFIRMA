@@ -151,7 +151,7 @@ afirma-teste-local-2026-chave-api-exclusiva
 ```
 ### Conexão compartilhada
 
-Abra `/assineai/trator` e use **Conectar** ou **Credenciais de teste** no rodapé. O acesso é reaproveitado nas outras telas e expira em 30 minutos por padrão. Configure `APP_SESSAO_ACESSO_MINUTOS` no `.env` e reinicie para mudar o prazo. Navegar ou atualizar a página não renova a sessão. O prazo também respeita a expiração do JWT externo. Credenciais fixas antigas de teste foram substituídas pelo botão do rodapé.
+Abra `/afirma/trator` e use **Conectar** ou **Credenciais de teste** no rodapé. O acesso é reaproveitado nas outras telas e expira em 30 minutos por padrão. Configure `APP_SESSAO_ACESSO_MINUTOS` no `.env` e reinicie para mudar o prazo. Navegar ou atualizar a página não renova a sessão. O prazo também respeita a expiração do JWT externo. Credenciais fixas antigas de teste foram substituídas pelo botão do rodapé.
 
 ## TOKEN JWT
 ```text
@@ -162,7 +162,7 @@ Para testar com certificado vencido, coloque `APP_PERMITIR_CERTIFICADO_VENCIDO=t
 
 ## Lista de documentos do AssineAi
 
-Abra `http://127.0.0.1:8080/assineai/trator`. A tela exige chave da API e JWT com escopo `pdf.sign`; no perfil `local-test`, use as credenciais locais descritas acima. O título abre o PDF, e a lista mostra os envelopes criados pelo usuário autenticado. A exclusão é lógica e invalida os convites do documento.
+Abra `http://127.0.0.1:8080/afirma/trator`. A tela exige chave da API e JWT com escopo `pdf.sign`; no perfil `local-test`, use as credenciais locais descritas acima. O título abre o PDF, e a lista mostra os envelopes criados pelo usuário autenticado. A exclusão é lógica e invalida os convites do documento.
 
 Para guardar novos PDFs no MinIO, configure `ASSINEAI_MINIO_ENDPOINT`, `ASSINEAI_MINIO_ACCESS_KEY`, `ASSINEAI_MINIO_SECRET_KEY` e `ASSINEAI_MINIO_BUCKET` no `.env` (veja `.env.example`), depois execute `docker compose up -d`. Registros antigos com PDF no PostgreSQL continuam legíveis. Sem essas variáveis, o armazenamento anterior continua ativo.
 

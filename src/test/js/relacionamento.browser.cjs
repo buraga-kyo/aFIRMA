@@ -73,7 +73,7 @@ arquivosEmDisco.mkdirSync(out, {
       if (!respostaAtual.ok()) throw Error(metodo + ' ' + item + ': ' + respostaAtual.status() + ' ' + (await respostaAtual.text()));
       return respostaAtual.text().then(itemAtual => itemAtual ? JSON.parse(itemAtual) : {});
     }
-    await pagina.goto(base + '/assineai/trator');
+    await pagina.goto(base + '/afirma/trator');
     assert.ok(await pagina.locator('#tabela-montagem').count());
     assert.equal(await pagina.locator('.firma-sidebar').count(), 0);
     await pagina.screenshot({
@@ -524,7 +524,7 @@ arquivosEmDisco.mkdirSync(out, {
     await pagina.waitForURL(base + '/advai');
     await pagina.goto(base + '/');
     await pagina.locator('.modulo-assine').click();
-    await pagina.waitForURL(base + '/assineai/trator');
+    await pagina.waitForURL(base + '/afirma/trator');
     await pagina.setViewportSize({
       width: 390,
       height: 844

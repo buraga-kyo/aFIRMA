@@ -43,7 +43,7 @@ const servidor = http.createServer(async (req, res) => {
     res.end(JSON.stringify({ nomeEmpresa: 'Firma Teste', resumoPdf: '0x' + 'aa'.repeat(32), identificador: 'pedido-teste', identificadorAssinado: '0x' + 'bb'.repeat(32), prazo: 2000000000 })); return;
   }
   if (req.url === '/api/blockchain/concluir') { res.setHeader('Content-Type', 'application/pdf'); res.end('%PDF-1.4\nProva de teste\n%%EOF'); return; }
-  const mapas = { '/assineai/inventor': 'templates/inventor.html', '/assinatura': 'templates/assinatura.html', '/assineai/trator': 'templates/documentos-assinatura.html' };
+  const mapas = { '/assineai/inventor': 'templates/inventor.html', '/assinatura': 'templates/assinatura.html', '/afirma/trator': 'templates/documentos-assinatura.html' };
   const relativo = mapas[req.url] || 'static/' + req.url;
   const renderizado = path.resolve(__dirname, '../target/telas-trator-test', path.basename(relativo));
   const arquivo = mapas[req.url] && fs.existsSync(renderizado) ? renderizado : path.resolve(raiz, relativo);

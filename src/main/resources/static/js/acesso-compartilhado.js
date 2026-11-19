@@ -70,7 +70,7 @@
     if (haviaAcesso) encerramentoPendente = requisitar('/api/acesso/sair', { method: 'POST', keepalive: true }).catch(() => {});
     if (paginaRestrita) {
       document.documentElement.style.visibility = 'hidden';
-      location.replace('/assineai/trator?acesso=necessario');
+      location.replace('/afirma/trator?acesso=necessario');
     }
   }
   function restaurar() {
@@ -207,12 +207,12 @@
       sair.type = 'button'; sair.className = 'acao'; sair.textContent = 'Desconectar';
       sair.addEventListener('click', () => desconectar()); rodape.append(sair);
     }
-    else if (!paginaRestrita) {
+    else if (!paginaRestrita && location.pathname !== '/') {
       const aviso = document.createElement('p'); aviso.className = 'nota-seguranca';
-      const link = document.createElement('a'); link.href = '/assineai/trator'; link.textContent = 'Gerenciar acesso no trator';
+      const link = document.createElement('a'); link.href = '/afirma/trator'; link.textContent = 'Gerenciar acesso no trator';
       aviso.append(estado, document.createTextNode(' '), link);
       (document.querySelector('main') || document.body).prepend(aviso);
-    } else {
+    } else if (paginaRestrita) {
       estado.hidden = true; document.body.append(estado);
     }
     for (const [identificador, operacao] of [

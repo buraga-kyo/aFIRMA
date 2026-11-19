@@ -31,7 +31,7 @@ public class ControlePaginaAssinatura {
     return "assinatura";
   }
 
-  @GetMapping({"/assineai/trator", "/assinatura/documentos"})
+  @GetMapping({"/afirma/trator", "/assineai/trator", "/assinatura/documentos"})
   public String documentos(Model modeloPagina) {
     return "documentos-assinatura";
   }

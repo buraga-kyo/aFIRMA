@@ -29,7 +29,7 @@ public class FiltroPaginaComAcesso extends OncePerRequestFilter {
         resposta.setHeader("Cache-Control", "no-store");
         try { acessos.exigir(requisicao); }
         catch (ResponseStatusException erro) {
-            resposta.sendRedirect("/assineai/trator?acesso=necessario");
+            resposta.sendRedirect("/afirma/trator?acesso=necessario");
             return;
         }
         cadeia.doFilter(requisicao, resposta);

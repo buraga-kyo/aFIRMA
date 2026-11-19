@@ -16,37 +16,57 @@
   <main>
     <section class="hero" aria-labelledby="titulo">
       <div class="hero-conteudo">
-        <span class="selo">NOW COM PROVA DE ANTERIORIDADE</span>
         <h1 id="titulo">A<br>FIRma</br><span>MAxima</span></h1>
-        <p>O documento é da sua FIRMA. Manda pelo WhatsApp ou Telegram e o cliente assina por lá.</p>
+        <p>
+          A ideia é fazer um ERP + CRM completo sem reiventar a roda então aFIRMA vai ta adicionando regra de negocio a projetos open source, juntando tudo e deixando com a mesma cara de graça oque os cara paga kkkk
+          <br><br>
+          Assinatura Digital; DocuSeal + JSignPDF<br>
+          Relacionamento com Cliente; Chatwoot + Baileys<br>
+          Financeiro; pesquisando....
+        </p>
         <div class="acoes">
-          <a class="botao botao-primario" th:href="@{/assinatura}" href="/assinatura">COMEÇAR AGORA <span aria-hidden="true">↗</span></a>
-          <a class="botao botao-secundario" href="#funcionalidades">VER RECURSOS <span aria-hidden="true">↓</span></a>
+          <a class="botao botao-primario botao-trator-inicio" th:href="@{/afirma/trator}" href="/afirma/trator">Trator daFIRMA</a>
         </div>
       </div>
       <div class="hero-grafico" aria-hidden="true">
         <div class="moldura moldura-externa"><div class="moldura moldura-interna"><span>aFIRMAndo que</span><div class="traco"></div><strong>A burocracia<br>não pode ser<br>mais difícil que VENDER</strong><div class="traco curto"></div><small>comFIRMA?</small></div></div>
-        <div class="grafico-legenda">vou te mostrar como</div>
       </div>
     </section>
-
-    <section class="recursos" id="funcionalidades" aria-labelledby="titulo-recursos">
-      <div class="secao-cabecalho"><span>aFIRMO que foi</span></div>
-      <div class="secao-intro"><h2 id="titulo-recursos">FEITO PARA NÃO<br><span>TRAVAR O NEGÓCIO.</span></h2></div>
-      <div class="grade-recursos">
-        <article class="recurso"><span class="recurso-numero">01 / AssineAi</span><div class="recurso-simbolo" aria-hidden="true">↗</div><h3><a href="/assineai/trator">Documento pronto, assina ai ↗</a></h3><p>O cliente recebe o PDF e aceita ali mesmo no chat da sua empresa. Sem precisar baixar aplicativo ou criar senha. O ÚNICO MODULO QUE JA TEM ALGUMA COISA KKK</p></article>
-        <article class="recurso"><span class="recurso-numero">02 / Zapiou</span><div class="recurso-simbolo" aria-hidden="true">◫</div><h3><a href="/chat">Atendimento e relacionamento ↗</a></h3><p>Conversa, contato, campanha e bot. Tudo no trator de relacionamento.</p></article>
-        <article class="recurso"><span class="recurso-numero">03 / ADVai</span><div class="recurso-simbolo" aria-hidden="true">◇</div><h3><a href="/advai">Advôga ai ↗</a></h3><p>O seu cliente precisa assinar o documento da sua FIRMA, e quem vai fazer esse documento? o AD vai... MODULO EM CONTRUÇÃO....</p></article>
-      </div>
-    </section>
-
-    <section class="chamada" aria-labelledby="titulo-chamada"><div><span class="selo">BORA ASSINAR</span><h2 id="titulo-chamada">O DOCUMENTO TÁ PRONTO?<br><span>ASSINA AÍ.</span></h2></div><a class="botao botao-primario" th:href="@{/assineai/trator}" href="/assineai/trator">ABRIR O TRATOR <span aria-hidden="true">↗</span></a></section>
   </main>
-  <footer><span>aFIRMA © 2026</span><span>Feito do jeito daFIRMA.</span><span>AQUI QUEM TRABALHA É O TRATOR.</span></footer>
-  <nav class="modulos" aria-label="Módulos da aFirma">
-    <a class="modulo modulo-assine" th:href="@{/assineai/trator}" href="/assineai/trator"><span class="modulo-icone" aria-hidden="true">✳</span><span class="modulo-texto"><strong>AssineAi</strong><small>ASSINATURA DIGITAL</small></span><span class="modulo-seta" aria-hidden="true">↗</span></a>
-    <a class="modulo modulo-talk" th:href="@{/chat}" href="/chat"><span class="modulo-icone" aria-hidden="true">◉</span><span class="modulo-texto"><strong>Zapiou</strong><small>CONVERSAS E GESTÃO</small></span><span class="modulo-seta" aria-hidden="true">↗</span></a>
-    <a class="modulo modulo-adv" th:href="@{/advai}" href="/advai"><span class="modulo-icone" aria-hidden="true">§</span><span class="modulo-texto"><strong>ADVai</strong><small>DOCUMENTOS JURÍDICOS</small></span><span class="modulo-seta" aria-hidden="true">↗</span></a>
+  <footer class="rodape-inicio" th:with="frase='é aFIRMA demonstrando a essência daFIRMA, praFIRMA, comFIRMA? pera comFIRMAndo... comFIRMAdo!'">
+    <span class="rodape-frase" th:text="${frase}">é aFIRMA demonstrando a essência daFIRMA, praFIRMA, comFIRMA? pera comFIRMAndo... comFIRMAdo!</span>
+    <div class="rodape-faixa" aria-hidden="true">
+      <div class="rodape-sequencia" th:each="copia : ${#numbers.sequence(1, 2)}">
+        <span th:each="variante : ${#numbers.sequence(1, 10)}" th:text="${frase}"></span>
+      </div>
+    </div>
+  </footer>
+  <nav class="modulos" aria-label="Repositórios no GitHub">
+    <a class="modulo modulo-talk" href="https://github.com/docusealco/docuseal">
+      <span class="modulo-icone" aria-hidden="true">✳</span>
+      <span class="modulo-texto"><strong>DocuSeal</strong><small>ASSINATURA DIGITAL</small></span>
+      <span class="modulo-seta" aria-hidden="true">↗</span>
+    </a>
+    <a class="modulo modulo-adv" href="https://github.com/intoolswetrust/jsignpdf">
+      <span class="modulo-icone" aria-hidden="true">✎</span>
+      <span class="modulo-texto"><strong>JSignPDF</strong><small>ASSINATURA DE PDF</small></span>
+      <span class="modulo-seta" aria-hidden="true">↗</span>
+    </a>
+    <a class="modulo modulo-talk" href="https://github.com/chatwoot/chatwoot">
+      <span class="modulo-icone" aria-hidden="true">◉</span>
+      <span class="modulo-texto"><strong>Chatwoot</strong><small>RELACIONAMENTO</small></span>
+      <span class="modulo-seta" aria-hidden="true">↗</span>
+    </a>
+    <a class="modulo modulo-adv" href="https://github.com/WhiskeySockets/Baileys">
+      <span class="modulo-icone" aria-hidden="true">◇</span>
+      <span class="modulo-texto"><strong>Baileys</strong><small>WHATSAPP</small></span>
+      <span class="modulo-seta" aria-hidden="true">↗</span>
+    </a>
+    <a class="modulo modulo-assine" href="https://github.com/buraga-kyo/aFIRMA">
+      <span class="modulo-icone" aria-hidden="true">✳</span>
+      <span class="modulo-texto"><strong>aFIRMA</strong><small>ERP + CRM</small></span>
+      <span class="modulo-seta" aria-hidden="true">↗</span>
+    </a>
   </nav>
 </body>
 </html>
