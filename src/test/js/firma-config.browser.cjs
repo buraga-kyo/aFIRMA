@@ -13,7 +13,7 @@ const base = process.env.FIRMA_TEST_BASE_URL || 'http://127.0.0.1:8080';
   });
   try {
     const leitura = await navegador.newPage();
-    await leitura.goto(base + '/assineai/trator');
+    await leitura.goto(base + '/afirma/trator');
     const token = await leitura.getAttribute('body', 'data-token-teste');
     assert(token, 'Execute no perfil local-test para obter o catálogo por leitura autenticada.');
     const cabecalhos = {

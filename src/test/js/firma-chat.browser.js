@@ -66,7 +66,7 @@
     assert(aba.textContent === 'Zapiou' && document.title.includes('Zapiou'), 'Nome do módulo incorreto');
     assert(getComputedStyle(marca).getPropertyValue('--cor-aba').trim() === '#3B2A1A', 'Marca sem cor de terra');
     assert(aba.getBoundingClientRect().height === 56 && marca.getBoundingClientRect().height === 50, 'Alturas diferentes das abas do AssineAI');
-    assert(getComputedStyle(faixa.querySelector('[href="/assineai/trator"]')).getPropertyValue('--cor-aba').includes('color-mix'), 'Verde do módulo substituído');
+    assert(getComputedStyle(faixa.querySelector('[href="/afirma/trator"]')).getPropertyValue('--cor-aba').includes('color-mix'), 'Verde do módulo substituído');
     assert(document.getElementById('chat-nova').textContent === '+ Zaps', 'Comando de novo atendimento incorreto');
     const colunas = document.getElementById('firma-chat-colunas-botao');
     assert(getComputedStyle(colunas).getPropertyValue('--cor-aba').trim() === '#d2bc8e', 'Colunas sem cor de papel');

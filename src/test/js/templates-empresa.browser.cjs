@@ -55,7 +55,7 @@ function documentoOriginal() {
     await paginaAtual.fill('#perfil-nome', 'Horizonte & Co.');
     await paginaAtual.locator('#dados-empresa [type=submit]').click();
     await paginaAtual.waitForFunction(() => document.querySelector('#mensagem-empresa').textContent.includes('Dados daFIRMA salvos')).catch(async erro => { console.error(await paginaAtual.locator('#mensagem-empresa').textContent()); console.error(await paginaAtual.locator('#dados-empresa').evaluate(form => [...form.elements].filter(c => c.validity && !c.validity.valid).map(c => ({id:c.id, motivo:c.validationMessage})))); throw erro; });
-    await paginaAtual.goto(base + '/assineai/trator');
+    await paginaAtual.goto(base + '/afirma/trator');
     await paginaAtual.getByRole('link', {name:'A Gráfica', exact:true}).click();
     await paginaAtual.waitForSelector('#editor-templates:not([hidden])');
     assert.equal(await paginaAtual.evaluate(() => typeof window.FirmaTabela), 'undefined', 'Editor depende do trator de tabelas');
