@@ -1,4 +1,16 @@
 const empresa = document.getElementById("empresa");
+const cnpjEmpresa = document.getElementById("empresa-cnpj");
+cnpjEmpresa.addEventListener("input", () => {
+  cnpjEmpresa.value = formatarCnpj(cnpjEmpresa.value);
+});
+
+function formatarCnpj(valor) {
+  return valor.replace(/\D/g, "").slice(0, 14)
+    .replace(/^(\d{2})(\d)/, "$1.$2")
+    .replace(/^(\d{2}\.\d{3})(\d)/, "$1.$2")
+    .replace(/(\.\d{3})(\d)/, "$1/$2")
+    .replace(/(\/\d{4})(\d)/, "$1-$2");
+}
 const arquivoPdf = document.getElementById("arquivo-pdf");
 const chaveApi = document.getElementById("chave-api");
 const token = document.getElementById("token");
@@ -56,14 +68,19 @@ let consultandoEstado = false;
 let acompanhamento;
 let recursos = {
   entregaDisponivel: false,
+  smsDisponivel: false,
   usuario: "",
 };
 let convitesGerados = [];
 const nomeDocumento = document.getElementById("nome-documento");
+const cadastroCertificado = document.getElementById("cadastro-certificado-empresa");
+const arquivoCertificado = document.getElementById("cadastro-certificado-arquivo");
+const senhaCertificado = document.getElementById("cadastro-certificado-senha");
 const rotulosMetodos = {
   tela: "Assinatura na tela",
   email: "Código por e-mail",
   whatsapp: "Código por WhatsApp",
+  sms: "Código por SMS",
   selfie: "Selfie",
 };
 async function verificarCanais() {
@@ -76,8 +93,7 @@ async function verificarCanais() {
   recursos = await resposta.json();
   if (recursos.empresa) {
     empresa.value = recursos.empresa.EmpresaNome || "";
-    document.getElementById("empresa-cnpj").value =
-      recursos.empresa.EmpresaCNPJ || "";
+    cnpjEmpresa.value = formatarCnpj(recursos.empresa.EmpresaCNPJ || "");
     document.getElementById("empresa-email").value =
       recursos.empresa.EmpresaEmail || "";
     document.getElementById("tema-assinatura").value = String(
@@ -93,18 +109,33 @@ async function verificarCanais() {
   document.getElementById('dados-responsavel-pendentes').hidden = !empresaParticipante || !recursos.empresa?.EmpresaAssinaturaAutomatica
     || ['EmpresaCNPJ', 'EmpresaResponsavelNome', 'EmpresaResponsavelCPF', 'EmpresaResponsavelEmail', 'EmpresaResponsavelCelular']
       .every(campo => String(recursos.empresa[campo] || '').trim());
-  document.getElementById("disponibilidade-canais").textContent =
-    recursos.entregaDisponivel
-      ? "Canais disponíveis: e-mail e WhatsApp."
-      : "Entrega não configurada. Compartilhe os links manualmente; assinatura na tela e selfie estão disponíveis.";
+  const canais = [];
+  if (recursos.entregaDisponivel) canais.push("e-mail", "WhatsApp");
+  if (recursos.smsDisponivel) canais.push("SMS");
+  document.getElementById("disponibilidade-canais").textContent = canais.length
+    ? `Canais disponíveis: ${canais.join(", ")}.`
+    : "Entrega não configurada. Compartilhe os links manualmente; assinatura na tela e selfie estão disponíveis.";
   const nomeCadastrado = empresa.value.trim();
-  empresaCarregada = !!nomeCadastrado
+  const dadosEmpresaCompletos = !!nomeCadastrado
     && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('empresa-email').value.trim());
-  document.getElementById('cadastro-empresa-pendente').hidden = empresaCarregada;
-  const navegacao = document.querySelector('.modulos-wizard');
-  navegacao.hidden = !empresaCarregada;
-  navegacao.style.display = empresaCarregada ? '' : 'none';
-  if (empresaCarregada && !identificadorEnvelope) document.getElementById('step-1-signatarios').hidden = false;
+  const faltaCertificado = !recursos.certificadoEmpresaDisponivel;
+  cadastroCertificado.hidden = !faltaCertificado;
+  for (const campo of [arquivoCertificado, senhaCertificado]) {
+    campo.required = faltaCertificado;
+  }
+  const cadastroCompleto = dadosEmpresaCompletos && !faltaCertificado;
+  const cadastroRecuperado = !empresaCarregada && cadastroCompleto;
+  empresaCarregada = cadastroCompleto || (dadosEmpresaCompletos && !!identificadorEnvelope);
+  document.getElementById('cadastro-empresa-pendente').hidden = cadastroCompleto;
+  document.querySelector('.navegacao-preparacao').hidden = !empresaCarregada || (identificadorEnvelope && secaoFinalizar.hidden);
+  if (!identificadorEnvelope) {
+    if (!empresaCarregada) {
+      for (const { secao } of etapasWizard) secao.hidden = true;
+    } else if (cadastroRecuperado) {
+      etapasWizard.slice(0, etapaAtual + 1).forEach(({ secao }) => { secao.hidden = false; });
+    }
+  }
+  atualizarNavegacaoWizard();
   atualizarSignatarios();
   if (empresaCarregada && identificadorEnvelope) await atualizarEstado();
 }
@@ -113,14 +144,28 @@ document.getElementById('completar-empresa').addEventListener('submit', async ev
   evento.preventDefault();
   const botao = evento.currentTarget.querySelector('button[type="submit"]');
   botao.disabled = true;
+  erroPreparacao.hidden = true;
   try {
+    const headers = credenciais();
+    const certificado = cadastroCertificado.hidden ? null : new FormData();
+    if (certificado) {
+      certificado.set('certificado', arquivoCertificado.files[0]);
+      certificado.set('senha', senhaCertificado.value);
+    }
     await verificarResposta(await fetch('/api/assineai/empresa', {
-      method: 'PUT', headers: { ...credenciais(), 'Content-Type': 'application/json' },
+      method: 'PUT', headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify({ EmpresaNome: empresa.value.trim(),
         EmpresaEmail: document.getElementById('empresa-email').value.trim(),
-        EmpresaCNPJ: document.getElementById('empresa-cnpj').value.trim(),
+        EmpresaCNPJ: cnpjEmpresa.value,
         EmpresaTemaTelaAssinatura: document.getElementById('tema-assinatura').value })
     }));
+    if (certificado) {
+      await verificarResposta(await fetch('/api/assineai/empresa/certificado', {
+        method: 'POST', headers, body: certificado
+      }));
+      arquivoCertificado.value = '';
+      senhaCertificado.value = '';
+    }
     await verificarCanais();
   } catch (falha) { mostrarErro(falha.message); }
   finally { botao.disabled = false; }
@@ -219,16 +264,73 @@ document.getElementById("adicionar-documento").addEventListener("click", () => {
   selecionarDocumento(documento);
   nomeDocumento.focus();
 });
+const modeloObservadoresSignatario = document.getElementById("modelo-observadores-signatario");
+const modeloObservador = document.getElementById("modelo-observador");
+
+function montarObservadores(signatario) {
+  const secaoObservadores = modeloObservadoresSignatario.content.firstElementChild.cloneNode(true);
+  const tituloObservadores = secaoObservadores.querySelector("h2");
+  tituloObservadores.id = `${signatario.id}-titulo-observadores`;
+  secaoObservadores.setAttribute("aria-labelledby", tituloObservadores.id);
+  const listaObservadores = secaoObservadores.querySelector(".lista-observadores");
+  const botaoAdicionarObservador = secaoObservadores.querySelector(".adicionar-observador");
+
+  // O cartão pode ser recriado ao editar outro signatário ou ao posicionar um campo.
+  signatario.observadores ??= [];
+
+  function mostrarObservador(contato) {
+    const observador = modeloObservador.content.firstElementChild.cloneNode(true);
+    const entradaEmail = observador.querySelector('input[type="email"]');
+    const entradaWhatsapp = observador.querySelector('input[type="tel"]');
+    entradaEmail.value = contato.email;
+    entradaWhatsapp.value = contato.whatsapp;
+    entradaEmail.addEventListener("input", () => { contato.email = entradaEmail.value; });
+    entradaWhatsapp.addEventListener("input", () => { contato.whatsapp = entradaWhatsapp.value; });
+    observador.querySelector("button").addEventListener("click", () => {
+      signatario.observadores.splice(signatario.observadores.indexOf(contato), 1);
+      observador.remove();
+      botaoAdicionarObservador.disabled = false;
+      botaoAdicionarObservador.focus();
+    });
+    listaObservadores.append(observador);
+    return entradaEmail;
+  }
+
+  for (const contato of signatario.observadores) mostrarObservador(contato);
+  botaoAdicionarObservador.disabled = signatario.observadores.length >= 20;
+  botaoAdicionarObservador.addEventListener("click", () => {
+    const contato = { email: "", whatsapp: "" };
+    signatario.observadores.push(contato);
+    botaoAdicionarObservador.disabled = signatario.observadores.length >= 20;
+    mostrarObservador(contato).focus();
+  });
+  return secaoObservadores;
+}
+
+function lerObservadores(signatario) {
+  return (signatario.observadores || []).map(observador => {
+    const email = observador.email.trim();
+    const whatsapp = dadosPessoaisSignatario.whatsapp(observador.whatsapp);
+    if (!email && !whatsapp) throw new Error("Informe e-mail ou WhatsApp de cada observador.");
+    if (email && !/^[^\s,;<>@]+@[^\s,;<>@]+\.[^\s,;<>@]+$/.test(email)) {
+      throw new Error("Informe um e-mail válido para o observador.");
+    }
+    return { email, whatsapp };
+  });
+}
+
 function validarDadosPessoais() {
   for (const pessoa of signatarios) {
     pessoa.cpf = dadosPessoaisSignatario.cpf(pessoa.cpf);
     pessoa.rg = dadosPessoaisSignatario.rg(pessoa.rg);
     pessoa.whatsapp = dadosPessoaisSignatario.whatsapp(pessoa.whatsapp);
+    lerObservadores(pessoa);
   }
 }
 function validarPreparacao() {
-  validarDadosPessoais();
+  if (!recursos.certificadoEmpresaDisponivel) throw new Error("Vincule um certificado digital à empresa antes de continuar.");
   if (!empresaCarregada) throw new Error("Complete os dados da empresa antes de continuar.");
+  validarDadosPessoais();
   if (!empresa.value.trim()) throw new Error("Informe o nome da empresa.");
   if (!signatarios.length && !empresaParticipante)
     throw new Error("Adicione pelo menos um signatário.");
@@ -269,6 +371,11 @@ function mostrarRevisao() {
     const linha = document.createElement("p");
     linha.textContent = `${pessoa.nome} · ${pessoa.qualificacao || "Signatário"} · Autenticação: ${pessoa.formaDeAutenticacao.map((registro) => rotulosMetodos[registro]).join(", ") || "Marcas posicionadas no PDF"} · Notificação: ${pessoa.formaDeNotificacao.join(", ") || "Link manual"}`;
     painel.append(linha);
+    for (const observador of lerObservadores(pessoa)) {
+      const linhaObservador = document.createElement("p");
+      linhaObservador.textContent = `Observador de ${pessoa.nome}: ${[observador.email, observador.whatsapp].filter(Boolean).join(" · ")}`;
+      painel.append(linhaObservador);
+    }
   }
 }
 let criacaoConcluida = false;
@@ -334,36 +441,49 @@ async function verificarResposta(resposta) {
   throw new Error(dados?.mensagem || `Operação recusada (${resposta.status}).`);
 }
 
-// Wizard Logic
-const s1 = document.getElementById("step-1-signatarios");
-const s2 = document.getElementById("step-2-documentos");
-const s3 = document.getElementById("step-3-finalizar");
-const b1 = document.getElementById("btn-step-1");
-const b2 = document.getElementById("btn-step-2");
-const b3 = document.getElementById("btn-step-3");
-function changeStep(inicioAtual, fim, botaoPaginaAnterior, botaoProximaPagina) {
-  inicioAtual.hidden = true;
-  fim.hidden = false;
-  botaoPaginaAnterior.classList.remove("ativo");
-  botaoPaginaAnterior.classList.add("inativo");
-  botaoProximaPagina.classList.remove("inativo");
-  botaoProximaPagina.classList.add("ativo");
-  for (const botao of [b1, b2, b3]) {
-    if (botao === botaoProximaPagina)
-      botao.setAttribute("aria-current", "step");
-    else botao.removeAttribute("aria-current");
-  }
-  fim.scrollIntoView({
-    block: "start",
-    behavior: "smooth",
-  });
+const secaoSignatarios = document.getElementById("step-1-signatarios");
+const secaoFinalizar = document.getElementById("step-3-finalizar");
+const etapasWizard = [
+  { secao: secaoSignatarios, indicador: document.getElementById("btn-step-1") },
+  { secao: document.getElementById("step-2-documentos"), indicador: document.getElementById("btn-step-2") },
+  { secao: secaoFinalizar, indicador: document.getElementById("btn-step-3") },
+];
+const voltarWizard = document.getElementById("voltar-wizard");
+const avancarWizard = document.getElementById("avancar-wizard");
+let etapaAtual = 0;
+
+function atualizarNavegacaoWizard() {
+  voltarWizard.disabled = etapaAtual === 0;
+  avancarWizard.disabled = etapaAtual === 2 || (etapaAtual === 1 && carregandoPdf);
 }
-document.getElementById("ir-step-2").addEventListener("click", () => {
+
+function mostrarEtapaWizard(indice) {
+  etapaAtual = indice;
+  const { secao, indicador } = etapasWizard[indice];
+  secao.hidden = false;
+  for (const etapa of etapasWizard) {
+    const ativa = etapa.indicador === indicador;
+    etapa.indicador.classList.toggle("ativo", ativa);
+    etapa.indicador.classList.toggle("inativo", !ativa);
+    if (ativa) etapa.indicador.setAttribute("aria-current", "step");
+    else etapa.indicador.removeAttribute("aria-current");
+  }
+  atualizarNavegacaoWizard();
+  if (voltarWizard.disabled) avancarWizard.focus({ preventScroll: true });
+  if (avancarWizard.disabled) voltarWizard.focus({ preventScroll: true });
+  secao.scrollIntoView({ block: "start" });
+}
+
+function avancarParaDocumentos() {
   erroPreparacao.hidden = true;
   for (const campo of listaSignatarios.querySelectorAll('[data-dado-pessoal]')) {
     if (!campo.reportValidity()) return;
   }
-  try { validarDadosPessoais(); } catch (falha) { return mostrarErro(falha.message); }
+  try {
+    validarDadosPessoais();
+  } catch (falha) {
+    return mostrarErro(falha.message);
+  }
   if (!signatarios.length && !empresaParticipante)
     return mostrarErro("Adicione pelo menos um signatário.");
   if (signatarios.some((itemAtual) => !itemAtual.nome.trim()))
@@ -392,30 +512,22 @@ document.getElementById("ir-step-2").addEventListener("click", () => {
         [
           ...itemAtual.formaDeAutenticacao,
           ...itemAtual.formaDeNotificacao,
-        ].includes("whatsapp") &&
+        ].some(canal => canal === "whatsapp" || canal === "sms") &&
         !itemAtual.whatsapp.trim(),
     )
   )
-    return mostrarErro("Informe WhatsApp com DDD para os canais selecionados.");
-  if (
-    !recursos.entregaDisponivel &&
-    signatarios.some(
-      (itemAtual) =>
-        itemAtual.formaDeNotificacao.length ||
-        itemAtual.formaDeAutenticacao.some((registro) =>
-          ["email", "whatsapp"].includes(registro),
-        ),
-    )
-  )
-    return mostrarErro(
-      "Verifique a disponibilidade dos canais com as credenciais atuais.",
-    );
-  changeStep(s1, s2, b1, b2);
-});
-document.getElementById("voltar-step-1").addEventListener("click", () => {
-  changeStep(s2, s1, b2, b1);
-});
-document.getElementById("ir-step-3").addEventListener("click", () => {
+    return mostrarErro("Informe um celular com DDD para WhatsApp ou SMS.");
+  const canaisSelecionados = signatarios.flatMap(pessoa => [
+    ...pessoa.formaDeAutenticacao, ...pessoa.formaDeNotificacao,
+  ]);
+  if (!recursos.entregaDisponivel && canaisSelecionados.some(canal => canal === "email" || canal === "whatsapp"))
+    return mostrarErro("Verifique a disponibilidade dos canais com as credenciais atuais.");
+  if (!recursos.smsDisponivel && canaisSelecionados.includes("sms"))
+    return mostrarErro("O gateway de SMS não está configurado.");
+  mostrarEtapaWizard(1);
+}
+
+function avancarParaFinalizar() {
   erroPreparacao.hidden = true;
   try {
     validarPreparacao();
@@ -423,10 +535,15 @@ document.getElementById("ir-step-3").addEventListener("click", () => {
     return mostrarErro(erro.message);
   }
   mostrarRevisao();
-  changeStep(s2, s3, b2, b3);
+  mostrarEtapaWizard(2);
+}
+
+avancarWizard.addEventListener("click", () => {
+  if (etapaAtual === 0) avancarParaDocumentos();
+  else if (etapaAtual === 1) avancarParaFinalizar();
 });
-document.getElementById("voltar-step-2").addEventListener("click", () => {
-  changeStep(s3, s2, b3, b2);
+voltarWizard.addEventListener("click", () => {
+  if (etapaAtual > 0) mostrarEtapaWizard(etapaAtual - 1);
 });
 function atualizarSeletor() {
   const selecionado = seletorSignatario.value;
@@ -464,6 +581,7 @@ function atualizarSignatarios() {
     const metodo = document.createElement('p'); metodo.textContent = cadastro.EmpresaAssinaturaAutomatica
       ? 'A empresa assina com o certificado cadastrado ao gerar os convites.' : 'A empresa participa e assina manualmente com o certificado cadastrado.';
     const remover = document.createElement('button'); remover.type = 'button'; remover.className = 'acao secundario'; remover.textContent = 'REMOVER MINHA PARTICIPAÇÃO';
+    remover.hidden = signatarios.length === 0;
     remover.addEventListener('click', () => { empresaParticipante = false; atualizarSignatarios(); });
     cartao.append(titulo, responsavel, contato, metodo, remover); listaSignatarios.append(cartao);
   }
@@ -471,7 +589,6 @@ function atualizarSignatarios() {
     const cartao = document.createElement("div");
     cartao.className = "cartao-signatario cartao-novo-assinante";
 
-    // Nome
     const nome = document.createElement("div");
     nome.className = "campo";
     nome.innerHTML = "<label>NOME *</label>";
@@ -486,10 +603,9 @@ function atualizarSignatarios() {
     });
     nome.append(entradaNome);
 
-    // Email
     const email = document.createElement("div");
     email.className = "campo";
-    email.innerHTML = "<label>E-MAIL (OPCIONAL)</label>";
+    email.innerHTML = "<label>E-MAIL</label>";
     const entradaEmail = document.createElement("input");
     entradaEmail.type = "email";
     entradaEmail.maxLength = 254;
@@ -500,10 +616,9 @@ function atualizarSignatarios() {
     });
     email.append(entradaEmail);
 
-    // CPF
     const divCpf = document.createElement("div");
     divCpf.className = "campo";
-    divCpf.innerHTML = "<label>CPF (OPCIONAL)</label>";
+    divCpf.innerHTML = "<label>CPF</label>";
     const entradaCpf = document.createElement("input");
     entradaCpf.placeholder = "000.000.000-00";
     entradaCpf.value = signatario.cpf || "";
@@ -512,7 +627,6 @@ function atualizarSignatarios() {
     });
     divCpf.append(entradaCpf);
 
-    // RG
     const divRg = document.createElement("div");
     divRg.className = "campo";
     divRg.innerHTML = "<label>RG</label>";
@@ -524,10 +638,9 @@ function atualizarSignatarios() {
     });
     divRg.append(entradaRg);
 
-    // Whatsapp
     const divZap = document.createElement("div");
     divZap.className = "campo";
-    divZap.innerHTML = "<label>WHATSAPP (OPCIONAL)</label>";
+    divZap.innerHTML = "<label>CELULAR (WHATSAPP E SMS)</label>";
     const entradaZap = document.createElement("input");
     entradaZap.placeholder = "(11) 99999-9999 ou + código do país";
     entradaZap.value = signatario.whatsapp || "";
@@ -536,12 +649,11 @@ function atualizarSignatarios() {
     });
     divZap.append(entradaZap);
 
-    // Qualificação
     const divQualificacao = document.createElement("div");
     divQualificacao.className = "campo";
-    divQualificacao.innerHTML = "<label>VAI ASSINAR COMO?</label>";
+    divQualificacao.innerHTML = "<label>FUNÇÃO DO ASSINANTE</label>";
     const entradaQualificacao = document.createElement("input");
-    entradaQualificacao.placeholder = "Associado, Empresa, Motorista...";
+    entradaQualificacao.placeholder = "Escolha uma função";
     entradaQualificacao.maxLength = 255;
 
     entradaQualificacao.value = signatario.qualificacao || "";
@@ -551,56 +663,15 @@ function atualizarSignatarios() {
     divQualificacao.append(entradaQualificacao);
     prepararListaQualificacaoFirma(divQualificacao, entradaQualificacao, signatario.id);
 
-    // Área de rodapé do cartão (Quantidade e Remover) - Ocupando a linha inteira no grid
     const rodapeCartao = document.createElement("div");
     rodapeCartao.className = "cartao-rodape-acoes";
-    const representacao = document.createElement("div");
-    representacao.className = "campo campo-largo";
-    const rotuloPapel = document.createElement("label");
-    rotuloPapel.textContent = "ATUAÇÃO DO PARTICIPANTE";
-    const papel = document.createElement("select");
-    for (const [valor, texto] of [
-      ["EM_NOME_PROPRIO", "Em nome próprio"],
-      ["REPRESENTANTE", "Em nome de outra pessoa ou empresa"],
-    ]) {
-      const opcao = document.createElement("option");
-      opcao.value = valor;
-      opcao.textContent = texto;
-      papel.append(opcao);
-    }
-    papel.value = signatario.papel || "EM_NOME_PROPRIO";
-    const representado = document.createElement("input");
-    representado.placeholder = "Pessoa ou empresa representada";
-    representado.maxLength = 254;
-    representado.value = signatario.representado || "";
-    const fundamento = document.createElement("textarea");
-    fundamento.placeholder = "Fundamento dos poderes de representação";
-    fundamento.maxLength = 1000;
-    fundamento.value = signatario.fundamentoRepresentacao || "";
-    function atualizarRepresentacao() {
-      signatario.papel = papel.value;
-      representado.hidden = fundamento.hidden = papel.value !== "REPRESENTANTE";
-      if (papel.value !== "REPRESENTANTE") {
-        signatario.representado = signatario.fundamentoRepresentacao = "";
-        representado.value = fundamento.value = "";
-      }
-    }
-    papel.addEventListener("change", atualizarRepresentacao);
-    representado.addEventListener("input", () => {
-      signatario.representado = representado.value;
-    });
-    fundamento.addEventListener("input", () => {
-      signatario.fundamentoRepresentacao = fundamento.value;
-    });
-    atualizarRepresentacao();
-    representacao.append(rotuloPapel, papel, representado, fundamento);
-    prepararListaAtuacaoFirma(representacao, rotuloPapel, papel, signatario.id);
     const quantidade = document.createElement("p");
     quantidade.textContent = `${signatario.campos.length} campo(s) posicionado(s)`;
     const remover = document.createElement("button");
     remover.type = "button";
     remover.className = "acao secundario";
     remover.textContent = "REMOVER SIGNATÁRIO";
+    remover.hidden = signatarios.length === 1 && !empresaParticipante;
     remover.addEventListener("click", () => {
       signatarios.splice(signatarios.indexOf(signatario), 1);
       atualizarSignatarios();
@@ -617,6 +688,7 @@ function atualizarSignatarios() {
           ["tela", "Assinatura na tela"],
           ["email", "Código por e-mail"],
           ["whatsapp", "Código por WhatsApp"],
+          ["sms", "Código por SMS"],
           ["selfie", "Selfie"],
         ],
       ],
@@ -626,6 +698,7 @@ function atualizarSignatarios() {
         [
           ["email", "E-mail"],
           ["whatsapp", "WhatsApp"],
+          ["sms", "SMS"],
         ],
       ],
     ]) {
@@ -639,9 +712,11 @@ function atualizarSignatarios() {
         entrada.type = "checkbox";
         entrada.value = valor;
         entrada.checked = signatario[propriedade].includes(valor);
-        if (["email", "whatsapp"].includes(valor)) {
+        if (["email", "whatsapp", "sms"].includes(valor)) {
           entrada.dataset.canalEntrega = "";
-          entrada.disabled = !recursos.entregaDisponivel && !entrada.checked;
+          const disponivel = valor === "sms" ? recursos.smsDisponivel : recursos.entregaDisponivel;
+          entrada.disabled = !disponivel && !entrada.checked;
+          if (entrada.disabled && valor === "sms") rotuloAtual.title = "Gateway de SMS não configurado";
         }
         entrada.addEventListener("change", () => {
           signatario[propriedade] = entrada.checked
@@ -674,8 +749,8 @@ function atualizarSignatarios() {
       divRg,
       divZap,
       divQualificacao,
-      representacao,
       escolhas,
+      montarObservadores(signatario),
       rodapeCartao,
     );
     listaSignatarios.append(cartao);
@@ -698,9 +773,6 @@ document
       formaDeAutenticacao: ["tela"],
       formaDeNotificacao: [],
       campos: [],
-      papel: "EM_NOME_PROPRIO",
-      representado: "",
-      fundamentoRepresentacao: "",
     };
     signatarios.push(signatario);
     atualizarSignatarios();
@@ -714,7 +786,7 @@ function atualizarControlesPdf() {
     carregandoPdf || paginaAtual >= totalPaginas;
   document.getElementById("adicionar-campo").disabled =
     carregandoPdf || !totalPaginas;
-  document.getElementById("ir-step-3").disabled = carregandoPdf;
+  atualizarNavegacaoWizard();
   document.getElementById("adicionar-documento").disabled = carregandoPdf;
   atualizarDocumentos();
   visualizador.inert = carregandoPdf;
@@ -1133,11 +1205,13 @@ document
                   rg: pessoa.rg || null,
                   whatsapp: pessoa.whatsapp || null,
                   qualificacao: pessoa.qualificacao || null,
+                  observadores: lerObservadores(pessoa),
                   formaDeAutenticacao: pessoa.formaDeAutenticacao,
                   formaDeNotificacao: pessoa.formaDeNotificacao,
-                  papel: pessoa.papel || "EM_NOME_PROPRIO",
-                  representado: pessoa.representado || "",
-                  fundamentoRepresentacao: pessoa.fundamentoRepresentacao || "",
+                  // A API ainda registra em nome de quem a pessoa assina.
+                  papel: "EM_NOME_PROPRIO",
+                  representado: "",
+                  fundamentoRepresentacao: "",
                   campos: pessoa.campos.map(({ id, documento, ...campo }) => ({
                     ...campo,
                     rotacao: campo.rotacao || 0,
@@ -1467,10 +1541,11 @@ async function enviarNotificacoes() {
     );
     const resultados = await resposta.json();
     estado.textContent = resultados
-      .map(
-        (registroAtual) =>
-          `${registroAtual.nome} (${registroAtual.canal}): ${registroAtual.enviado ? "enviado" : "falha na entrega; compartilhe o link manualmente"}`,
-      )
+      .map(({ nome, canal, enviado }) => {
+        const rotulo = canal === "sms" ? "SMS" : canal;
+        const resultado = canal === "sms" ? "aceito pelo gateway" : "enviado";
+        return `${nome} (${rotulo}): ${enviado ? resultado : "falha na entrega; compartilhe o link manualmente"}`;
+      })
       .join(" · ");
     botao.hidden = resultados.every((registroAtual) => registroAtual.enviado);
   } catch (erro) {
@@ -1588,6 +1663,8 @@ document
 document.addEventListener('firma:acesso-conectado', () => verificarCanais().catch(falha => mostrarErro(falha.message)));
 
 document.addEventListener('firma:desconectado', () => {
+  arquivoCertificado.value = '';
+  senhaCertificado.value = '';
   document.getElementById('confirmar-finalizacao').checked = false;
 });
 
@@ -1636,7 +1713,7 @@ function prepararListaQualificacaoFirma(grupoQualificacao, entradaQualificacao, 
   listaQualificacao.id = identificadorLista;
   listaQualificacao.className = "lista-qualificacao-firma";
   listaQualificacao.setAttribute("role", "listbox");
-  listaQualificacao.setAttribute("aria-label", "Vai assinar como?");
+  listaQualificacao.setAttribute("aria-label", "Função do assinante");
   listaQualificacao.hidden = true;
   grupoQualificacao.classList.add("qualificacao-firma");
   const caixaEntradaQualificacao = document.createElement("div");
@@ -1681,23 +1758,47 @@ function prepararListaQualificacaoFirma(grupoQualificacao, entradaQualificacao, 
     fecharListaQualificacao();
   }
 
+  function adicionarFuncao() {
+    fecharListaQualificacao();
+    const janelaFuncao = document.getElementById("adicionar-funcao-assinante");
+    const formularioFuncao = janelaFuncao.querySelector("form");
+    const entradaNovaFuncao = document.getElementById("nome-nova-funcao");
+    formularioFuncao.reset();
+
+    // Cada abertura aplica a função ao assinante que abriu a janela.
+    formularioFuncao.onsubmit = eventoEnvio => {
+      if (eventoEnvio.submitter.value === "cancelar") return;
+      eventoEnvio.preventDefault();
+      janelaFuncao.close();
+      selecionarQualificacao(entradaNovaFuncao.value.trim());
+    };
+    janelaFuncao.showModal();
+  }
+
+  function incluirOpcaoQualificacao(textoOpcao, escolherOpcao) {
+    const opcaoQualificacao = document.createElement("li");
+    opcaoQualificacao.id = `${identificadorLista}-${listaQualificacao.children.length}`;
+    opcaoQualificacao.setAttribute("role", "option");
+    opcaoQualificacao.setAttribute("aria-selected", "false");
+    opcaoQualificacao.textContent = textoOpcao;
+    // Mantém o foco na entrada até o clique escolher a opção.
+    opcaoQualificacao.addEventListener("pointerdown", eventoOpcao => eventoOpcao.preventDefault());
+    opcaoQualificacao.addEventListener("click", escolherOpcao);
+    listaQualificacao.append(opcaoQualificacao);
+    return opcaoQualificacao;
+  }
+
   function abrirListaQualificacao() {
     listaQualificacao.replaceChildren();
     indiceOpcaoAtiva = -1;
     entradaQualificacao.removeAttribute("aria-activedescendant");
     const filtroQualificacao = entradaQualificacao.value.trim().toLocaleLowerCase("pt-BR");
     for (const valorQualificacao of opcoesQualificacao.filter(valorOpcao => valorOpcao.toLocaleLowerCase("pt-BR").includes(filtroQualificacao))) {
-      const opcaoQualificacao = document.createElement("li");
-      opcaoQualificacao.id = `${identificadorLista}-${listaQualificacao.children.length}`;
-      opcaoQualificacao.setAttribute("role", "option");
-      opcaoQualificacao.setAttribute("aria-selected", "false");
-      opcaoQualificacao.textContent = valorQualificacao;
-      opcaoQualificacao.addEventListener("pointerdown", eventoOpcao => eventoOpcao.preventDefault());
-      opcaoQualificacao.addEventListener("click", () => selecionarQualificacao(valorQualificacao));
-      listaQualificacao.append(opcaoQualificacao);
+      incluirOpcaoQualificacao(valorQualificacao, () => selecionarQualificacao(valorQualificacao));
     }
-    listaQualificacao.hidden = listaQualificacao.children.length === 0;
-    entradaQualificacao.setAttribute("aria-expanded", String(!listaQualificacao.hidden));
+    incluirOpcaoQualificacao("Adicionar função", adicionarFuncao).classList.add("opcao-adicionar-funcao");
+    listaQualificacao.hidden = false;
+    entradaQualificacao.setAttribute("aria-expanded", "true");
   }
 
   entradaQualificacao.addEventListener("focus", abrirListaQualificacao);
@@ -1708,7 +1809,7 @@ function prepararListaQualificacaoFirma(grupoQualificacao, entradaQualificacao, 
     if (eventoTeclado.key === "Escape" || eventoTeclado.key === "Tab") return fecharListaQualificacao();
     if (eventoTeclado.key === "Enter" && !listaQualificacao.hidden && indiceOpcaoAtiva >= 0) {
       eventoTeclado.preventDefault();
-      return selecionarQualificacao(listaQualificacao.children[indiceOpcaoAtiva].textContent);
+      return listaQualificacao.children[indiceOpcaoAtiva].click();
     }
     if (!["ArrowDown", "ArrowUp"].includes(eventoTeclado.key)) return;
     eventoTeclado.preventDefault();
@@ -1721,88 +1822,4 @@ function prepararListaQualificacaoFirma(grupoQualificacao, entradaQualificacao, 
     destacarOpcaoQualificacao();
   });
   caixaEntradaQualificacao.append(listaQualificacao);
-}
-
-// Mantenho o select como fonte do valor e uso a lista da FIRMA na tela.
-function prepararListaAtuacaoFirma(grupoAtuacao, rotuloAtuacao, seletorAtuacao, identificadorSignatario) {
-  const caixaAtuacao = document.createElement("div");
-  caixaAtuacao.className = "qualificacao-firma";
-  const botaoAtuacao = document.createElement("button");
-  botaoAtuacao.type = "button";
-  botaoAtuacao.className = "seletor-atuacao-firma";
-  botaoAtuacao.id = `atuacao-firma-${identificadorSignatario}`;
-  rotuloAtuacao.htmlFor = botaoAtuacao.id;
-  const listaAtuacao = document.createElement("ul");
-  listaAtuacao.id = `${botaoAtuacao.id}-opcoes`;
-  listaAtuacao.className = "lista-qualificacao-firma";
-  listaAtuacao.setAttribute("role", "listbox");
-  listaAtuacao.setAttribute("aria-label", "Atuação do participante");
-  listaAtuacao.hidden = true;
-  botaoAtuacao.setAttribute("role", "combobox");
-  botaoAtuacao.setAttribute("aria-haspopup", "listbox");
-  botaoAtuacao.setAttribute("aria-controls", listaAtuacao.id);
-  botaoAtuacao.setAttribute("aria-expanded", "false");
-  seletorAtuacao.hidden = true;
-  let indiceAtuacaoAtiva = seletorAtuacao.selectedIndex;
-
-  function fecharListaAtuacao() {
-    listaAtuacao.hidden = true;
-    botaoAtuacao.setAttribute("aria-expanded", "false");
-    botaoAtuacao.removeAttribute("aria-activedescendant");
-  }
-
-  function atualizarAtuacaoSelecionada() {
-    botaoAtuacao.textContent = seletorAtuacao.selectedOptions[0].textContent;
-    [...listaAtuacao.children].forEach((opcaoAtuacao, indiceOpcao) => {
-      opcaoAtuacao.setAttribute("aria-selected", String(indiceOpcao === seletorAtuacao.selectedIndex));
-      opcaoAtuacao.classList.toggle("opcao-em-foco", indiceOpcao === indiceAtuacaoAtiva);
-    });
-    if (!listaAtuacao.hidden) botaoAtuacao.setAttribute("aria-activedescendant", listaAtuacao.children[indiceAtuacaoAtiva].id);
-  }
-
-  function selecionarAtuacao(indiceOpcao) {
-    seletorAtuacao.selectedIndex = indiceOpcao;
-    indiceAtuacaoAtiva = indiceOpcao;
-    seletorAtuacao.dispatchEvent(new Event("change", { bubbles: true }));
-    atualizarAtuacaoSelecionada();
-    fecharListaAtuacao();
-  }
-
-  [...seletorAtuacao.options].forEach((opcaoOriginal, indiceOpcao) => {
-    const opcaoAtuacao = document.createElement("li");
-    opcaoAtuacao.id = `${listaAtuacao.id}-${indiceOpcao}`;
-    opcaoAtuacao.setAttribute("role", "option");
-    opcaoAtuacao.textContent = opcaoOriginal.textContent;
-    opcaoAtuacao.addEventListener("pointerdown", eventoOpcao => eventoOpcao.preventDefault());
-    opcaoAtuacao.addEventListener("click", () => selecionarAtuacao(indiceOpcao));
-    listaAtuacao.append(opcaoAtuacao);
-  });
-
-  function abrirListaAtuacao() {
-    listaAtuacao.hidden = false;
-    indiceAtuacaoAtiva = seletorAtuacao.selectedIndex;
-    botaoAtuacao.setAttribute("aria-expanded", "true");
-    atualizarAtuacaoSelecionada();
-  }
-
-  botaoAtuacao.addEventListener("click", () => listaAtuacao.hidden ? abrirListaAtuacao() : fecharListaAtuacao());
-  botaoAtuacao.addEventListener("blur", fecharListaAtuacao);
-  botaoAtuacao.addEventListener("keydown", eventoTeclado => {
-    if (["Escape", "Tab"].includes(eventoTeclado.key)) return fecharListaAtuacao();
-    if (["Enter", " "].includes(eventoTeclado.key)) {
-      eventoTeclado.preventDefault();
-      return listaAtuacao.hidden ? abrirListaAtuacao() : selecionarAtuacao(indiceAtuacaoAtiva);
-    }
-    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(eventoTeclado.key)) return;
-    eventoTeclado.preventDefault();
-    if (listaAtuacao.hidden) abrirListaAtuacao();
-    else if (eventoTeclado.key === "Home") indiceAtuacaoAtiva = 0;
-    else if (eventoTeclado.key === "End") indiceAtuacaoAtiva = seletorAtuacao.options.length - 1;
-    else indiceAtuacaoAtiva = (indiceAtuacaoAtiva + (eventoTeclado.key === "ArrowDown" ? 1 : -1) + seletorAtuacao.options.length) % seletorAtuacao.options.length;
-    atualizarAtuacaoSelecionada();
-  });
-  seletorAtuacao.addEventListener("change", atualizarAtuacaoSelecionada);
-  caixaAtuacao.append(botaoAtuacao, listaAtuacao);
-  grupoAtuacao.insertBefore(caixaAtuacao, seletorAtuacao);
-  atualizarAtuacaoSelecionada();
 }

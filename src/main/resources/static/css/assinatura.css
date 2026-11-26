@@ -44,6 +44,7 @@ h1 span { color: var(--primary); }
 
 .area-trabalho { margin: 0 40px 72px; border: 2px solid var(--border); background: var(--card); box-shadow: 8px 8px 0 var(--secondary); }
 .cabecalho-area { display: flex; justify-content: space-between; gap: 20px; padding: 15px 32px; background: var(--secondary); font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+.cabecalho-area > h2 { margin: 0; font: inherit; text-transform: uppercase; }
 .cabecalho-area span:first-child { color: var(--primary); }
 .cabecalho-area span:last-child { color: var(--muted-foreground); }
 .modos-assinatura { display: flex; gap: 12px; padding: 20px 40px; border-bottom: 2px solid var(--border); }
@@ -89,8 +90,8 @@ h1 span { color: var(--primary); }
 .nota-seguranca { margin: 17px 0 0 0; color: var(--muted-foreground); font-size: 12px; }
 .rodape-formulario { padding: 27px 40px 34px; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
 .rodape-formulario p { max-width: 230px; margin: 0; color: var(--muted-foreground); font-size: 13px; }
-.rodape-formulario button, .botao-baixar { min-height: 58px; padding: 0 25px; display: inline-flex; align-items: center; justify-content: space-between; gap: 40px; border: 2px solid var(--background); border-radius: 0; background: var(--primary); color: var(--background); box-shadow: var(--electric-shadow); font-size: 13px; font-weight: 800; letter-spacing: .04em; text-decoration: none; cursor: pointer; }
-.rodape-formulario button:hover, .botao-baixar:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--accent); }
+.rodape-formulario button, .botao-navegacao-wizard, .botao-baixar { min-height: 58px; padding: 0 25px; display: inline-flex; align-items: center; justify-content: space-between; gap: 40px; border: 2px solid var(--background); border-radius: 0; background: var(--primary); color: var(--background); box-shadow: var(--electric-shadow); font-size: 13px; font-weight: 800; letter-spacing: .04em; text-decoration: none; cursor: pointer; }
+.rodape-formulario button:hover, .botao-navegacao-wizard:hover:not(:disabled), .botao-baixar:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--accent); }
 .rodape-formulario button:disabled { cursor: progress; opacity: .8; transform: none; }
 .resultado { margin: 0 40px 40px; padding: 23px; display: flex; align-items: center; gap: 20px; border: 2px solid var(--primary); border-right: 6px solid var(--primary); background: var(--background); }
 .resultado-icone { width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center; background: var(--primary); color: var(--background); font-size: 24px; font-weight: 800; }

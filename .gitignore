@@ -40,6 +40,7 @@ build/
 .env
 .env.*
 !.env.example
+/.afirma/
 
 # Sessões WhatsApp e dependências Node
 chat-baileys/dados/
@@ -53,3 +54,6 @@ chat-arquivos/
 
 # Dependências da biblioteca Nostr local
 scripts/nostr/node_modules/
+
+# Dependências para reconstruir o editor de e-mail
+/frontend/email/node_modules/

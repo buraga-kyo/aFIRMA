@@ -69,6 +69,33 @@ class ServicoAutenticacaoAssinaturaTest {
         assertTrue(servico.verificarCodigo(token, "email", codigo.getValue()));
         assertFalse(servico.verificarCodigo(token, "email", codigo.getValue()));
     }
+    @Test void autenticaENotificaPorSmsSemGatewayDeEmailOuWhatsApp() throws Exception {
+        String token = "s".repeat(43);
+        String telefone = "+5511999999999";
+        var pessoa = prepararConvite(token);
+        assertThrows(ResponseStatusException.class, () -> servico.configurar(pessoa, List.of("sms"), List.of()));
+        pessoa.setWhatsapp(telefone);
+        assertThrows(ResponseStatusException.class, () -> servico.configurar(pessoa, List.of(), List.of("sms")));
+        when(entrega.smsDisponivel()).thenReturn(true);
+        servico.configurar(pessoa, List.of("sms"), List.of("sms"));
+
+        var codigo = org.mockito.ArgumentCaptor.forClass(String.class);
+        var desafio = org.mockito.ArgumentCaptor.forClass(DesafioAssinatura.class);
+        servico.enviarCodigo(token, "sms");
+        verify(entrega).enviar(eq("sms"), eq(telefone), eq("codigo"), codigo.capture());
+        verify(desafios).save(desafio.capture());
+        when(desafios.bloquear(pessoa.getId() + ":sms")).thenReturn(Optional.of(desafio.getValue()));
+        when(desafios.findById(pessoa.getId() + ":sms")).thenReturn(Optional.of(desafio.getValue()));
+        assertThrows(ResponseStatusException.class, () -> servico.exigirVerificacao(pessoa));
+        assertFalse(servico.verificarCodigo(token, "sms", "inválido"));
+        assertTrue(servico.verificarCodigo(token, "sms", codigo.getValue()));
+        assertDoesNotThrow(() -> servico.exigirVerificacao(pessoa));
+
+        var resultado = servico.notificar(pessoa.getEnvelopeId(), "dono", List.of(token), "https://firma.example");
+        assertEquals(List.of(new ServicoAutenticacaoAssinatura.Notificacao("Ana", "sms", true)), resultado);
+        verify(entrega).enviar("sms", telefone, "convite", "https://firma.example/convite/" + token);
+    }
+
     @Test void impedeReenvioImediatoECanaisNaoSolicitados() throws Exception {
         String token = "b".repeat(43);
         var pessoa = prepararConvite(token);

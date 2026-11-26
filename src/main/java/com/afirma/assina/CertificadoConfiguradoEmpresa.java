@@ -47,6 +47,16 @@ public class CertificadoConfiguradoEmpresa {
     }
 
     public void conferir(long empresa) { try (var material = carregar(empresa)) { } }
+
+    public boolean disponivel(long empresa) {
+        try {
+            conferir(empresa);
+            return true;
+        } catch (ErroAssinatura erro) {
+            return false;
+        }
+    }
+
     public record Material(byte[] dados, char[] senha, ServicoAssinaturaPdf.DadosCertificado titular) implements AutoCloseable {
         @Override public void close() { Arrays.fill(dados, (byte) 0); Arrays.fill(senha, '\0'); }
     }

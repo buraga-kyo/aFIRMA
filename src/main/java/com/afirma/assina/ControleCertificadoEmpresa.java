@@ -26,15 +26,20 @@ public class ControleCertificadoEmpresa {
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<CofreCertificadoEmpresa.Situacao> salvar(HttpServletRequest requisicao,
-            @RequestParam MultipartFile certificado, @RequestParam String senha, @RequestParam String declaracaoPoderes,
-            @RequestParam boolean assinaturaAutomatica) {
+            @RequestParam MultipartFile certificado, @RequestParam String senha,
+            @RequestParam(required = false) String declaracaoPoderes,
+            @RequestParam(required = false) Boolean assinaturaAutomatica) {
         var acesso = acesso(requisicao);
-        if (!PoliticaDocumentosAssinatura.DECLARACAO_PODERES.equals(declaracaoPoderes)) {
+        boolean editarAssinaturaAutomatica = assinaturaAutomatica != null || declaracaoPoderes != null;
+        if (editarAssinaturaAutomatica && (assinaturaAutomatica == null
+                || !PoliticaDocumentosAssinatura.DECLARACAO_PODERES.equals(declaracaoPoderes))) {
             throw new ErroAssinatura("Confirme a autorização para cadastrar o certificado da empresa");
         }
         var situacao = cofre.salvar(acesso.empresa(), acesso.responsavel(), certificado, senha);
-        identidade.salvar(acesso.responsavel(), java.util.Map.of("EmpresaAssinaturaAutomatica", assinaturaAutomatica,
-                "EmpresaAutorizacaoCertificado", declaracaoPoderes));
+        if (editarAssinaturaAutomatica) {
+            identidade.salvar(acesso.responsavel(), java.util.Map.of("EmpresaAssinaturaAutomatica", assinaturaAutomatica,
+                    "EmpresaAutorizacaoCertificado", declaracaoPoderes));
+        }
         return ResponseEntity.ok().header("Cache-Control", "no-store").body(situacao);
     }
     @DeleteMapping

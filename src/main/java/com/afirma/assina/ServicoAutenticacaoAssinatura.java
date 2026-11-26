@@ -17,6 +17,8 @@ public class ServicoAutenticacaoAssinatura {
     private final ServicoEntregaAssinatura entrega;
     private final RepositorioSignatarioHistorico historicos;
     private final ServicoAutenticacaoConvites sessoes;
+    private static final Set<String> CANAIS_CODIGO = Set.of("email", "whatsapp", "sms");
+    private static final Set<String> METODOS = Set.of("tela", "email", "whatsapp", "sms", "selfie");
     private static final SecureRandom SORTEADOR = new SecureRandom();
     public ServicoAutenticacaoAssinatura(RepositorioSignatarioEnvelope pessoas, RepositorioEnvelopeAssinatura envelopes,
             RepositorioDesafioAssinatura desafios, ServicoEntregaAssinatura entrega, RepositorioSignatarioHistorico historicos, ServicoAutenticacaoConvites sessoes) {
@@ -26,12 +28,18 @@ public class ServicoAutenticacaoAssinatura {
     public void configurar(SignatarioEnvelope pessoa, List<String> autenticacao, List<String> notificacao) {
         List<String> autenticacaoAtual = autenticacao == null ? List.of() : autenticacao;
         List<String> avisos = notificacao == null ? List.of() : notificacao;
-        if (autenticacaoAtual.stream().anyMatch(a -> a == null || !Set.of("tela", "email", "whatsapp", "selfie").contains(a))
-                || avisos.stream().anyMatch(a -> a == null || !Set.of("email", "whatsapp").contains(a))) throw erro("Método inválido");
+        if (autenticacaoAtual.stream().anyMatch(a -> a == null || !METODOS.contains(a))
+                || avisos.stream().anyMatch(a -> a == null || !CANAIS_CODIGO.contains(a))) throw erro("Método inválido");
         if ((autenticacaoAtual.contains("email") || avisos.contains("email")) && pessoa.getEmail().isBlank()) throw erro("Informe e-mail para o canal selecionado");
         if ((autenticacaoAtual.contains("whatsapp") || avisos.contains("whatsapp")) && (pessoa.getWhatsapp() == null
                 || DadosPessoaisSignatario.whatsapp(pessoa.getWhatsapp()).isEmpty())) throw erro("Informe WhatsApp válido para o canal selecionado");
-        if ((!avisos.isEmpty() || autenticacaoAtual.contains("email") || autenticacaoAtual.contains("whatsapp")) && !entrega.disponivel())
+        if (autenticacaoAtual.contains("sms") || avisos.contains("sms")) {
+            if (DadosPessoaisSignatario.whatsapp(pessoa.getWhatsapp()).isEmpty()) throw erro("Informe um celular para SMS");
+            if (!entrega.smsDisponivel())
+                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Gateway SMS não configurado");
+        }
+        if (java.util.stream.Stream.concat(autenticacaoAtual.stream(), avisos.stream())
+                .anyMatch(canal -> "email".equals(canal) || "whatsapp".equals(canal)) && !entrega.disponivel())
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Configure o serviço de entrega antes de selecionar códigos ou notificações");
         pessoa.setFormaDeAutenticacao(List.copyOf(autenticacaoAtual)); pessoa.setFormaDeNotificacao(List.copyOf(avisos));
     }
@@ -51,7 +59,7 @@ public class ServicoAutenticacaoAssinatura {
     public void enviarCodigo(String token, String canal, String ip, String dispositivo) {
         var pessoa = convite(token);
         if (pessoa.getFormaDeAutenticacao() == null || !pessoa.getFormaDeAutenticacao().contains(canal)
-                || !Set.of("email", "whatsapp").contains(canal)) throw erro("Canal não solicitado neste convite");
+                || !CANAIS_CODIGO.contains(canal)) throw erro("Canal não solicitado neste convite");
         // Serializa também a primeira emissão, quando ainda não existe um desafio.
         pessoas.buscarConviteParaAssinar(pessoa.getResumoConvite()).orElseThrow();
         String id = pessoa.getId() + ":" + canal;
@@ -70,7 +78,7 @@ public class ServicoAutenticacaoAssinatura {
     @Transactional
     public boolean verificarCodigo(String token, String canal, String codigo, String ip, String dispositivo) {
         var pessoa = convite(token);
-        if (!Set.of("email", "whatsapp").contains(canal) || codigo == null || !codigo.matches("[0-9]{6}")) return false;
+        if (!CANAIS_CODIGO.contains(canal) || codigo == null || !codigo.matches("[0-9]{6}")) return false;
         String id = pessoa.getId() + ":" + canal;
         if (pessoa.getFormaDeAutenticacao() == null || !pessoa.getFormaDeAutenticacao().contains(canal)) return false;
         boolean valido = desafios.bloquear(id).map(d -> d.verificar(hash(id + ":" + codigo))).orElse(false);
@@ -92,9 +100,9 @@ public class ServicoAutenticacaoAssinatura {
 
     private void exigirCanais(SignatarioEnvelope pessoa, Set<String> confirmadosNoAcesso) {
         for (String canal : pessoa.getFormaDeAutenticacao() == null ? List.<String>of() : pessoa.getFormaDeAutenticacao()) {
-            if (Set.of("email", "whatsapp").contains(canal) && !confirmadosNoAcesso.contains(canal)
+            if (CANAIS_CODIGO.contains(canal) && !confirmadosNoAcesso.contains(canal)
                     && !desafios.findById(pessoa.getId() + ":" + canal).map(DesafioAssinatura::valido).orElse(false)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Valide o código por " + canal + " antes de assinar");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Valide o código por " + ("sms".equals(canal) ? "SMS" : canal) + " antes de assinar");
             }
         }
     }

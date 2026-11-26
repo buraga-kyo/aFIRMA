@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 25)
 public class FiltroPaginaComAcesso extends OncePerRequestFilter {
-    private static final Set<String> PAGINAS = Set.of("/preparar-assinaturas", "/assinatura", "/assineai/pagina-assinatura", "/assineai/inventor", "/assineai/inventor/configuracao", "/advai");
+    private static final Set<String> PAGINAS = Set.of("/preparar-assinaturas", "/assinatura", "/assineai/pagina-assinatura", "/assineai/inventor", "/assineai/inventor/configuracao", "/assineai/modelos-email", "/advai");
     private final ServicoAcessoNavegador acessos;
 
     public FiltroPaginaComAcesso(ServicoAcessoNavegador acessos) { this.acessos = acessos; }

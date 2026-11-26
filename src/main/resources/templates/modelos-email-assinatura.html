@@ -1,0 +1,92 @@
+<section th:fragment="conteudo" class="modelos-email" id="modelos-email" hidden aria-label="Editor de e-mails da assinatura">
+  <p id="email-modelo-status" role="status" aria-live="polite" data-firma-mensagem hidden></p>
+  <button id="email-modelo-carregar" class="acao" type="button" hidden>Carregar modelo</button>
+  <div class="email-modelo-comandos">
+    <button type="button" id="email-modelo-voltar">← Templates</button>
+  </div>
+  <div id="email-modelo-grade" hidden>
+    <form id="email-modelo-form">
+      <div class="email-modelo-comandos">
+        <div class="email-modelo-acoes">
+          <button type="button" id="email-modelo-prever">Ir à prévia</button>
+          <button type="button" id="email-modelo-historico">Histórico</button>
+          <button type="button" id="email-modelo-teste" title="Envio de teste pelo Mailpit local">Enviar teste</button>
+          <button type="submit">Salvar rascunho</button>
+          <button type="button" id="email-modelo-publicar" class="primaria">Publicar</button>
+        </div>
+      </div>
+      <div class="email-modelo-assunto">
+        <label for="email-modelo-titulo">Título</label>
+        <input id="email-modelo-titulo" maxlength="180" required>
+      </div>
+      <div class="email-modelo-assunto">
+        <label for="email-modelo-assunto">Assunto</label>
+        <input id="email-modelo-assunto" maxlength="180" required>
+        <select id="email-modelo-variavel-assunto" aria-label="Inserir variável no assunto">
+          <option value="">Inserir variável no assunto</option>
+          <th:block th:each="variavel : ${variaveisEmail}">
+            <option th:if="${variavel.nome() != 'codigo_verificacao'}" th:value="${variavel.nome()}"
+                    th:text="${variavel.rotulo()}"></option>
+          </th:block>
+        </select>
+      </div>
+      <div class="email-modelo-barra" role="group" aria-label="Ferramentas do editor">
+        <button type="button" id="email-modelo-blocos" title="Digite / no editor para abrir o menu de blocos">+ Bloco</button>
+        <div id="email-modelo-formatacao" class="email-modelo-grupo" role="group" aria-label="Formatação">
+          <button type="button" data-formato="toggleBold" aria-label="Negrito" title="Negrito"><strong>N</strong></button>
+          <button type="button" data-formato="toggleItalic" aria-label="Itálico" title="Itálico"><em>I</em></button>
+          <button type="button" data-formato="toggleUnderline" aria-label="Sublinhado" title="Sublinhado"><u>S</u></button>
+          <button type="button" data-formato="toggleStrike" aria-label="Tachado" title="Tachado"><s>T</s></button>
+          <button type="button" data-formato="undo" aria-label="Desfazer" title="Desfazer">↶</button>
+          <button type="button" data-formato="redo" aria-label="Refazer" title="Refazer">↷</button>
+        </div>
+        <select id="email-modelo-variavel" aria-label="Inserir variável">
+          <option value="">Inserir variável</option>
+          <option th:each="variavel : ${variaveisEmail}" th:value="${variavel.nome()}"
+                  th:text="${variavel.rotulo()}"></option>
+        </select>
+        <button type="button" id="email-modelo-modo">Ver HTML</button>
+        <div class="email-modelo-momento">
+          <label for="email-modelo-momento" class="email-modelo-etapa">Momento de envio</label>
+          <select id="email-modelo-momento">
+            <option th:each="momento : ${momentosEmail}" th:value="${momento.id()}" th:text="${momento.titulo()}"></option>
+          </select>
+        </div>
+      </div>
+    </form>
+    <div id="email-modelo-maily"></div>
+    <section id="email-modelo-painel-previa" class="email-modelo-painel-previa" aria-labelledby="email-modelo-titulo-previa">
+      <div class="email-modelo-comandos">
+        <h2 id="email-modelo-titulo-previa" tabindex="-1">Prévia do e-mail</h2>
+        <div class="email-modelo-acoes">
+          <select id="email-modelo-largura" aria-label="Formato da prévia">
+            <option value="desktop">Computador</option>
+            <option value="movel">Celular</option>
+          </select>
+          <button type="button" id="email-modelo-atualizar-previa">Atualizar</button>
+        </div>
+      </div>
+      <p id="email-modelo-previa-status" role="status"></p>
+      <p id="email-modelo-assunto-previa"></p>
+      <iframe id="email-modelo-previa" title="Prévia do e-mail com dados fictícios" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe>
+    </section>
+  </div>
+  <dialog id="email-modelo-janela-html" class="modal-exportacao email-modelo-janela" aria-labelledby="email-modelo-titulo-html">
+    <form method="dialog" class="email-modelo-comandos">
+      <h2 id="email-modelo-titulo-html">HTML do e-mail</h2>
+      <button type="submit">Fechar</button>
+    </form>
+    <textarea id="email-modelo-html" aria-label="Código HTML do e-mail" spellcheck="false" readonly></textarea>
+  </dialog>
+  <dialog id="email-modelo-janela-historico" class="modal-exportacao email-modelo-janela" aria-labelledby="email-modelo-titulo-historico">
+    <form method="dialog" class="email-modelo-comandos">
+      <h2 id="email-modelo-titulo-historico">Histórico de publicação</h2>
+      <button type="submit">Fechar</button>
+    </form>
+    <p id="email-modelo-ativo"></p>
+    <div class="email-modelo-acoes">
+      <select id="email-modelo-versoes" aria-label="Versão publicada"></select>
+      <button type="button" id="email-modelo-restaurar">Salvar versão como rascunho</button>
+    </div>
+  </dialog>
+</section>

@@ -243,9 +243,10 @@
     credenciais: obterCredenciais,
     toast: aviso,
     onRender: instancia => {
-      if (painelInventor) {
+      const area = painelInventor;
+      if (area) {
         const painel = instancia.raiz.querySelector('.tabela-painel');
-        if (painelInventor.parentElement !== painel) painel.prepend(painelInventor);
+        if (area.parentElement !== painel) painel.prepend(area);
       }
       const carregando = instancia.getEstado().carregando;
       if (carregando && !carregandoRegistros) {

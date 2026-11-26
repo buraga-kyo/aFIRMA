@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ServicoAutenticacaoConvites {
+	static final java.time.Duration VALIDADE_CODIGO = java.time.Duration.ofMinutes(10);
 	private final JdbcTemplate banco;
 	private final SegredosAssinatura segredos;
 	private final EnviadorCodigoConvite enviador;
@@ -75,16 +76,16 @@ public class ServicoAutenticacaoConvites {
 		String codigo = SegredosAssinatura.novoCodigo();
 		String resumo = segredos.selar("codigo-convite:" + convite.participante(), codigo);
 		// Falha no SMTP não habilita acesso nem grava um código que nunca foi enviado.
-		enviador.enviar(convite.email(), convite.nomeDocumento(), codigo);
+		enviador.enviar(convite.email(), convite.dadosEmail(), codigo, convite.empresaId());
 		agora = Instant.now();
 		banco.update("""
 				UPDATE autenticacao_convite SET resumo_codigo=?,codigo_expira_em=?,ultimo_envio_em=?,
 				janela_envios_em=?,quantidade_envios=?,tentativas_incorretas=CASE WHEN bloqueado_ate IS NOT NULL THEN 0 ELSE tentativas_incorretas END,
 				bloqueado_ate=NULL WHERE signatario_id=?
-				""", resumo, Timestamp.from(agora.plusSeconds(600)), Timestamp.from(agora), Timestamp.from(janela), quantidade + 1,
+				""", resumo, Timestamp.from(agora.plus(VALIDADE_CODIGO)), Timestamp.from(agora), Timestamp.from(janela), quantidade + 1,
 				convite.participante());
 		evidencias.registrar(convite.envelope(), convite.participante(), "CODIGO_ENVIADO", Map.of("destino", mascararEmail(convite.email()),
-				"expiraEm", agora.plusSeconds(600).toString()));
+				"expiraEm", agora.plus(VALIDADE_CODIGO).toString()));
 	}
 
 	@Transactional(noRollbackFor = ResponseStatusException.class)
@@ -173,14 +174,48 @@ public class ServicoAutenticacaoConvites {
 		if (token == null || !token.matches("[A-Za-z0-9_-]{43}")) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Convite inválido");
 		var convites = banco.query("""
 				SELECT participante.id,envelope.id,participante.email,envelope.nome_documento,envelope.expira_em,
-				envelope.finalizado_em,envelope.excluido_em,envelope.cancelado_em,envelope.nome_empresa
+				envelope.finalizado_em,envelope.excluido_em,envelope.cancelado_em,envelope.nome_empresa,
+				COALESCE((envelope.configuracao_registro_assinatura::jsonb ->> 'empresaId')::bigint, 0),
+				participante.nome, participante.cpf, participante.rg, participante.whatsapp,
+				participante.qualificacao, participante.papel, participante.representado,
+				participante.fundamento_representacao, COALESCE(NULLIF(btrim(envelope.nome), ''), envelope.nome_documento),
+				envelope.tipo_documento, envelope.criado_em,
+				ARRAY(SELECT jsonb_array_elements_text(
+					CASE WHEN jsonb_typeof(participante.forma_de_autenticacao) = 'array' THEN participante.forma_de_autenticacao ELSE '[]'::jsonb END)),
+				ARRAY(SELECT jsonb_array_elements_text(
+					CASE WHEN jsonb_typeof(participante.forma_de_notificacao) = 'array' THEN participante.forma_de_notificacao ELSE '[]'::jsonb END)),
+				COALESCE((envelope.configuracao_registro_assinatura::jsonb ->> 'empresaParticipante')::boolean, true)
 				FROM signatario_envelope participante JOIN envelope_assinatura envelope ON envelope.id=participante.envelope_id
 				WHERE participante.resumo_convite=?
 				""" + (bloquear ? " FOR UPDATE OF envelope" : ""), (linha, indice) -> {
 			if (linha.getTimestamp(7) != null || linha.getTimestamp(8) != null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 			Instant limite = linha.getTimestamp(6) == null ? linha.getTimestamp(5).toInstant() : linha.getTimestamp(6).toInstant().plusSeconds(7 * 86400);
 			if (!Instant.now().isBefore(limite)) throw new ResponseStatusException(HttpStatus.GONE, "Convite expirado");
-			return new Convite(linha.getObject(1, UUID.class), linha.getObject(2, UUID.class), linha.getString(3), linha.getString(4), linha.getString(9));
+			UUID envelope = linha.getObject(2, UUID.class);
+			String email = linha.getString(3);
+			String documento = linha.getString(4);
+			String empresa = linha.getString(9);
+			var dados = new java.util.HashMap<String, String>();
+			dados.put("id_assinatura", envelope.toString());
+			dados.put("email_signatario", email);
+			dados.put("nome_documento", documento);
+			dados.put("nome_empresa", empresa);
+			dados.put("nome_signatario", linha.getString(11));
+			dados.put("cpf_signatario", VariaveisEmailAssinatura.mascarar(linha.getString(12), 2));
+			dados.put("rg_signatario", VariaveisEmailAssinatura.mascarar(linha.getString(13), 2));
+			dados.put("whatsapp_signatario", VariaveisEmailAssinatura.mascarar(linha.getString(14), 4));
+			dados.put("qualificacao_signatario", linha.getString(15));
+			dados.put("papel_signatario", VariaveisEmailAssinatura.rotulo(linha.getString(16)));
+			dados.put("representado", linha.getString(17));
+			dados.put("fundamento_representacao", linha.getString(18));
+			dados.put("nome_assinatura", java.util.Objects.toString(linha.getString(19), documento));
+			dados.put("tipo_documento", VariaveisEmailAssinatura.rotulo(linha.getString(20)));
+			dados.put("data_criacao", VariaveisEmailAssinatura.data(instante(linha.getTimestamp(21))));
+			dados.put("data_expiracao_convite", VariaveisEmailAssinatura.data(limite));
+			dados.put("forma_autenticacao", canais(linha.getArray(22)));
+			dados.put("forma_notificacao", canais(linha.getArray(23)));
+			dados.put("empresa_participante", linha.getBoolean(24) ? "Sim" : "Não");
+			return new Convite(linha.getObject(1, UUID.class), envelope, email, empresa, linha.getLong(10), dados);
 		}, SegredosAssinatura.resumo(token));
 		if (convites.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Convite inválido");
 		if (bloquear) {
@@ -200,7 +235,23 @@ public class ServicoAutenticacaoConvites {
 	private String limitar(String texto, int tamanho) { return texto == null ? "" : texto.substring(0, Math.min(texto.length(), tamanho)); }
 	private ResponseStatusException codigoInvalido() { return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Código inválido ou expirado"); }
 	private ResponseStatusException limite() { return new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Limite de códigos ou tentativas atingido. Aguarde antes de tentar novamente"); }
-	private record Convite(UUID participante, UUID envelope, String email, String nomeDocumento, String nomeEmpresa) { }
+	private static String canais(java.sql.Array valores) throws java.sql.SQLException {
+		if (valores == null) return "";
+		try {
+			return java.util.Arrays.stream((Object[]) valores.getArray())
+					.map(valor -> switch (java.util.Objects.toString(valor, "").toLowerCase(java.util.Locale.ROOT)) {
+						case "email" -> "E-mail";
+						case "whatsapp" -> "WhatsApp";
+						default -> VariaveisEmailAssinatura.rotulo(java.util.Objects.toString(valor, ""));
+					})
+					.filter(valor -> !valor.isBlank())
+					.collect(java.util.stream.Collectors.joining(", "));
+		} finally {
+			valores.free();
+		}
+	}
+
+	private record Convite(UUID participante, UUID envelope, String email, String nomeEmpresa, long empresaId, Map<String, String> dadosEmail) { }
 	public record Sessao(UUID identificador, UUID participante, UUID envelope, Instant autenticadaEm, Instant expiraEm) { }
 	public record Autenticado(String segredoSessao, Instant expiraEm) { }
 	public record Acesso(String emailMascarado, boolean autenticado, Instant expiraEm, boolean envioDisponivel, String avisoPrivacidade, String nomeEmpresa, long segundosParaReenvio) { }

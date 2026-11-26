@@ -26,6 +26,14 @@ public class ControlePaginaAssinatura {
   @GetMapping("/assineai/inventor/configuracao")
   public String configurarInventor(Model modeloPagina) { modeloPagina.addAttribute("telaTrator", "conexoes"); return "documentos-assinatura"; }
 
+  @GetMapping("/assineai/modelos-email")
+  public String modelosEmail(Model modeloPagina) {
+    modeloPagina.addAttribute("telaTrator", "emails");
+    modeloPagina.addAttribute("variaveisEmail", VariaveisEmailAssinatura.catalogo());
+    modeloPagina.addAttribute("momentosEmail", MomentoEmailAssinatura.values());
+    return "documentos-assinatura";
+  }
+
   @GetMapping("/assinatura")
   public String assinatura() {
     return "assinatura";

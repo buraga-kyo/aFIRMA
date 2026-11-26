@@ -5,6 +5,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -13,9 +14,15 @@ public class EnviadorCodigoConvite {
 	private final ObjectProvider<JavaMailSender> remetentes;
 	private final String enderecoRemetente;
 	private final boolean servidorConfigurado;
+	private final boolean testeLocal;
+	private final ModelosEmailAssinatura modelos;
 
-	public EnviadorCodigoConvite(ObjectProvider<JavaMailSender> remetentes, Environment ambiente) {
+	public EnviadorCodigoConvite(ObjectProvider<JavaMailSender> remetentes, Environment ambiente, ModelosEmailAssinatura modelos) {
 		this.remetentes = remetentes;
+		this.modelos = modelos;
+		testeLocal = ambiente.matchesProfiles("local-test")
+				&& java.util.Set.of("localhost", "127.0.0.1").contains(ambiente.getProperty("ASSINEAI_SMTP_HOST", ""))
+				&& ambiente.getProperty("ASSINEAI_SMTP_PORT", Integer.class, 587) == 1025;
 		enderecoRemetente = ambiente.getProperty("ASSINEAI_EMAIL_REMETENTE", "");
 		servidorConfigurado = !ambiente.getProperty("ASSINEAI_SMTP_HOST", "").isBlank();
 		if (servidorConfigurado && !ambiente.matchesProfiles("local-test")
@@ -26,17 +33,37 @@ public class EnviadorCodigoConvite {
 
 	public boolean configurado() { return servidorConfigurado && !enderecoRemetente.isBlank() && remetentes.getIfAvailable() != null; }
 
-	public void enviar(String destinatario, String nomeDocumento, String codigo) {
+	public void enviar(String destinatario, java.util.Map<String, String> dados, String codigo, long empresaId) {
+		var valores = new java.util.HashMap<>(dados);
+		valores.put(VariaveisEmailAssinatura.CODIGO, codigo);
+		valores.put("validade_codigo_minutos", Long.toString(ServicoAutenticacaoConvites.VALIDADE_CODIGO.toMinutes()));
+		enviarHtml(destinatario, ModelosEmailAssinatura.renderizar(modelos.publicado(empresaId), valores));
+	}
+
+	public boolean testeDisponivel() {
+		return testeLocal && configurado();
+	}
+
+	public void enviarTeste(ModelosEmailAssinatura.Mensagem mensagem) {
+		if (!testeDisponivel()) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+				"O teste requer SMTP local na porta 1025 com o perfil local-test.");
+		enviarHtml("teste-assinatura@example.test", mensagem);
+	}
+
+	void enviarHtml(String destinatario, ModelosEmailAssinatura.Mensagem conteudo) {
 		if (!configurado()) throw indisponivel();
-		SimpleMailMessage mensagem = new SimpleMailMessage();
-		mensagem.setFrom(enderecoRemetente);
-		mensagem.setTo(destinatario);
-		mensagem.setSubject("Seu código para acessar o documento");
-		mensagem.setText("Código: " + codigo + "\n\nDocumento: " + nomeDocumento.replaceAll("[\\p{Cntrl}]", " ")
-				+ "\nO código vale por 10 minutos. Digite-o apenas na página do convite que você abriu. "
-				+ "Não compartilhe o código. Se você não solicitou este acesso, ignore esta mensagem.\n");
-		try { remetentes.getObject().send(mensagem); }
-		catch (org.springframework.mail.MailException erro) { throw indisponivel(); }
+		try {
+			var remetente = remetentes.getObject();
+			var mensagem = remetente.createMimeMessage();
+			var mime = new MimeMessageHelper(mensagem, true, "UTF-8");
+			mime.setFrom(enderecoRemetente);
+			mime.setTo(destinatario);
+			mime.setSubject(conteudo.assunto());
+			mime.setText(conteudo.texto(), conteudo.html());
+			remetente.send(mensagem);
+		} catch (jakarta.mail.MessagingException | org.springframework.mail.MailException erro) {
+			throw indisponivel();
+		}
 	}
 
 	public void enviarMensagem(String destinatario, String assunto, String texto) {

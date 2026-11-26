@@ -20,6 +20,13 @@ public class AssinaApplication {
       }
       return;
     }
-    SpringApplication.run(AssinaApplication.class, argumentos);
+    SpringApplication aplicacao = new SpringApplication(AssinaApplication.class);
+    aplicacao.addInitializers(contexto -> {
+      var ambiente = contexto.getEnvironment();
+      if (ambiente.matchesProfiles("prod") && ambiente.matchesProfiles("local-test")) {
+        throw new IllegalStateException("O perfil de produção não pode usar credenciais de teste.");
+      }
+    });
+    aplicacao.run(argumentos);
   }
 }
