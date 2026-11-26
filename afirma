@@ -1,0 +1,221 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+raiz=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+cd "$raiz"
+
+uso() {
+  printf '%s\n' 'Uso: ./afirma --dev ou ./afirma --prod'
+}
+
+falhar() {
+  printf 'aFIRMA: %s\n' "$*" >&2
+  exit 1
+}
+
+case "${1:-}" in
+  --help|-h) uso; exit 0 ;;
+  --dev|--prod) modo=$1 ;;
+  *) uso >&2; exit 2 ;;
+esac
+[[ $# -eq 1 ]] || { uso >&2; exit 2; }
+((BASH_VERSINFO[0] > 5 || (BASH_VERSINFO[0] == 5 && BASH_VERSINFO[1] >= 1))) ||
+  falhar 'Use Bash 5.1 ou mais novo.'
+
+for comando in java node npm docker curl setsid sha256sum flock; do
+  command -v "$comando" >/dev/null || falhar "Instale $comando para iniciar."
+done
+docker compose version >/dev/null || falhar 'Instale o plugin Docker Compose.'
+docker info >/dev/null 2>&1 || falhar 'Inicie o Docker e confira o acesso deste usuário.'
+node -e 'process.exit(Number(process.versions.node.split(".")[0]) < 20 ? 1 : 0)' ||
+  falhar 'Use Node.js 20 ou mais novo.'
+java -version 2>&1 | awk -F'[".]' '/version/ {versao=$2; exit} END {exit !(versao >= 25)}' ||
+  falhar 'Use Java 25 ou mais novo.'
+
+estado="$raiz/.afirma"
+mkdir -p "$estado"
+servicos=(postgres redis minio)
+ambiente=()
+compose=(docker compose)
+
+if [[ "$modo" == --dev ]]; then
+  diretorioJava="$estado/dev"
+  mkdir -p "$diretorioJava"
+  chaveCofreDev=$( {
+    umask 077
+    flock 8
+    arquivoChave="$diretorioJava/chave-cofre-certificados"
+    if [[ ! -s "$arquivoChave" ]]; then
+      node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("base64"))' > "$arquivoChave"
+    fi
+    cat "$arquivoChave"
+  } 8>"$diretorioJava/chave-cofre-certificados.lock")
+  portaJava=${AFIRMA_DEV_PORTA:-8081}
+  portaPonte=${AFIRMA_DEV_PORTA_PONTE:-8092}
+
+  # O Compose e a aplicação de teste usam portas, dados e credenciais próprios.
+  export POSTGRES_DB=afirma_dev POSTGRES_USER=afirma_dev POSTGRES_PASSWORD=afirma-dev-postgres
+  export MINIO_ROOT_USER=afirma-dev MINIO_ROOT_PASSWORD=afirma-dev-minio
+  export AFIRMA_PORTA_POSTGRES=15432 AFIRMA_PORTA_REDIS=16379 AFIRMA_PORTA_MINIO=19000
+  export AFIRMA_PORTA_MINIO_CONSOLE=19001
+  compose+=(--env-file /dev/null --project-name afirma-dev --profile teste-assinatura)
+  servicos+=(mailpit)
+
+  # A JVM de teste roda fora da raiz para o Spring não importar o .env de produção.
+  ambiente=(env -i "PATH=$PATH" "HOME=$HOME" "LANG=${LANG:-C.UTF-8}")
+  [[ -z "${JAVA_HOME:-}" ]] || ambiente+=("JAVA_HOME=$JAVA_HOME")
+  ambiente+=(
+    'SPRING_DOCKER_COMPOSE_ENABLED=false'
+    "SPRING_DATASOURCE_URL=jdbc:postgresql://127.0.0.1:$AFIRMA_PORTA_POSTGRES/$POSTGRES_DB"
+    "SPRING_DATASOURCE_USERNAME=$POSTGRES_USER"
+    "SPRING_DATASOURCE_PASSWORD=$POSTGRES_PASSWORD"
+    "SPRING_DATA_REDIS_HOST=127.0.0.1"
+    "SPRING_DATA_REDIS_PORT=$AFIRMA_PORTA_REDIS"
+    "ASSINEAI_MINIO_ENDPOINT=http://127.0.0.1:$AFIRMA_PORTA_MINIO"
+    "ASSINEAI_MINIO_ACCESS_KEY=$MINIO_ROOT_USER"
+    "ASSINEAI_MINIO_SECRET_KEY=$MINIO_ROOT_PASSWORD"
+    'ASSINEAI_MINIO_BUCKET=afirma-dev'
+    'ASSINEAI_SMTP_HOST=127.0.0.1'
+    'ASSINEAI_SMTP_PORT=1025'
+    'ASSINEAI_EMAIL_REMETENTE=assinaturas@example.test'
+    'ASSINEAI_SMTP_AUTENTICAR=false'
+    'ASSINEAI_SMTP_STARTTLS=false'
+    'APP_FIRMA_ROTINAS=false'
+    "APP_CHAVE_COFRE_CERTIFICADOS=$chaveCofreDev"
+    'APP_CHAT_BRIDGE_KEY=afirma-dev-ponte-so-para-testes-locais'
+    "APP_CHAT_BRIDGE_URL=http://127.0.0.1:$portaPonte"
+    "APP_CHAT_BACKEND_URL=http://127.0.0.1:$portaJava"
+    "APP_CHAT_BRIDGE_PORT=$portaPonte"
+    "APP_CHAT_AUTH_DIR=$diretorioJava/whatsapp"
+  )
+  comandoJava=(./mvnw spring-boot:run
+    "-Dspring-boot.run.workingDirectory=$diretorioJava"
+    "-Dspring-boot.run.arguments=--spring.profiles.active=local-test --server.address=127.0.0.1 --server.port=$portaJava")
+else
+  [[ -r .env ]] || falhar 'Copie .env.example para .env e preencha a configuração de produção.'
+  set -a
+  # shellcheck source=/dev/null
+  source ./.env
+  set +a
+
+  for variavel in APP_JWT_ISSUER_URI APP_JWT_AUDIENCE APP_API_KEY_SHA256 APP_CHAT_BRIDGE_KEY \
+    POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD SPRING_DATASOURCE_URL SPRING_DATASOURCE_USERNAME \
+    SPRING_DATASOURCE_PASSWORD MINIO_ROOT_USER MINIO_ROOT_PASSWORD; do
+    [[ -n "${!variavel:-}" ]] || falhar "Preencha $variavel no .env de produção."
+  done
+
+  chaveTeste=afirma-teste-local-2026-chave-api-exclusiva
+  resumoTeste=$(printf '%s' "$chaveTeste" | sha256sum)
+  [[ "$APP_JWT_ISSUER_URI" == https://* && "$APP_JWT_ISSUER_URI" != *SEU-EMISSOR* &&
+     "$APP_JWT_AUDIENCE" != SEU-PUBLICO && "$APP_JWT_AUDIENCE" != afirma.local-test ]] ||
+    falhar 'Configure o emissor HTTPS e o audience OAuth de produção.'
+  [[ "$APP_API_KEY_SHA256" =~ ^[0-9A-Fa-f]{64}$ &&
+     "${APP_API_KEY_SHA256,,}" != "${resumoTeste%% *}" && "${APP_API_KEY:-}" != "$chaveTeste" ]] ||
+    falhar 'Configure o SHA-256 de uma chave da API de produção.'
+  [[ ${#APP_CHAT_BRIDGE_KEY} -ge 32 && "$APP_CHAT_BRIDGE_KEY" != COLOQUE_* &&
+     "$APP_CHAT_BRIDGE_KEY" != afirma-dev-* ]] ||
+    falhar 'Configure uma chave de produção para APP_CHAT_BRIDGE_KEY.'
+  for senha in "$POSTGRES_PASSWORD" "$SPRING_DATASOURCE_PASSWORD" "$MINIO_ROOT_PASSWORD" "${ASSINEAI_MINIO_SECRET_KEY:-}"; do
+    case "$senha" in
+      SENHA_FORTE_DO_POSTGRES|TROQUE_ESTA_SENHA|afirma-local-password|afirma-dev-*)
+        falhar 'Troque as senhas de exemplo ou de teste antes de iniciar em produção.' ;;
+    esac
+  done
+  for segredo in "${APP_ASSINEAI_JWT_SECRET:-}" "${JWT_SECRET:-}" "${ASSINEAI_SEGREDO_EVIDENCIAS:-}"; do
+    case "$segredo" in
+      afirma-local-test-*|afirma-teste-local-*|afirma-segredo-exclusivo-para-testes-locais-2026)
+        falhar 'Troque os segredos de teste antes de iniciar em produção.' ;;
+    esac
+  done
+
+  portaJava=${SERVER_PORT:-8080}
+  portaPonte=${APP_CHAT_BRIDGE_PORT:-8091}
+  export APP_CHAT_BRIDGE_PORT="$portaPonte"
+  export APP_CHAT_BRIDGE_URL="${APP_CHAT_BRIDGE_URL:-http://127.0.0.1:$portaPonte}"
+  export APP_CHAT_BACKEND_URL="${APP_CHAT_BACKEND_URL:-http://127.0.0.1:$portaJava}"
+  export APP_CHAT_AUTH_DIR="${APP_CHAT_AUTH_DIR:-$raiz/chat-baileys/dados}"
+  comandoJava=(java -jar "$raiz/target/afirma.jar" --spring.profiles.active=prod
+    --spring.docker.compose.enabled=false "--server.port=$portaJava")
+fi
+
+for porta in "$portaJava" "$portaPonte"; do
+  if [[ ! "$porta" =~ ^[1-9][0-9]{0,4}$ ]] || ((porta > 65535)); then
+    falhar 'Informe portas entre 1 e 65535.'
+  fi
+done
+[[ "$portaJava" != "$portaPonte" ]] || falhar 'A aplicação e a ponte precisam de portas diferentes.'
+
+# A instalação usa o lockfile. O bloqueio evita dois npm ci na mesma pasta.
+(
+  flock 9
+  resumoDependencias=$(sha256sum chat-baileys/package-lock.json)
+  if [[ ! -d chat-baileys/node_modules/@whiskeysockets/baileys ||
+        "$(cat chat-baileys/node_modules/.afirma-lock 2>/dev/null || true)" != "$resumoDependencias" ]]; then
+    printf '%s\n' 'Preparando as dependências do Baileys.'
+    # O lockfile usa SSH no GitHub. HTTPS permite instalar sem chave SSH.
+    GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=url.https://github.com/.insteadOf \
+      GIT_CONFIG_VALUE_0=ssh://git@github.com/ npm --prefix chat-baileys ci --no-audit --no-fund
+    printf '%s\n' "$resumoDependencias" > chat-baileys/node_modules/.afirma-lock
+  fi
+) 9>"$estado/dependencias.lock" || falhar 'O npm não conseguiu preparar o Baileys.'
+
+if [[ "$modo" == --prod ]]; then
+  printf '%s\n' 'Empacotando a aplicação Java.'
+  ./mvnw -q -DskipTests package || falhar 'O Maven não conseguiu empacotar a aplicação.'
+fi
+
+printf '%s\n' 'Subindo os serviços do Docker.'
+"${compose[@]}" up -d --no-recreate "${servicos[@]}" || falhar 'O Docker não conseguiu subir os serviços.'
+
+aguardar() {
+  local servico=$1
+  shift
+  local limite=$((SECONDS + 90))
+  until "$@" >/dev/null 2>&1; do
+    ((SECONDS < limite)) || falhar "$servico não ficou pronto. Confira os logs do Docker Compose."
+    sleep 2
+  done
+}
+
+# Os dados do PostgreSQL são lidos dentro do contêiner.
+# shellcheck disable=SC2016
+aguardar PostgreSQL "${compose[@]}" exec -T postgres sh -c \
+  'PGPASSWORD="$POSTGRES_PASSWORD" psql -h 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "SELECT 1"'
+# shellcheck disable=SC2016
+aguardar Redis "${compose[@]}" exec -T redis sh -c '[ "$(redis-cli ping)" = PONG ]'
+aguardar MinIO curl -fsS --max-time 3 "http://127.0.0.1:${AFIRMA_PORTA_MINIO:-9000}/minio/health/ready"
+if [[ "$modo" == --dev ]]; then
+  aguardar Mailpit curl -fsS --max-time 3 http://127.0.0.1:8025/
+  printf '%s\n' 'E-mails de teste em http://127.0.0.1:8025'
+fi
+
+processos=()
+# Esta função roda pela trap de saída.
+# shellcheck disable=SC2317
+encerrar() {
+  trap - EXIT
+  # Encerra a JVM que o Maven abriu e a ponte sem derrubar os serviços do Docker.
+  for processo in "${processos[@]}"; do
+    kill -TERM -- "-$processo" 2>/dev/null || kill -TERM "$processo" 2>/dev/null || true
+  done
+  wait || true
+}
+trap encerrar EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+printf 'Iniciando aFIRMA na porta %s e Baileys na porta %s.\n' "$portaJava" "$portaPonte"
+setsid "${ambiente[@]}" node "$raiz/chat-baileys/servidor.cjs" &
+processos+=("$!")
+setsid "${ambiente[@]}" "${comandoJava[@]}" &
+processos+=("$!")
+
+resultado=0
+wait -n -p processoEncerrado "${processos[@]}" || resultado=$?
+if [[ "${processoEncerrado:-}" == "${processos[0]}" ]]; then
+  printf 'aFIRMA: Baileys encerrou com código %s.\n' "$resultado" >&2
+else
+  printf 'aFIRMA: servidor Java encerrou com código %s.\n' "$resultado" >&2
+fi
+((resultado != 0)) || resultado=1
+exit "$resultado"

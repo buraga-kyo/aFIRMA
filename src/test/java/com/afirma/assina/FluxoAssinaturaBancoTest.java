@@ -300,6 +300,52 @@ class FluxoAssinaturaBancoTest {
 		assertTrue(evidencias.eventos(criado.identificador()).stream().anyMatch(evento -> evento.tipo().equals("CONVITE_RECUSADO")));
 	}
 
+	@Test void avisaSomenteObservadoresVinculadosAoSignatario() throws Exception {
+		var concluido = criar(2, List.of(
+				List.of(new ObservadorAssinatura("COMPARTILHADO@exemplo.com", "(11) 99999-9999"),
+						new ObservadorAssinatura("compartilhado@exemplo.com", "+5511999999999")),
+				List.of(new ObservadorAssinatura("compartilhado@exemplo.com", null),
+						new ObservadorAssinatura("segundo@exemplo.com", null))));
+		String primeiroConvite = concluido.convites().getFirst().token();
+		servico.registrarAcessoConvite(primeiroConvite, "127.0.0.1", "Navegador");
+		servico.registrarAcessoConvite(primeiroConvite, "127.0.0.1", "Navegador");
+		assinarComColeta(primeiroConvite);
+		assinarComColeta(concluido.convites().getLast().token());
+		finalizar(concluido.identificador());
+
+		var recusado = criar(2, List.of(List.of(new ObservadorAssinatura(null, "+5511988888888")), List.of()));
+		for (var convite : recusado.convites().reversed()) {
+			gestao.recusar(convite.token(), "Motivo privado", sessao(convite.token()));
+		}
+
+		var entrega = mock(ServicoEntregaAssinatura.class);
+		when(entrega.disponivel()).thenReturn(true);
+		when(entrega.whatsappDisponivel()).thenReturn(true);
+		var rotina = new RotinaObservadoresAssinatura(banco, entrega);
+		for (int tentativa = 0; tentativa < 16; tentativa++) rotina.entregar();
+
+		var ordem = inOrder(entrega);
+		for (String mensagem : List.of("O envelope foi criado.", "Pessoa 0 abriu o convite.",
+				"Pessoa 0 assinou.", "Pessoa 1 assinou.", "A assinatura foi concluída.")) {
+			ordem.verify(entrega).enviar("email", "compartilhado@exemplo.com", "observador", "Assinatura: contrato.pdf\n" + mensagem);
+		}
+		verify(entrega, times(5)).enviar(eq("email"), eq("compartilhado@exemplo.com"), eq("observador"), anyString());
+		verify(entrega, times(4)).enviar(eq("whatsapp"), eq("+5511999999999"), eq("observador"), anyString());
+		verify(entrega, never()).enviar(eq("whatsapp"), eq("+5511999999999"), eq("observador"), contains("Pessoa 1"));
+		verify(entrega, times(3)).enviar(eq("email"), eq("segundo@exemplo.com"), eq("observador"), anyString());
+		verify(entrega, never()).enviar(eq("email"), eq("segundo@exemplo.com"), eq("observador"), contains("Pessoa 0"));
+		verify(entrega, times(2)).enviar(eq("whatsapp"), eq("+5511988888888"), eq("observador"), anyString());
+		verify(entrega).enviar("whatsapp", "+5511988888888", "observador", "Assinatura: contrato.pdf\nPessoa 0 recusou a assinatura.");
+		assertEquals(2, concluido.convites().size());
+	}
+
+	private void assinarComColeta(String convite) throws Exception {
+		var coleta = new ColetaDadosAssinatura.Dados("192.0.2.1", "192.0.2.1", "CONEXAO", "", 0, 0, 10, Instant.now());
+		servico.assinarConvite(convite, new MockMultipartFile("assinatura", "assinatura.png", "image/png", imagem),
+				null, null, true, "192.0.2.1", "Navegador", java.util.Map.of(), java.util.Map.of(),
+				servico.consultarConvite(convite).resumoDocumento(), ServicoEnvelopes.TEXTO_ACEITE, false, sessao(convite), coleta);
+	}
+
 	@Test void bancoImpedeAlteracaoERemocaoDasProvas() throws Exception {
 		var criado = criar(1);
 		assertThrows(org.springframework.dao.DataAccessException.class,
@@ -448,14 +494,21 @@ class FluxoAssinaturaBancoTest {
 	}
 
 	private ServicoEnvelopes.Criado criar(int quantidade) throws Exception {
+		return criar(quantidade, List.of());
+	}
+
+	private ServicoEnvelopes.Criado criar(int quantidade, List<List<ObservadorAssinatura>> observadoresPorSignatario) throws Exception {
 		var pessoas = new java.util.ArrayList<ServicoEnvelopes.SignatarioNovo>();
 		for (int indice = 0; indice < quantidade; indice++) {
+			var observadores = indice < observadoresPorSignatario.size() ? observadoresPorSignatario.get(indice) : null;
 			pessoas.add(new ServicoEnvelopes.SignatarioNovo("Pessoa " + indice, "pessoa" + indice + "@exemplo.com",
+					null, null, null, null,
 					List.of(new ServicoEnvelopes.CampoNovo(CampoAssinatura.Tipo.ASSINATURA, 1, .1, .1 + indice * .25, .4, .2)),
-					"EM_NOME_PROPRIO", null, null));
+					List.of(), List.of(), "EM_NOME_PROPRIO", null, null, observadores));
 		}
 		return servico.criar(new MockMultipartFile("pdf", "contrato.pdf", "application/pdf", ArquivosAssinaturaTeste.pdf()),
-				new ServicoEnvelopes.PedidoCriacao("Empresa", pessoas, "CONTRATO_PARTICULAR", PoliticaDocumentosAssinatura.DECLARACAO_FORMALIDADES, UUID.randomUUID()), "criador");
+				new ServicoEnvelopes.PedidoCriacao("Empresa", null, pessoas, "CONTRATO_PARTICULAR",
+						PoliticaDocumentosAssinatura.DECLARACAO_FORMALIDADES, UUID.randomUUID()), "criador");
 	}
 	private void assinar(String token, String resumo) throws Exception {
 		servico.assinarConvite(token, new MockMultipartFile("assinatura", "assinatura.png", "image/png", imagem),
@@ -501,7 +554,8 @@ class FluxoAssinaturaBancoTest {
 			fabrica.setDataSource(banco);
 			fabrica.setPackagesToScan("com.afirma.assina");
 			fabrica.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-			fabrica.setJpaPropertyMap(java.util.Map.of("hibernate.hbm2ddl.auto", "validate"));
+			fabrica.setJpaPropertyMap(java.util.Map.of("hibernate.hbm2ddl.auto", "validate",
+					"hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.PhysicalNamingStrategySnakeCaseImpl"));
 			return fabrica;
 		}
 		@Bean JpaTransactionManager transactionManager(EntityManagerFactory fabrica) { return new JpaTransactionManager(fabrica); }
@@ -515,6 +569,7 @@ class FluxoAssinaturaBancoTest {
 		@Bean PoliticaDocumentosAssinatura politica(org.springframework.core.env.Environment ambiente) { return new PoliticaDocumentosAssinatura(ambiente); }
 		@Bean ArmazenamentoMinio armazenamento() { return new ArmazenamentoMinio(new MockEnvironment()); }
 		@Bean ServicoAssinaturaPdf assinador() { return new ServicoAssinaturaPdf(); }
+		@Bean PaginaAssinaturaEmpresa paginasEmpresa() { return mock(PaginaAssinaturaEmpresa.class); }
 		@Bean ServicoEvidenciasAssinatura evidencias(org.springframework.jdbc.core.JdbcTemplate banco,
 				tools.jackson.databind.ObjectMapper json, SegredosAssinatura segredos, ArmazenamentoMinio armazenamento) {
 			return new ServicoEvidenciasAssinatura(banco, json, segredos, armazenamento);
@@ -523,7 +578,7 @@ class FluxoAssinaturaBancoTest {
 			var enviador = mock(EnviadorCodigoConvite.class);
 			when(enviador.configurado()).thenReturn(true);
 			doAnswer(chamada -> { codigos.put(chamada.getArgument(0), chamada.getArgument(2)); return null; })
-					.when(enviador).enviar(anyString(), anyString(), anyString());
+					.when(enviador).enviar(anyString(), anyMap(), anyString(), anyLong());
 			return enviador;
 		}
 		@Bean ServicoAutenticacaoConvites autenticacao(org.springframework.jdbc.core.JdbcTemplate banco,
@@ -533,13 +588,25 @@ class FluxoAssinaturaBancoTest {
 		@Bean ServicoPedidosAssinatura pedidos(org.springframework.jdbc.core.JdbcTemplate banco, SegredosAssinatura segredos, tools.jackson.databind.ObjectMapper json) {
 			return new ServicoPedidosAssinatura(banco, segredos, json);
 		}
+		private ServicoRegistroParcial registroParcial(ServicoCamposPdf pdfs) throws Exception {
+			var registro = mock(ServicoRegistroParcial.class);
+			when(registro.gerar(any(), any(), anyList(), anyList())).thenAnswer(chamada -> {
+				byte[] original = chamada.getArgument(1);
+				List<ServicoCamposPdf.Marca> marcas = chamada.getArgument(2);
+				return marcas.isEmpty() ? original : pdfs.aplicar(original, marcas);
+			});
+			return registro;
+		}
 
 		@Bean ServicoEnvelopes servico(RepositorioEnvelopeAssinatura envelopes, RepositorioSignatarioEnvelope pessoas,
 				RepositorioCampoAssinatura campos, RepositorioConfiguracaoAssinatura configuracoes, ServicoCamposPdf pdfs,
 				ArmazenamentoMinio armazenamento, ServicoEvidenciasAssinatura evidencias, ServicoAutenticacaoConvites autenticacao,
-				PoliticaDocumentosAssinatura politica, ServicoAssinaturaPdf assinador, ServicoPedidosAssinatura pedidos, RepositorioDocumentoAssinatura documentos, RepositorioSignatarioHistorico historicos) {
+				PoliticaDocumentosAssinatura politica, ServicoAssinaturaPdf assinador, ServicoPedidosAssinatura pedidos,
+				RepositorioDocumentoAssinatura documentos, RepositorioSignatarioHistorico historicos,
+				PaginaAssinaturaEmpresa paginasEmpresa) throws Exception {
 			return new ServicoEnvelopes(envelopes, pessoas, campos, new ValidadorPedidoAssinatura(configuracoes), pdfs,
-					assinador, armazenamento, mock(ServicoAutenticacaoAssinatura.class), documentos, historicos, mock(PaginaAssinaturaEmpresa.class), evidencias, autenticacao, politica, pedidos, mock(ServicoRegistroParcial.class));
+					assinador, armazenamento, mock(ServicoAutenticacaoAssinatura.class), documentos, historicos, paginasEmpresa,
+					evidencias, autenticacao, politica, pedidos, registroParcial(pdfs));
 		}
 		@Bean ServicoGestaoAssinaturas gestao(RepositorioEnvelopeAssinatura envelopes, RepositorioSignatarioEnvelope pessoas,
 				org.springframework.jdbc.core.JdbcTemplate banco, ServicoEvidenciasAssinatura evidencias, ServicoAutenticacaoConvites autenticacao) {

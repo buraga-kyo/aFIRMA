@@ -49,7 +49,7 @@ class ReenvioCodigoConviteTest {
     var acesso = servico.consultarAcesso(tokenConvite, null);
     assertTrue(acesso.segundosParaReenvio() > 0 && acesso.segundosParaReenvio() <= 60);
     assertEquals(429, assertThrows(ResponseStatusException.class, () -> servico.solicitarCodigo(tokenConvite)).getStatusCode().value());
-    verify(enviador, never()).enviar(anyString(), anyString(), anyString());
+    verify(enviador, never()).enviar(anyString(), anyMap(), anyString(), anyLong());
     assertTrue(servico.consultarAcesso(tokenConvite, null).segundosParaReenvio() > 0);
   }
 }

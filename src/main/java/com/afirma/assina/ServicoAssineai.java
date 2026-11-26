@@ -73,15 +73,20 @@ public class ServicoAssineai {
   }
 
   public Map<String, Object> recursos(String identidade) {
+    var empresa = identidades.empresa(identidade);
     return Map.of(
       "entregaDisponivel",
       entrega.disponivel(),
+      "smsDisponivel",
+      entrega.smsDisponivel(),
       "certificadoDisponivel",
       !caminhoCertificado.isBlank(),
+      "certificadoEmpresaDisponivel",
+      certificadoEmpresa.disponivel(id(empresa, "EmpresaId")),
       "usuario",
-      texto(identidades.empresa(identidade), "EmpresaUsuario"),
+      texto(empresa, "EmpresaUsuario"),
       "empresa",
-      identidades.empresa(identidade)
+      empresa
     );
   }
 

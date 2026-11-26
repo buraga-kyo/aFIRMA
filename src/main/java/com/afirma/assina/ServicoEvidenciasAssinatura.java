@@ -39,6 +39,31 @@ public class ServicoEvidenciasAssinatura {
 	}
 
 	@Transactional(propagation = Propagation.MANDATORY)
+	public void cadastrarObservadores(UUID envelope, UUID participante, java.util.Set<ObservadorAssinatura.Destino> destinos) {
+		for (var destino : destinos) {
+			banco.update("INSERT INTO observador_assinatura(envelope_id, canal, contato) VALUES (?,?,?) ON CONFLICT DO NOTHING",
+					envelope, destino.canal(), destino.contato());
+			banco.update("""
+					INSERT INTO observador_signatario_assinatura(envelope_id, canal, contato, participante_id) VALUES (?,?,?,?)
+					""", envelope, destino.canal(), destino.contato(), participante);
+		}
+		// O primeiro evento já existe quando os signatários são salvos.
+		banco.update("""
+				INSERT INTO notificacao_observador_assinatura(envelope_id, sequencia, canal, contato)
+				SELECT vinculo.envelope_id, evento.sequencia, vinculo.canal, vinculo.contato
+				FROM observador_signatario_assinatura vinculo
+				JOIN evento_assinatura evento ON evento.envelope_id=vinculo.envelope_id AND evento.tipo='ENVELOPE_CRIADO'
+				WHERE vinculo.participante_id=?
+				ON CONFLICT DO NOTHING
+				""", participante);
+	}
+
+	public boolean temObservadores(UUID participante) {
+		return Boolean.TRUE.equals(banco.queryForObject(
+				"SELECT EXISTS (SELECT 1 FROM observador_signatario_assinatura WHERE participante_id=?)", Boolean.class, participante));
+	}
+
+	@Transactional(propagation = Propagation.MANDATORY)
 	public String registrar(UUID envelope, UUID participante, String tipo, Map<String, ?> informacoes) {
 		segredos.exigirConfiguracao();
 		// O mesmo bloqueio serializa eventos e alterações do documento, inclusive entre instâncias da aplicação.
@@ -64,6 +89,12 @@ public class ServicoEvidenciasAssinatura {
 				resumo_anterior,resumo_evento,selo_servidor,chave_selo) VALUES (?,?,?,?,?,?,?,?,?,?)
 				""", envelope, sequencia, Timestamp.from(ocorridoEm), tipo, participante, texto,
 				anterior, resumo, segredos.selar("evento-assinatura", resumo), segredos.identificadorChave());
+		// A atualização só entra na fila se a movimentação for confirmada no banco.
+		if (ObservadorAssinatura.mensagem(tipo, null) != null) banco.update("""
+				INSERT INTO notificacao_observador_assinatura(envelope_id, sequencia, canal, contato)
+				SELECT DISTINCT envelope_id, ?, canal, contato FROM observador_signatario_assinatura
+				WHERE envelope_id=? AND participante_id=COALESCE(CAST(? AS uuid), participante_id)
+				""", sequencia, envelope, participante);
 		return resumo;
 	}
 

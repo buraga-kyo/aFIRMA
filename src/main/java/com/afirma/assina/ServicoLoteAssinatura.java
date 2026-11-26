@@ -72,7 +72,7 @@ public class ServicoLoteAssinatura {
                     campo.posicaoX(), campo.posicaoY(), campo.largura(), campo.altura(), null,campo.nome(),campo.obrigatorio(),campo.rotacao()));
             }
             pessoas.add(new ServicoEnvelopes.SignatarioNovo(pessoa.nome(), pessoa.email(), pessoa.cpf(), pessoa.whatsapp(),
-                pessoa.rg(), pessoa.qualificacao(), campos, pessoa.formaDeAutenticacao(), pessoa.formaDeNotificacao(), pessoa.papel(), pessoa.representado(), pessoa.fundamentoRepresentacao()));
+                pessoa.rg(), pessoa.qualificacao(), campos, pessoa.formaDeAutenticacao(), pessoa.formaDeNotificacao(), pessoa.papel(), pessoa.representado(), pessoa.fundamentoRepresentacao(), pessoa.observadores()));
         }
         for (boolean usado : usados) if (!usado && !pessoas.isEmpty()) throw erro("Cada documento precisa de ao menos um campo de assinatura");
         byte[] conjunto;
@@ -93,10 +93,14 @@ public class ServicoLoteAssinatura {
             fontes.add(documento);
         }
         return envelopes.criarComDocumentos(new Pdf(conjunto, pedido.nomeAssinatura().strip()),
-            new ServicoEnvelopes.PedidoCriacao(pedido.nomeEmpresa(), pedido.nomeAssinatura(), pessoas, pedido.tipoDocumento(), pedido.declaracaoFormalidades(), pedido.idRequisicao(), pedido.empresaParticipante()), criador, fontes, coletaEmpresa, dispositivoEmpresa);
+            new ServicoEnvelopes.PedidoCriacao(pedido.nomeEmpresa(), pedido.nomeAssinatura(), pessoas, pedido.tipoDocumento(), pedido.declaracaoFormalidades(), pedido.idRequisicao(), pedido.empresaParticipante(), pedido.observadores()), criador, fontes, coletaEmpresa, dispositivoEmpresa);
     }
     private ResponseStatusException erro(String mensagem) { return new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem); }
-    public record Pedido(String nomeEmpresa, String nomeAssinatura, List<ServicoEnvelopes.SignatarioNovo> signatarios, List<DocumentoNovo> documentos, String tipoDocumento, String declaracaoFormalidades, UUID idRequisicao, boolean empresaParticipante) {
+    public record Pedido(String nomeEmpresa, String nomeAssinatura, List<ServicoEnvelopes.SignatarioNovo> signatarios, List<DocumentoNovo> documentos, String tipoDocumento, String declaracaoFormalidades, UUID idRequisicao, boolean empresaParticipante, List<ObservadorAssinatura> observadores) {
+        public Pedido(String nomeEmpresa, String nomeAssinatura, List<ServicoEnvelopes.SignatarioNovo> signatarios, List<DocumentoNovo> documentos,
+                String tipoDocumento, String declaracaoFormalidades, UUID idRequisicao, boolean empresaParticipante) {
+            this(nomeEmpresa, nomeAssinatura, signatarios, documentos, tipoDocumento, declaracaoFormalidades, idRequisicao, empresaParticipante, null);
+        }
         public Pedido(String nomeEmpresa, String nomeAssinatura, List<ServicoEnvelopes.SignatarioNovo> signatarios, List<DocumentoNovo> documentos,
                 String tipoDocumento, String declaracaoFormalidades, UUID idRequisicao) {
             this(nomeEmpresa, nomeAssinatura, signatarios, documentos, tipoDocumento, declaracaoFormalidades, idRequisicao, false);

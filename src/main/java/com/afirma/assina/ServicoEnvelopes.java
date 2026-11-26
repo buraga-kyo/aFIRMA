@@ -143,6 +143,9 @@ public class ServicoEnvelopes {
       obterEnvelope(anterior.envelope(), criador);
       return pedidos.lerResposta(anterior, Criado.class);
     }
+    if (pedido.observadores() != null && !pedido.observadores().isEmpty()) {
+      throw erro("Cadastre os observadores em cada signatário.");
+    }
     assinador.validarDocumentoAntesDeAlterar(pdf);
     int paginas;
     try {
@@ -316,6 +319,10 @@ public class ServicoEnvelopes {
         novo.fundamentoRepresentacao()
       );
       signatarios.flush();
+      var destinosObservadores = ObservadorAssinatura.destinos(novo.observadores());
+      if (!destinosObservadores.isEmpty()) {
+        evidencias.cadastrarObservadores(identificador, idSignatario, destinosObservadores);
+      }
       evidencias.registrar(
         identificador,
         idSignatario,
@@ -589,7 +596,11 @@ public class ServicoEnvelopes {
       .orElseThrow(() ->
         new ResponseStatusException(HttpStatus.NOT_FOUND, "Convite inválido")
       );
+    // Avisa só na primeira abertura, mesmo que o signatário recarregue a página.
     pessoa.registrarAcesso(dispositivo);
+    if ("1".equals(pessoa.getQuantidadeDeAcessosNoLinkDeAssinatura()) && evidencias.temObservadores(pessoa.getId())) {
+      evidencias.registrar(envelope.getId(), pessoa.getId(), "CONVITE_ABERTO", java.util.Map.of());
+    }
     if (envelope.getFinalizadoEm() == null) envelope.setStatus("Em Processo");
     historicos.save(
       new SignatarioHistorico(
@@ -1567,8 +1578,14 @@ public class ServicoEnvelopes {
     String tipoDocumento,
     String declaracaoFormalidades,
     UUID idRequisicao,
-    boolean empresaParticipante
+    boolean empresaParticipante,
+    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)
+    List<ObservadorAssinatura> observadores
   ) {
+    public PedidoCriacao(String nomeEmpresa, String nomeAssinatura, List<SignatarioNovo> signatarios,
+        String tipoDocumento, String declaracaoFormalidades, UUID idRequisicao, boolean empresaParticipante) {
+      this(nomeEmpresa, nomeAssinatura, signatarios, tipoDocumento, declaracaoFormalidades, idRequisicao, empresaParticipante, null);
+    }
     public PedidoCriacao(String nomeEmpresa, String nomeAssinatura, List<SignatarioNovo> signatarios,
         String tipoDocumento, String declaracaoFormalidades, UUID idRequisicao) {
       this(nomeEmpresa, nomeAssinatura, signatarios, tipoDocumento, declaracaoFormalidades, idRequisicao, false);
@@ -1591,12 +1608,21 @@ public class ServicoEnvelopes {
     List<String> formaDeNotificacao,
     String papel,
     String representado,
-    String fundamentoRepresentacao
+    String fundamentoRepresentacao,
+    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY)
+    List<ObservadorAssinatura> observadores
   ) {
     public SignatarioNovo {
       cpf = DadosPessoaisSignatario.cpf(cpf);
       rg = DadosPessoaisSignatario.rg(rg);
       whatsapp = DadosPessoaisSignatario.whatsapp(whatsapp);
+    }
+
+    public SignatarioNovo(String nome, String email, String cpf, String whatsapp, String rg, String qualificacao,
+        List<CampoNovo> campos, List<String> formaDeAutenticacao, List<String> formaDeNotificacao,
+        String papel, String representado, String fundamentoRepresentacao) {
+      this(nome, email, cpf, whatsapp, rg, qualificacao, campos, formaDeAutenticacao, formaDeNotificacao,
+          papel, representado, fundamentoRepresentacao, null);
     }
 
     public SignatarioNovo(String nome, String email, List<CampoNovo> campos,

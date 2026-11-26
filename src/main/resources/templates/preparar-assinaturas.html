@@ -20,29 +20,47 @@
 <header class="topo">
 <a class="marca" href="/">aFIRMA<span class="marca-ponto">.</span></a><span class="topo-selo">CRIAR ASSINATURA</span>
 </header>
-<main style="padding-bottom: 120px; padding-top: 64px"><p hidden="" id="disponibilidade-canais"></p><input id="token" type="hidden"/><input id="chave-api" type="hidden"/><section class="area-trabalho" hidden="" id="cadastro-empresa-pendente"><h2>Complete os dados da empresa</h2><p>Informe o nome e o e-mail da empresa para preparar as assinaturas.</p><form class="etapa campos" id="completar-empresa"><div class="campo campo-largo">
+<main class="preparacao-assinaturas"><p hidden="" id="disponibilidade-canais"></p><input id="token" type="hidden"/><input id="chave-api" type="hidden"/>
+<section aria-labelledby="titulo-cadastro-empresa" class="area-trabalho" hidden="" id="cadastro-empresa-pendente">
+<div class="cabecalho-area"><h2 id="titulo-cadastro-empresa">Complete os dados da empresa</h2></div>
+<form class="etapa campos" id="completar-empresa">
+<p class="campo-largo">Informe o nome e o e-mail da empresa e vincule um certificado digital para preparar as assinaturas.</p>
+<div class="campo campo-largo">
 <label for="empresa">NOME DA EMPRESA</label><input id="empresa" maxlength="255" placeholder="Empresa solicitante" required=""/>
 </div><div class="campo">
 <label for="empresa-email">E-MAIL DA EMPRESA</label><input id="empresa-email" maxlength="254" required="" type="email"/>
 </div><div class="campo">
-<label for="empresa-cnpj">CNPJ</label><input id="empresa-cnpj" maxlength="18" placeholder="00.000.000/0000-00"/>
+<label for="empresa-cnpj">CNPJ</label><input id="empresa-cnpj" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00"/>
 </div><div class="campo campo-largo">
 <label for="tema-assinatura">TEMA DA TELA DE ASSINATURA</label><select id="tema-assinatura">
 <option value="firma">Firma</option>
 <option value="Caderno">Caderno</option>
 <option value="Cor Solida">Cor sólida</option>
 </select>
-</div><button class="botao-carteira" type="submit">SALVAR E CONTINUAR</button></form></section>
+</div>
+<fieldset class="campos cartao-signatario campo-largo" hidden="" id="cadastro-certificado-empresa">
+<legend>Certificado digital da empresa</legend>
+<div class="campo campo-largo">
+<label for="cadastro-certificado-arquivo">ARQUIVO DO CERTIFICADO (.PFX OU .P12)</label>
+<input type="file" id="cadastro-certificado-arquivo" accept=".pfx,.p12,application/x-pkcs12"/>
+</div>
+<div class="campo campo-largo">
+<label for="cadastro-certificado-senha">SENHA DO CERTIFICADO</label>
+<input type="password" id="cadastro-certificado-senha" autocomplete="off" maxlength="256"/>
+</div>
+</fieldset>
+<button class="botao-carteira" type="submit">SALVAR E CONTINUAR</button>
+</form>
+</section>
 <div class="erro" data-firma-mensagem="" hidden="" id="erro-preparacao" role="alert"></div>
 <section aria-label="Passo 1: Signatários" class="area-trabalho" hidden="" id="step-1-signatarios">
-<div class="cabecalho-area"><span>01 / QUEM VAI ASSINAR</span></div>
+<div class="cabecalho-area"><span>QUEM VAI ASSINAR</span></div>
 <div class="etapa">
 <datalist id="qualificacoes-signatario">
-<option value="Associado"></option>
-<option value="Empresa"></option>
-<option value="Motorista"></option>
 <option value="Testemunha"></option>
-<option value="Avalista"></option>
+<option value="Aprovar"></option>
+<option value="Recebimento"></option>
+<option value="Autorizar"></option>
 </datalist>
 <div class="lista-signatarios" id="lista-signatarios"></div>
 <button class="botao-carteira" id="adicionar-signatario" type="button">
@@ -51,16 +69,27 @@
 <button class="botao-carteira" id="adicionar-eu" type="button">
             + ME ADICIONAR COMO SIGNATÁRIO
           </button>
+<template id="modelo-observadores-signatario">
+<section class="observadores-assinatura campo-largo">
+<h2><button class="botao-carteira adicionar-observador" type="button" title="Recebem atualizações da assinatura por e-mail ou WhatsApp.">+ Observadores</button></h2>
+<div class="lista-observadores"></div>
+</section>
+</template>
+<template id="modelo-observador">
+<fieldset class="campos cartao-signatario">
+<legend>Observador</legend>
+<label class="campo">E-MAIL<input type="email" maxlength="254" placeholder="pessoa@empresa.com"/></label>
+<label class="campo">WHATSAPP<input type="tel" maxlength="32" placeholder="(11) 99999-9999"/></label>
+<div class="campo-largo">
+<button class="acao secundario" type="button">REMOVER OBSERVADOR</button>
 </div>
-<div class="rodape-formulario">
-<button class="botao-primario botao" id="ir-step-2" type="button">
-            PRÓXIMO PASSO ↗
-          </button>
+</fieldset>
+</template>
 </div>
 </section>
 <section aria-label="Passo 2: Documentos" class="area-trabalho" hidden="" id="step-2-documentos">
 <div class="cabecalho-area">
-<span>02 / DOCUMENTO E ASSINATURAS</span><span>CADA ASSINATURA NO SEU LUGAR</span>
+<span>DOCUMENTO E ASSINATURAS</span><span>CADA ASSINATURA NO SEU LUGAR</span>
 </div>
 <div class="etapa campos">
 <p class="campo campo-largo">
@@ -84,7 +113,7 @@
 </div><button class="botao-carteira adicionar-outro-pdf" id="adicionar-documento" type="button">+ ADICIONAR OUTRO PDF</button>
 </div>
 <div class="cabecalho-area" hidden="" id="header-posicionamento">
-<span>02.1 / POSICIONAR CAMPOS</span><span>CLIQUE NA PÁGINA; ARRASTE PARA AJUSTAR</span>
+<span>POSICIONAR CAMPOS</span><span>CLIQUE NA PÁGINA; ARRASTE PARA AJUSTAR</span>
 </div>
 <div class="etapa" hidden="" id="etapa-posicionamento">
 <p class="instrucao-campos">
@@ -122,14 +151,6 @@
             seta move mais rápido. Remova pelo botão ×.
           </p>
 </div>
-<div class="rodape-formulario" style="display: flex; gap: 16px">
-<button class="botao-secundario botao" id="voltar-step-1" type="button">
-            ← VOLTAR
-          </button>
-<button class="botao-primario botao" id="ir-step-3" type="button">
-            PRÓXIMO PASSO ↗
-          </button>
-</div>
 </section>
 <section aria-label="Passo 3: Finalizar" class="area-trabalho" hidden="" id="step-3-finalizar">
 <section class="etapa">
@@ -149,7 +170,7 @@
 </details>
 </section>
 <div class="cabecalho-area">
-<span>03 / FINALIZAR</span><span>PREPARE OS CONVITES</span>
+<span>FINALIZAR</span><span>PREPARE OS CONVITES</span>
 </div>
 <div class="etapa campos">
 <div class="campo campo-largo">
@@ -157,10 +178,7 @@
 </div>
 </div>
 <div class="etapa" id="revisao-assinatura"></div>
-<div class="rodape-formulario" style="display: flex; gap: 16px">
-<button class="botao-secundario botao" id="voltar-step-2" type="button">
-            ← VOLTAR
-          </button>
+<div class="rodape-formulario">
 <button class="botao-primario botao" id="criar-envelope" type="button">
             GERAR CONVITES ↗
           </button>
@@ -240,8 +258,23 @@
 <ul id="estado-signatarios"></ul>
 <p id="identificador-envelope"></p>
 </main>
-<nav aria-label="Passos do Wizard" class="modulos-wizard" hidden="" style="display:none">
-<div class="modulo-wizard ativo" id="btn-step-1">
+<dialog id="adicionar-funcao-assinante" aria-labelledby="titulo-adicionar-funcao">
+<form method="dialog">
+<h2 id="titulo-adicionar-funcao">Adicionar função</h2>
+<div class="campo">
+<label for="nome-nova-funcao">NOME DA FUNÇÃO</label>
+<input id="nome-nova-funcao" maxlength="255" pattern=".*\S.*" required autofocus/>
+</div>
+<div class="rodape-formulario">
+<button class="botao-primario botao" type="submit">ADICIONAR</button>
+<button class="botao-secundario botao" type="submit" value="cancelar" formnovalidate>CANCELAR</button>
+</div>
+</form>
+</dialog>
+<div class="navegacao-preparacao" hidden="">
+<button class="botao-secundario botao botao-navegacao-wizard" id="voltar-wizard" type="button" disabled>← VOLTAR</button>
+<nav aria-label="Etapas da preparação de assinaturas" class="modulos-wizard">
+<div class="modulo-wizard ativo" id="btn-step-1" aria-current="step">
 <span class="modulo-icone">1</span>
 <span class="modulo-texto"><strong>SIGNATÁRIOS</strong><small>QUEM VAI ASSINAR?</small></span>
 </div>
@@ -254,5 +287,7 @@
 <span class="modulo-texto"><strong>FINALIZAR</strong><small>NOMEIE O ENVELOPE</small></span>
 </div>
 </nav>
+<button class="botao-primario botao botao-navegacao-wizard" id="avancar-wizard" type="button">AVANÇAR →</button>
+</div>
 </body>
 </html>

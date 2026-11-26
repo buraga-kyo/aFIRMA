@@ -3,18 +3,28 @@
 <head><script src="/js/acesso-compartilhado.js"></script><link rel="stylesheet" href="/css/mensagens-firma.css"><script src="/js/mensagens-firma.js" defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title th:text="${telaTrator == 'inventor'} ? 'O Inventor · Trator do AssineAI' : (${telaTrator == 'conexoes'} ? 'Conexões do Inventor · Trator do AssineAI' : 'Documentos · AssineAi')">Documentos · AssineAi</title>
+  <title th:text="${telaTrator == 'emails'} ? 'Cartas · Trator' : (${telaTrator == 'inventor'} ? 'O Inventor · Trator do AssineAI' : (${telaTrator == 'conexoes'} ? 'Conexões do Inventor · Trator do AssineAI' : 'Documentos · AssineAi'))">Documentos · AssineAi</title>
   <link rel="stylesheet" href="/css/assinatura.css">
   <link rel="stylesheet" href="/css/tabela-core.css">
   <link rel="stylesheet" href="/css/documentos-assinatura.css">
   <script src="/js/tabela-core.js" defer></script><script src="/js/trator-firma.js" defer></script>
-  <script src="/js/coleta-dados-assinatura.js" defer></script><script src="/js/documentos-assinatura.js" defer></script>
+  <th:block th:if="${telaTrator != 'emails'}">
+    <script src="/js/coleta-dados-assinatura.js" defer></script>
+    <script src="/js/documentos-assinatura.js" defer></script>
+  </th:block>
   <link rel="stylesheet" href="/css/trator-firma.css">
-<link th:if="${telaTrator != null and telaTrator != 'documentos'}" rel="stylesheet" href="/css/inventor.css">
+<link th:if="${telaTrator == 'inventor' or telaTrator == 'conexoes'}" rel="stylesheet" href="/css/inventor.css">
   <th:block th:if="${telaTrator == 'inventor'}"><script src="/js/vendor/nostr.js" defer></script><script src="/js/inventor.js" defer></script><script src="/js/blockchain.js" defer></script></th:block>
   <script th:if="${telaTrator == 'conexoes'}" src="/js/inventor-configuracao.js" defer></script>
+  <th:block th:if="${telaTrator == 'emails'}">
+    <link rel="stylesheet" href="/js/vendor/maily.css">
+    <link rel="stylesheet" href="/css/modelos-email-assinatura.css">
+    <script src="/js/vendor/maily.js" defer></script>
+    <script src="/js/modelos-email-assinatura.js" defer></script>
+    <script src="/js/cartas.js" defer></script>
+  </th:block>
 </head>
-<body class="sistema-trator" th:attr="data-token-teste=${tokenTeste},data-chave-teste=${chaveTeste}">
+<body class="sistema-trator" th:classappend="${telaTrator == 'emails'} ? 'pagina-cartas' : ''" th:attr="data-token-teste=${tokenTeste},data-chave-teste=${chaveTeste}">
 
 <main id="pagina-documentos" class="lista-documentos" data-largura="total">
   <div id="tabela-montagem"></div>
@@ -22,16 +32,23 @@
     <th:block th:if="${telaTrator == 'inventor'}" th:insert="~{inventor :: conteudo}"></th:block>
     <th:block th:if="${telaTrator == 'conexoes'}" th:insert="~{inventor-configuracao :: conteudo}"></th:block>
   </section>
+  <th:block th:if="${telaTrator == 'emails'}">
+    <th:block th:replace="~{modelos-email-assinatura :: conteudo}"></th:block>
+  </th:block>
   <template id="tabela-comandos">
     <nav class="trator-firma" aria-label="Módulos do Trator da Firma">
       <a class="trator-aba trator-marca" href="/firma" aria-label="aFIRMA, perfil da empresa">aFIRMA<span>.</span></a>
-      <a class="trator-aba" href="/afirma/trator" aria-current="page">Cartorio</a>
+      <a class="trator-aba" href="/afirma/trator" th:attr="aria-current=${telaTrator != 'emails'} ? 'page' : null">Cartório</a>
       <a class="trator-aba" href="/chat">Recepção</a>
-      <a class="trator-aba" href="/advai">Escritorio</a>
+      <a class="trator-aba" href="/advai">Escritório</a>
+      <a class="trator-aba" href="/assineai/modelos-email" th:attr="aria-current=${telaTrator == 'emails'} ? 'page' : null">Cartas</a>
     </nav>
+    <button th:if="${telaTrator == 'emails'}" id="cartas-novo" class="acao primaria" type="button">+ Template</button>
+    <th:block th:if="${telaTrator != 'emails'}">
     <a class="acao primaria" href="/preparar-assinaturas">+ Assinatura</a>
     <button id="exportar-dados" type="button">↑ EXPORTAR</button>
     <button id="importar-dados" type="button">↓ IMPORTAR</button>
+    </th:block>
   </template>
 
   <template id="tabela-telas"><a class="trator-aba" href="/assineai/pagina-assinatura">A Gráfica</a><a class="trator-aba" href="/assineai/inventor" th:attr="aria-current=${telaTrator == 'inventor' or telaTrator == 'conexoes'} ? 'page' : null">O Inventor</a></template>
@@ -81,6 +98,6 @@
   </dialog>
 </main>
 
-<div th:replace="~{fragments/trator :: acesso(true)}"></div>
+<div th:replace="~{fragments/trator :: acesso(${telaTrator != 'emails'})}"></div>
 </body>
 </html>

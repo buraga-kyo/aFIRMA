@@ -40,13 +40,31 @@ Em breve vai ter videos mostrando como plantar e colher os fruto daFIRMA no seu 
 vou deixar o passo a passo de como assinar um PDF manualmente aqui, e cara, eu uso linux, se vira pra fazer no Ruindows ai valeu?!;
 Em breve receio ter que colocar essas instruções em outro arquivo, enfim por enquanto segue:
 
-### Requisitos minimos do sistema
-Java 25+
-Qualquer docker moderno
-Qualquer linuxzinho barato
+### Requisitos mínimos
 
-### Configuração local
-Comece copiando `.env.example` para `.env` na raiz. A aplicação e o Docker Compose usam esse arquivo. Coloque ali o emissor e o audience do OAuth, além dos dados dos serviços que você vai usar. O `.env` fica fora do Git.
+Linux com Bash 5.1 ou mais novo, Java 25 ou mais novo, Node.js 20 ou mais novo com npm, Docker com o plugin Compose e curl.
+
+### Subir a aFIRMA
+
+Pra desenvolver e testar, rode:
+
+```sh
+./afirma --dev
+```
+
+Abra http://127.0.0.1:8081 e use o acesso de teste no Trator daFIRMA. O perfil `local-test` usa credenciais próprias, banco, Redis, MinIO e dados do Baileys separados da produção. O Mailpit recebe os e-mails de teste em http://127.0.0.1:8025. Pra trocar as portas da aplicação e da ponte, use `AFIRMA_DEV_PORTA` e `AFIRMA_DEV_PORTA_PONTE`.
+
+Pra produção, copie `.env.example` para `.env`, preencha as credenciais do OAuth, da API, do PostgreSQL, do MinIO e do Baileys e rode:
+
+```sh
+./afirma --prod
+```
+
+A aplicação abre na porta 8080 por padrão. Em banco já criado, mantenha a senha atual até alterar a senha do usuário no PostgreSQL. O `.env` fica fora do Git.
+
+Os dois modos sobem PostgreSQL, Redis, MinIO, a ponte Baileys e a aplicação Java. O modo de desenvolvimento também sobe o Mailpit. Chatwoot e SMS Gateway for Android são integrações externas configuradas à parte.
+
+Ctrl+C encerra a aplicação Java e a ponte. Os serviços do Docker continuam disponíveis pra próxima inicialização. Se quiser parar os serviços de desenvolvimento também, pare os contêineres do projeto `afirma-dev` pelo Docker.
 
 ### Gerar uma chave para a API
 ```sh
@@ -63,61 +81,13 @@ em Application Access vai permitir User-delegated Access e Client Access
 De qualquer forma não estou satisfeito com esse serviço ai de Oauth, em breve, vou atraz de outra solução para segurança mas por enquanto é isso...
 Dito isto no QuickStart vc vai gerar o token em Ger Acess Token. Coloque o emissor em `APP_JWT_ISSUER_URI` e o audience em `APP_JWT_AUDIENCE` no `.env`.
 
-### Agora vamos ver o postgres e redis; no compose.yaml do projeto você deve deixar correto onde os serviços estão rodando
-
-```yaml
-services:
-  postgres:
-    image: 'postgres:latest'
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_USER: ${POSTGRES_USER}
-    ports:
-      - '127.0.0.1:5432:5432'
-  redis:
-    image: 'redis:latest'
-    ports:
-      - '127.0.0.1:6379:6379'
-```
-
-### Agora ta no hora de subir tudo (que temos ate agora hehe)
-```sh
-docker compose up -d
-```
-
-### Confira se respondem
-```sh
-docker compose exec postgres pg_isready -U myuser -d mydatabase
-docker compose exec redis redis-cli ping
-```
-
-As respostas esperadas são "accepting connections" e "PONG".
-
-### Conferir o .env
-Confira os dados do Postgres e Redis no `.env`. `SPRING_DATASOURCE_PASSWORD` precisa ser igual a `POSTGRES_PASSWORD`. Em banco já criado, mantenha a senha atual até alterar a senha do usuário no Postgres.
-
 ### Relacionamento daFIRMA
 
 A página `/` abre AssineAi, Zapiou e ADVai. O Trator de Relacionamento fica em `/chat`, com o mesmo componente de tabela das assinaturas. Cadastros, permissões, atendimentos, campanhas e automações são controlados pela aplicação Java. O motor de chat funciona como serviço integrado. As APIs de negócio usam `/api/firma` e exigem autenticação e autorização por empresa. Veja [o contrato de dados](docs/relacionamento.md), [as regras operacionais](docs/regras-relacionamento.md) e [a cobertura verificada](docs/auditoria-relacionamento-firma.md).
 
-### Iniciar a aplicação (e agora que a gente começa a orar também)
-```sh
-./iniciar.sh
-```
-O script carrega `.env` e substitui valores antigos exportados no terminal.
-
-## Para preguiçosos, tokens prontos...
-
-Para testar a assinatura em `http://127.0.0.1:8080/`, inicie com o perfil `local-test`:
-
-```sh
-./iniciar.sh -Dspring-boot.run.profiles=local-test
-```
-
 ### ADVai, pra montar a proposta
 
-Abra `http://127.0.0.1:8080/advai` com o perfil `local-test`. Preencha empresa, cliente, serviços, honorários e o texto da proposta. Com a chave da API e o JWT, dá para usar o catálogo do `gerador-de-propostas-advocaticias`, adicionar serviços e editar os que você escolheu. Depois é só gerar PDF ou DOCX. O botão **Preparar assinatura** manda o PDF para a tela de convites.
+Abra `http://127.0.0.1:8081/advai` depois de iniciar com `./afirma --dev`. Preencha empresa, cliente, serviços, honorários e o texto da proposta. Com a chave da API e o JWT, dá para usar o catálogo do `gerador-de-propostas-advocaticias`, adicionar serviços e editar os que você escolheu. Depois é só gerar PDF ou DOCX. O botão **Preparar assinatura** manda o PDF para a tela de convites.
 
 Confira o texto antes de mandar para o cliente. Por enquanto ele é montado com o que você preencheu; a IA dessa parte ainda não entrou na roça.
 
@@ -140,7 +110,11 @@ Revise documentos, participantes e métodos na última etapa antes de gerar os c
 
 Cada signatário lê o PDF no próprio link, desenha assinatura e rubrica, envia selfie quando solicitada e confirma o aceite. O PDF é atualizado com as marcas assim que cada pessoa assina; os próximos signatários e o criador podem baixar essa versão atual. Os documentos novos mantêm originais, versões assinadas e certificação individual. O convite permite selecionar e baixar cada PDF. O link comprova posse do convite. Se códigos por e-mail e WhatsApp forem selecionados, um dos canais válidos atende à verificação, como no Assineai de produção. A selfie é uma imagem solicitada, sem validação biométrica automática. Quando todos concluírem, volte à página de preparação, atualize o estado e finalize com o certificado digital da empresa. O PDF final inclui as marcas nos lugares escolhidos e uma assinatura criptográfica sobre o documento completo. Após a finalização, os links permitem baixar o PDF final por mais 7 dias.
 
-Para habilitar entrega de códigos e notificações, configure `APP_ASSINATURAS_ENTREGA_URL` e, quando necessário, `APP_ASSINATURAS_ENTREGA_SEGREDO`. O gateway recebe um POST JSON com `canal` (`email` ou `whatsapp`), `destino`, `tipo` (`codigo` ou `convite`) e `conteudo`, usando `Authorization: Bearer` quando houver segredo. Respostas 2xx confirmam a entrega ao gateway. Sem gateway, a interface mantém canais externos indisponíveis e permite compartilhar links manualmente. Falhas ao notificar não desfazem os convites criados e aparecem na tela para nova tentativa. Códigos duram 10 minutos, têm até cinco tentativas e intervalo mínimo de um minuto entre emissões; somente o hash é persistido.
+Para habilitar entrega de códigos e notificações por e-mail e WhatsApp, configure `APP_ASSINATURAS_ENTREGA_URL` e, quando necessário, `APP_ASSINATURAS_ENTREGA_SEGREDO`. O gateway recebe um POST JSON com `canal` (`email` ou `whatsapp`), `destino`, `tipo` (`codigo`, `convite` ou `observador`) e `conteudo`, usando `Authorization: Bearer` quando houver segredo. Respostas 2xx confirmam a entrega ao gateway. Sem gateway, a interface permite compartilhar links manualmente. Falhas ao notificar não desfazem os convites criados e aparecem na tela para nova tentativa. Códigos duram 10 minutos, têm até cinco tentativas e um intervalo mínimo de um minuto entre emissões. O sistema guarda apenas o hash do código.
+
+Na preparação, cada signatário aceita até 20 observadores com e-mail, WhatsApp ou os dois. As atualizações são enfileiradas na ordem das movimentações e incluem a primeira abertura ou substituição do convite, a recusa e a assinatura do signatário vinculado. Os observadores também recebem avisos de criação, conclusão e cancelamento do envelope. O e-mail do observador também pode ser enviado pelo SMTP da aFIRMA. A mensagem traz o título e a movimentação, sem link de convite ou PDF.
+
+Para habilitar SMS no wizard, ative o modo **Local Server** no [SMS Gateway for Android](https://github.com/capcom6/android-sms-gateway#local-server). Configure `APP_ASSINATURAS_SMS_URL` com o endpoint completo (por exemplo, `http://IP_DO_ANDROID:8080/message` em rede privada), mais `APP_ASSINATURAS_SMS_USUARIO` e `APP_ASSINATURAS_SMS_SENHA` com as credenciais do gateway. Use uma rede privada ou HTTPS e reinicie o aFIRMA. O wizard usa o mesmo campo **Celular** para WhatsApp e SMS. Selecione **Código por SMS** para exigir o código no convite ou **SMS** para enviar o link. O acesso inicial ao convite continua usando o e-mail e o aceite do gateway não confirma a entrega ao celular.
 
 O perfil exige PostgreSQL e Redis configurados no `.env`, mas dispensa o provedor OAuth externo. Ele aceita apenas conexões em `127.0.0.1`. Informe na tela:
 

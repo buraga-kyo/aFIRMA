@@ -109,6 +109,8 @@ public class ControleEnvelopes {
     return java.util.Map.of(
       "entregaDisponivel",
       entrega.disponivel(),
+      "smsDisponivel",
+      entrega.smsDisponivel(),
       "usuario",
       usuario.getName()
     );

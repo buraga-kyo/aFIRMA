@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "desafio_assinatura")
 public class DesafioAssinatura {
+    static final int VALIDADE_SEGUNDOS = 600;
     @Id @Column(length = 64) private String id;
     @Column(length = 64) private String resumo;
     @Column(nullable = false) private java.util.UUID signatarioId;
@@ -13,7 +14,7 @@ public class DesafioAssinatura {
     private int tentativas;
     private boolean verificado;
     protected DesafioAssinatura() {}
-    public DesafioAssinatura(java.util.UUID signatarioId, String canal, String resumo) { this.signatarioId = signatarioId; this.canal = canal; this.id = signatarioId + ":" + canal; this.resumo = resumo; enviadoEm = Instant.now(); expiraEm = enviadoEm.plusSeconds(600); }
+    public DesafioAssinatura(java.util.UUID signatarioId, String canal, String resumo) { this.signatarioId = signatarioId; this.canal = canal; this.id = signatarioId + ":" + canal; this.resumo = resumo; enviadoEm = Instant.now(); expiraEm = enviadoEm.plusSeconds(VALIDADE_SEGUNDOS); }
     public Instant getEnviadoEm() { return enviadoEm; }
     public boolean verificar(String recebido) {
         if (tentativas >= 5 || Instant.now().isAfter(expiraEm) || verificado) return false;

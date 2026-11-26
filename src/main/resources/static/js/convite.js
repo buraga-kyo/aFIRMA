@@ -1,4 +1,4 @@
-const conviteToken = location.pathname.split("/").filter(Boolean).at(-1);
+const tokenConvite = location.pathname.split("/").filter(Boolean).at(-1);
 const mensagemErro = document.getElementById("erro");
 const visualizador = document.getElementById("visualizador");
 const imagemPagina = document.getElementById("imagem-pagina");
@@ -119,7 +119,7 @@ async function mostrarPagina() {
   const paginaSolicitada = paginaAtual;
   const resposta = await verificar(
     await fetch(
-      `/api/convites/${conviteToken}/paginas/${paginaSolicitada}?resumoDocumento=${dadosConvite.resumoDocumento}`,
+      `/api/convites/${tokenConvite}/paginas/${paginaSolicitada}?resumoDocumento=${dadosConvite.resumoDocumento}`,
       {
         cache: "no-store",
       },
@@ -156,7 +156,7 @@ async function mostrarPagina() {
 async function atualizarDocumento() {
   const resposta = await verificar(
     await fetch(
-      `/api/convites/${conviteToken}/pdf?resumoDocumento=${dadosConvite.resumoDocumento}`,
+      `/api/convites/${tokenConvite}/pdf?resumoDocumento=${dadosConvite.resumoDocumento}`,
       { cache: "no-store" },
     ),
   );
@@ -262,27 +262,27 @@ document
         throw new Error("Envie sua selfie.");
       const dados = envioPendente || new FormData();
       if (!envioPendente) {
-        const coleta = await coletarDadosAssinatura(`/api/convites/${conviteToken}/coleta`);
+        const coleta = await coletarDadosAssinatura(`/api/convites/${tokenConvite}/coleta`);
         dados.append("localizacao", JSON.stringify(coleta.localizacao));
         dados.append("ipNavegador", coleta.ipNavegador);
         dados.append("aceite", "true");
         dados.append("resumoDocumento", dadosConvite.resumoDocumento);
         dados.append("textoAceite", dadosConvite.textoAceite);
         const valores = {};
-        for (const input of document.querySelectorAll(
+        for (const entrada of document.querySelectorAll(
           "[data-campo-preenchimento]",
         )) {
-          if (!input.reportValidity())
+          if (!entrada.reportValidity())
             throw Error("Preencha os campos obrigatórios.");
-          if (input.type === "file") {
-            if (input.files[0])
+          if (entrada.type === "file") {
+            if (entrada.files[0])
               dados.append(
-                "anexo_" + input.dataset.campoPreenchimento,
-                input.files[0],
+                "anexo_" + entrada.dataset.campoPreenchimento,
+                entrada.files[0],
               );
           } else
-            valores[input.dataset.campoPreenchimento] =
-              input.type === "checkbox" ? String(input.checked) : input.value;
+            valores[entrada.dataset.campoPreenchimento] =
+              entrada.type === "checkbox" ? String(entrada.checked) : entrada.value;
         }
         dados.append("valores", JSON.stringify(valores));
         if (tipos.has("ASSINATURA") && desenhos.get("desenho-assinatura"))
@@ -306,7 +306,7 @@ document
         envioPendente = dados;
       }
       const respostaEnvio = await fetch(
-        `/api/convites/${conviteToken}/assinar`,
+        `/api/convites/${tokenConvite}/assinar`,
         {
           method: "POST",
           body: dados,
@@ -411,11 +411,11 @@ function prepararAutenticacao() {
   const painel = document.getElementById("codigos-autenticacao");
   painel.replaceChildren();
   for (const canal of dadosConvite.formaDeAutenticacao || []) {
-    if (canal !== "whatsapp") continue;
+    if (!["whatsapp", "sms"].includes(canal)) continue;
     const grupo = document.createElement("div");
     grupo.className = "codigo-convite";
     const rotulo = document.createElement("label");
-    rotulo.textContent = `CÓDIGO POR ${canal === "email" ? "E-MAIL" : "WHATSAPP"}`;
+    rotulo.textContent = `CÓDIGO POR ${canal === "sms" ? "SMS" : "WHATSAPP"}`;
     const entrada = document.createElement("input");
     entrada.inputMode = "numeric";
     entrada.maxLength = 6;
@@ -434,12 +434,17 @@ function prepararAutenticacao() {
       enviar.disabled = true;
       try {
         await verificar(
-          await fetch(`/api/convites/${conviteToken}/codigos/${canal}`, {
+          await fetch(`/api/convites/${tokenConvite}/codigos/${canal}`, {
             method: "POST",
           }),
         );
+        entrada.disabled = false;
+        entrada.value = "";
+        validar.disabled = false;
         estado.textContent =
-          "Código enviado. Validade de 10 minutos; aguarde um minuto antes de reenviar.";
+          canal === "sms"
+            ? "Envio por SMS solicitado. Validade de 10 minutos. Aguarde um minuto antes de reenviar."
+            : "Código enviado. Validade de 10 minutos; aguarde um minuto antes de reenviar.";
       } catch (falha) {
         erro(falha.message);
       } finally {
@@ -453,7 +458,7 @@ function prepararAutenticacao() {
       try {
         await verificar(
           await fetch(
-            `/api/convites/${conviteToken}/codigos/${canal}/verificar`,
+            `/api/convites/${tokenConvite}/codigos/${canal}/verificar`,
             {
               method: "POST",
               headers: {
@@ -497,7 +502,7 @@ function prepararDocumentos() {
 async function carregar() {
   const jaEstavaAssinado = !!dadosConvite?.assinado;
   const resposta = await verificar(
-    await fetch(`/api/convites/${conviteToken}`, {
+    await fetch(`/api/convites/${tokenConvite}`, {
       cache: "no-store",
     }),
   );
@@ -570,7 +575,7 @@ async function carregar() {
   atualizarLeitura();
   if (dadosConvite.finalizado) {
     await assinaturasDigitais.conferirEndereco(
-      `/api/convites/${conviteToken}/verificacao`,
+      `/api/convites/${tokenConvite}/verificacao`,
       {},
       document.getElementById("verificacao-assinatura"),
     );
@@ -582,7 +587,7 @@ document
     evento.preventDefault();
     try {
       const resposta = await verificar(
-        await fetch(`/api/convites/${conviteToken}/final`, {
+        await fetch(`/api/convites/${tokenConvite}/final`, {
           cache: "no-store",
         }),
       );
@@ -619,7 +624,7 @@ async function atualizarConvite() {
     carregandoDocumento = false;
   }
 }
-if (conviteToken === "convite") {
+if (tokenConvite === "convite") {
   document.getElementById("marca-empresa").firstChild.textContent = "aFIRMA";
   document.getElementById("rodape-empresa").textContent = "aFIRMA";
   document.getElementById("destino-codigo").textContent = "Abra o link completo recebido por e-mail para identificar a empresa e acessar seu documento.";
@@ -641,7 +646,7 @@ window.addEventListener("pageshow", (evento) => {
 
 async function consultarAcesso() {
   const resposta = await verificar(
-    await fetch(`/api/convites/${conviteToken}/acesso`, { cache: "no-store" }),
+    await fetch(`/api/convites/${tokenConvite}/acesso`, { cache: "no-store" }),
   );
   const acesso = await resposta.json();
   atualizarEmpresaConvite(acesso.nomeEmpresa);
@@ -688,7 +693,7 @@ document
     );
     try {
       const respostaEnvioCodigo = await verificar(
-        await fetch(`/api/convites/${conviteToken}/codigo`, {
+        await fetch(`/api/convites/${tokenConvite}/codigo`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: "{}",
@@ -704,7 +709,7 @@ document
       erro(falha.message);
       // Se outra aba enviou o código, recupero o prazo que a API está cobrando.
       try {
-        const respostaAcessoConvite = await verificar(await fetch(`/api/convites/${conviteToken}/acesso`, { cache: "no-store" }));
+        const respostaAcessoConvite = await verificar(await fetch(`/api/convites/${tokenConvite}/acesso`, { cache: "no-store" }));
         sincronizarReenvioCodigo(await respostaAcessoConvite.json());
       } catch {
         envioCodigoDisponivel = false;
@@ -727,7 +732,7 @@ document
       if (!/^[0-9]{8}$/.test(codigo))
         throw new Error("Informe os oito dígitos recebidos por e-mail.");
       await verificar(
-        await fetch(`/api/convites/${conviteToken}/autenticar`, {
+        await fetch(`/api/convites/${tokenConvite}/autenticar`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ codigo }),
@@ -747,7 +752,7 @@ document
   .addEventListener("click", async () => {
     try {
       await verificar(
-        await fetch(`/api/convites/${conviteToken}/sair`, {
+        await fetch(`/api/convites/${tokenConvite}/sair`, {
           method: "POST",
           cache: "no-store",
         }),
@@ -765,7 +770,7 @@ document
     botao.disabled = true;
     try {
       await verificar(
-        await fetch(`/api/convites/${conviteToken}/recusar`, {
+        await fetch(`/api/convites/${tokenConvite}/recusar`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -788,7 +793,7 @@ async function acompanharConviteAssinado() {
       || consultandoAndamento || carregandoDocumento || carregandoPagina || enviandoAssinatura) return;
   consultandoAndamento = true;
   try {
-    const resposta = await verificar(await fetch(`/api/convites/${conviteToken}`, { cache: 'no-store' }));
+    const resposta = await verificar(await fetch(`/api/convites/${tokenConvite}`, { cache: 'no-store' }));
     const estado = await resposta.json();
     if (estado.resumoDocumento !== dadosConvite.resumoDocumento || estado.finalizado !== dadosConvite.finalizado)
       await atualizarConvite();
